@@ -61,7 +61,7 @@ button.busy{opacity:.7;cursor:wait;position:relative}button.busy:after{content:"
 </style>
 </head>
 <body>
-<header><h1>🧭 LaborKompass Pro</h1><p>Laborwerte, Befunde, Verlauf und persönliche medizinische Struktur</p><span class="versionBadge">Version 1.3.0 · sichere Sicherung und Befundverwaltung</span></header>
+<header><h1>🧭 LaborKompass Pro</h1><p>Laborwerte, Befunde, Verlauf und persönliche medizinische Struktur</p><span class="versionBadge">Version 1.3.1 · Stabilitätskorrektur</span></header>
 <main>
 <nav class="tabs">
 <button class="tab active" data-page="home">Übersicht</button>
@@ -200,7 +200,7 @@ button.busy{opacity:.7;cursor:wait;position:relative}button.busy:after{content:"
 <div class="card"><h2>Automatische Datensicherung</h2><p class="small">Bei jeder Änderung wird automatisch eine lokale Sicherungsversion angelegt. Es werden die letzten gewählten Versionen aufbewahrt.</p><div class="row"><div><label>Automatische Sicherung</label><select id="autoBackupSelect"><option value="on">Ein</option><option value="off">Aus</option></select></div><div><label>Versionen behalten</label><select id="backupLimit"><option>10</option><option>20</option><option selected>30</option><option>50</option></select></div></div><button class="secondary full" id="backupNowBtn">Zusätzliche lokale Sicherung anlegen</button><label>Sicherung aus Datei wiederherstellen</label><input id="importBackup" type="file" accept=".json,application/json"><div id="backupStatus" class="small"></div><div id="backupVersions"></div><h3>Letzte Aktionen</h3><div id="actionLog" class="actionLog"><div class="small">Noch keine Aktion.</div></div></div>
 <div class="card"><h2>Datenschutz</h2><div class="privacyBox"><b>Was ist öffentlich?</b><br>Der Programmcode und die leere App auf GitHub Pages sind öffentlich zugänglich.<br><br><b>Was bleibt privat?</b><br>Laborwerte, Diagnosen, Medikamente und importierte Befundtexte werden ausschließlich im lokalen Speicher dieses Browsers abgelegt. Sie werden nicht automatisch zu GitHub hochgeladen.<br><br><b>Wichtig:</b><br>Lade niemals persönliche Befunde, Sicherungsdateien, Passwörter oder API-Schlüssel in dein öffentliches GitHub-Repository.</div></div>
 <div class="card"><h2>Komplette Sicherung und Wiederherstellung</h2><button class="secondary full" id="exportBtn">Komplette Daten als JSON exportieren</button><button class="dangerBtn full" id="resetBtn">Alle lokalen Daten löschen</button></div>
-<div class="card"><h2>App-Information</h2><p><b>LaborKompass Pro 1.3.0</b></p><p class="small">Persönliche Gesundheitsakte mit Labor, Befunden, Vitalwerten, Impfungen, Allergien, Operationen, Zeitstrahl, Backups und lokaler Analyse.</p></div>
+<div class="card"><h2>App-Information</h2><p><b>LaborKompass Pro 1.3.1</b></p><p class="small">Persönliche Gesundheitsakte mit Labor, Befunden, Vitalwerten, Impfungen, Allergien, Operationen, Zeitstrahl, Backups und lokaler Analyse.</p></div>
 </section>
 </main>
 
@@ -389,14 +389,14 @@ function render(){
  const l=latest(),bad=l.filter(v=>st(v)!=="ok");
  mCount.textContent=values.length;mOk.textContent=l.filter(v=>st(v)==="ok").length;mBad.textContent=bad.length;mFiles.textContent=documents.length;
  alerts.innerHTML=bad.length?bad.map(card).join(""):"<div class='success'>Keine aktuelle Überschreitung der eingetragenen Referenzbereiche.</div>";
- autoSummary.textContent=autoText();renderValues();renderFiles();renderDocuments();renderTrendOptions();renderDocCompareOptions();renderAkte();renderJournal();
+ autoSummary.textContent=autoText();renderValues();renderFiles();renderDocuments();renderTrendOptions();renderDocCompareOptions();renderAkte();
 }
 function renderValues(){let q=search.value.toLowerCase(),f=filter.value;let arr=[...values].sort((a,b)=>b.date.localeCompare(a.date));arr=arr.filter(v=>(v.name+" "+v.category).toLowerCase().includes(q));arr=arr.filter(v=>f==="all"||(f==="bad"&&st(v)!=="ok")||(f==="ok"&&st(v)==="ok"));valueList.innerHTML=arr.map(card).join("")||"<div class='card'>Keine Werte gefunden.</div>"}
 search.oninput=renderValues;filter.onchange=renderValues;
 vDate.value=new Date().toISOString().slice(0,10);vCat.innerHTML=cats.map(x=>`<option>${x}</option>`).join("");names.innerHTML=Object.keys(defs).map(x=>`<option>${x}</option>`).join("");
 vName.onchange=()=>{let d=defs[vName.value];if(d){vUnit.value=d.u;vMin.value=d.min;vMax.value=d.max;vCat.value=d.c}}
 valueForm.onsubmit=e=>{e.preventDefault();values.push({id:uid(),name:vName.value.trim(),value:+vValue.value,unit:vUnit.value.trim(),min:vMin.value===""?"":+vMin.value,max:vMax.value===""?"":+vMax.value,date:vDate.value,category:vCat.value,note:vNote.value.trim()});save();e.target.reset();vDate.value=new Date().toISOString().slice(0,10);render();showToast("Laborwert wurde gespeichert.","ok")};
-const APP_VERSION="1.3.0";let deferredInstallPrompt=null;
+const APP_VERSION="1.3.1";let deferredInstallPrompt=null;
 function completePayload(){return{app:"LaborKompass Pro",version:APP_VERSION,exportedAt:new Date().toISOString(),values,files,documents,diagnoses,meds,symptoms,vitals,vaccinations,allergies,operations}}
 function getBackups(){try{return JSON.parse(localStorage.getItem("lk_backup_versions")||"[]")}catch(e){showToast("Sicherungsliste konnte nicht gelesen werden.","error");return[]}}
 function storageEstimate(){let n=0;for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);n+=(k.length+(localStorage.getItem(k)||"").length)*2}return n}
@@ -699,4 +699,11 @@ exportBtn.onclick=()=>{setButtonBusy(exportBtn,true,"Export wird erstellt");try{
 <script>
 document.addEventListener("click",e=>{const b=e.target.closest("button");if(!b||b.disabled)return;b.classList.add("actionPulse");setTimeout(()=>b.classList.remove("actionPulse"),180);const label=(b.textContent||"Aktion").trim().replace(/\s+/g," ");if(!["Wiederherstellen","Löschen"].includes(label))logAction(`Taste „${label}“ gedrückt`,"info")},true);
 document.addEventListener("change",e=>{if(e.target.matches("input[type=file]")){const n=e.target.files?.length||0;if(n)showToast(`${n} Datei${n===1?"":"en"} ausgewählt. Verarbeitung startet.`,"info")}});
+
+function appSelfCheck(){
+ const required=["render","renderValues","renderFiles","renderDocuments","renderTrendOptions","renderDocCompareOptions","renderAkte","save"];
+ const missing=required.filter(n=>typeof window[n]!=="function");
+ if(missing.length){console.error("Fehlende App-Funktionen:",missing);showToast?.("Technischer Fehler: "+missing.join(", "),"error");return false}
+ return true;
+}
 </script></body></html>

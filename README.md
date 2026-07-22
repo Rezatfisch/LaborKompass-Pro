@@ -1,14 +1,11 @@
-# LaborKompass Pro 1.3.0
+# LaborKompass Pro 1.3.1
 
-## Behoben
-- JSON-Sicherung ist wieder global verfügbar und funktioniert ohne vorher einen Laborwert anzulegen.
-- „Vorhandenen ersetzen“ bei doppelten Befunden arbeitet nun über eine sichere interne Import-ID.
-- Importvorschauen können verworfen werden.
-- Importierte Berichte können aus der Übersicht entfernt werden, ohne bereits übernommene Laborwerte oder Akteneinträge zu löschen.
+Stabilitätskorrektur für Version 1.3.0.
 
-## Sicherung vor Updates
-1. Unter Einstellungen „Lokal als JSON sichern“ wählen.
-2. Danach „In OneDrive / Cloud speichern“ wählen und im Android-Teilen-Dialog OneDrive als Ziel auswählen.
-3. Erst danach eine neue App-Version hochladen.
+Behoben:
+- Fehlermeldung `renderJournal is not defined`
+- Aktualisierung der Übersicht nach Speichern, Löschen und Wiederherstellen
+- Buttons und Sicherungsfunktionen werden nicht mehr durch den veralteten Journal-Aufruf unterbrochen
+- Versionsanzeige und Service-Worker-Cache auf 1.3.1 aktualisiert
 
-Die JSON-Sicherung enthält strukturierte Daten, Laborwerte und Befundtexte. Originaldateien bleiben zusätzlich lokal im App-Speicher.
+Die vorhandenen lokalen Gesundheitsdaten werden durch dieses Update nicht absichtlich gelöscht. Vor dem Hochladen dennoch nach Möglichkeit eine JSON-Sicherung erstellen.
