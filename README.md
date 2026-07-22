@@ -1,11 +1,14 @@
-# LaborKompass Pro 1.3.1
+# LaborKompass Pro 1.4.0
 
-Stabilitätskorrektur für Version 1.3.0.
+Neu:
+- automatische Erkennung von Optiker- und Brillenpass-Dokumenten
+- strukturierte Augenwerte für rechts und links: Sphäre, Zylinder, Achse, Addition, Pupillendistanz und Visus
+- Erkennung von Augenarztbegriffen und Augeninnendruck, soweit im Text eindeutig vorhanden
+- Zahnarztdokumente mit Zahnnummern, Befundbegriffen, BEMA-/GOZ-Codes und Kostenangaben
+- allgemeine Arztberichte mit ICD-Codes, Medikamentenhinweisen und Untersuchungsverfahren
+- neue Rubrik „Fachwerte“, chronologisch nach Datum
+- unterschiedliche Vorlagen werden über flexible Begriffe und Zahlenmuster ausgewertet
+- strukturierte Fachwerte werden in Sicherungen und Wiederherstellungen mitgeführt
 
-Behoben:
-- Fehlermeldung `renderJournal is not defined`
-- Aktualisierung der Übersicht nach Speichern, Löschen und Wiederherstellen
-- Buttons und Sicherungsfunktionen werden nicht mehr durch den veralteten Journal-Aufruf unterbrochen
-- Versionsanzeige und Service-Worker-Cache auf 1.3.1 aktualisiert
-
-Die vorhandenen lokalen Gesundheitsdaten werden durch dieses Update nicht absichtlich gelöscht. Vor dem Hochladen dennoch nach Möglichkeit eine JSON-Sicherung erstellen.
+Wichtig:
+Die lokale Erkennung ist eine technische Voranalyse. Alle Werte müssen mit dem Originaldokument kontrolliert werden. Eine echte externe KI-Auswertung benötigt weiterhin einen sicheren Server-Endpunkt; der API-Schlüssel darf niemals in GitHub oder direkt in die HTML-Datei eingetragen werden.

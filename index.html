@@ -58,15 +58,22 @@ canvas{width:100%;height:230px;background:white;border-radius:12px}
 button.actionPulse{transform:scale(.97);filter:brightness(.94)}
 button.busy{opacity:.7;cursor:wait;position:relative}button.busy:after{content:" …"}
 .actionLog{margin-top:10px;border:1px solid var(--line);border-radius:12px;padding:10px;background:#f8fafc;max-height:180px;overflow:auto}.actionLog div{padding:4px 0;border-bottom:1px dashed #dbe3ea}.actionLog div:last-child{border:0}
+
+.specialistGrid{display:grid;gap:10px;grid-template-columns:repeat(2,minmax(0,1fr))}
+.specialistCard{border:1px solid var(--line);border-radius:13px;padding:12px;background:#fff}
+.specialistCard h3{margin:0 0 8px;color:var(--brand);font-size:1rem}
+.kv{display:grid;grid-template-columns:1fr auto;gap:6px 12px;padding:4px 0;border-bottom:1px dashed #dbe3ea}
+.kv:last-child{border-bottom:0}.kv b{text-align:right}.eyeSide{border-left:5px solid #0f766e}
+@media(max-width:520px){.specialistGrid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
-<header><h1>🧭 LaborKompass Pro</h1><p>Laborwerte, Befunde, Verlauf und persönliche medizinische Struktur</p><span class="versionBadge">Version 1.3.1 · Stabilitätskorrektur</span></header>
+<header><h1>🧭 LaborKompass Pro</h1><p>Laborwerte, Befunde, Verlauf und persönliche medizinische Struktur</p><span class="versionBadge">Version 1.4.0 · Facharzt-, Augen- und Zahndokumente</span></header>
 <main>
 <nav class="tabs">
 <button class="tab active" data-page="home">Übersicht</button>
 <button class="tab" data-page="werte">Laborwerte</button>
-<button class="tab" data-page="import">Import & Scan</button>
+<button class="tab" data-page="import">Import & Scan</button><button class="tab" data-page="fachwerte">Fachwerte</button>
 <button class="tab" data-page="trend">Verlauf</button>
 <button class="tab" data-page="analyse">Analyse</button>
 <button class="tab" data-page="mensch">Körper & Fachgebiete</button>
@@ -106,7 +113,7 @@ button.busy{opacity:.7;cursor:wait;position:relative}button.busy:after{content:"
 </section>
 
 <section id="import" class="page">
-<div class="card"><h2>Befunde und Berichte einlesen</h2>
+<div class="card"><h2>Befunde und Berichte einlesen</h2><div class="notice"><b>Neu:</b> Optiker-, Augenarzt- und Zahnarztdokumente werden selbständig erkannt. Verwertbare Werte werden strukturiert in „Fachwerte“ abgelegt. Die lokale Auswertung arbeitet regelbasiert; eine echte Online-KI-Auswertung wird erst nach sicherer API-Anbindung aktiviert.</div>
 <div class="filebox">
 <input id="smartImportInput" type="file" accept=".pdf,image/*,.txt,.csv,.json,.doc,.docx" multiple>
 <p><b>Dateien, PDFs, Scans oder mehrere Fotos auswählen</b></p>
@@ -144,6 +151,15 @@ button.busy{opacity:.7;cursor:wait;position:relative}button.busy:after{content:"
 <button class="secondary full" id="bulkBtn">Übernehmen</button></div>
 </section>
 
+
+<section id="fachwerte" class="page">
+<div class="card">
+<h2>Strukturierte Facharztwerte</h2>
+<p class="small">Hier erscheinen automatisch erkannte Werte aus Augenarzt-, Optiker-, Zahnarzt- und anderen Facharztunterlagen. Die Anzeige wird nach Befunddatum sortiert.</p>
+<div class="row"><div><label>Fachgebiet</label><select id="specialtyFilter"><option value="all">Alle Fachgebiete</option></select></div><div><label>Suche</label><input id="specialtySearch" placeholder="Visus, Sphäre, Zahn 16, Glaukom …"></div></div>
+</div>
+<div id="specialtyOverview"></div>
+</section>
 <section id="trend" class="page">
 <div class="card"><h2>Zeitliche Entwicklung</h2><label>Laborwert</label><select id="trendSelect"></select><canvas id="chart" width="960" height="320"></canvas><div id="trendInfo" class="aiout"></div></div>
 <div class="card"><h2>Dokument- und Befundvergleich</h2>
@@ -200,7 +216,7 @@ button.busy{opacity:.7;cursor:wait;position:relative}button.busy:after{content:"
 <div class="card"><h2>Automatische Datensicherung</h2><p class="small">Bei jeder Änderung wird automatisch eine lokale Sicherungsversion angelegt. Es werden die letzten gewählten Versionen aufbewahrt.</p><div class="row"><div><label>Automatische Sicherung</label><select id="autoBackupSelect"><option value="on">Ein</option><option value="off">Aus</option></select></div><div><label>Versionen behalten</label><select id="backupLimit"><option>10</option><option>20</option><option selected>30</option><option>50</option></select></div></div><button class="secondary full" id="backupNowBtn">Zusätzliche lokale Sicherung anlegen</button><label>Sicherung aus Datei wiederherstellen</label><input id="importBackup" type="file" accept=".json,application/json"><div id="backupStatus" class="small"></div><div id="backupVersions"></div><h3>Letzte Aktionen</h3><div id="actionLog" class="actionLog"><div class="small">Noch keine Aktion.</div></div></div>
 <div class="card"><h2>Datenschutz</h2><div class="privacyBox"><b>Was ist öffentlich?</b><br>Der Programmcode und die leere App auf GitHub Pages sind öffentlich zugänglich.<br><br><b>Was bleibt privat?</b><br>Laborwerte, Diagnosen, Medikamente und importierte Befundtexte werden ausschließlich im lokalen Speicher dieses Browsers abgelegt. Sie werden nicht automatisch zu GitHub hochgeladen.<br><br><b>Wichtig:</b><br>Lade niemals persönliche Befunde, Sicherungsdateien, Passwörter oder API-Schlüssel in dein öffentliches GitHub-Repository.</div></div>
 <div class="card"><h2>Komplette Sicherung und Wiederherstellung</h2><button class="secondary full" id="exportBtn">Komplette Daten als JSON exportieren</button><button class="dangerBtn full" id="resetBtn">Alle lokalen Daten löschen</button></div>
-<div class="card"><h2>App-Information</h2><p><b>LaborKompass Pro 1.3.1</b></p><p class="small">Persönliche Gesundheitsakte mit Labor, Befunden, Vitalwerten, Impfungen, Allergien, Operationen, Zeitstrahl, Backups und lokaler Analyse.</p></div>
+<div class="card"><h2>App-Information</h2><p><b>LaborKompass Pro 1.4.0</b></p><p class="small">Persönliche Gesundheitsakte mit Labor, Befunden, Vitalwerten, Impfungen, Allergien, Operationen, Zeitstrahl, Backups und lokaler Analyse.</p></div>
 </section>
 </main>
 
@@ -385,18 +401,28 @@ function localEngine(){
  return out.join("\n");
 }
 function autoText(){return localEngine()}
+
+function renderSpecialtyOverview(){
+ const box=window.specialtyOverview,filter=window.specialtyFilter,q=(window.specialtySearch?.value||"").toLowerCase();if(!box||!filter)return;
+ const docs=documents.filter(d=>hasSpecialtyData(d.specialtyData));
+ const specs=[...new Set(docs.map(d=>d.specialty))].sort(),cur=filter.value||"all";
+ filter.innerHTML='<option value="all">Alle Fachgebiete</option>'+specs.map(x=>`<option>${esc(x)}</option>`).join("");if(specs.includes(cur))filter.value=cur;
+ const arr=docs.filter(d=>(filter.value==="all"||d.specialty===filter.value)&&(`${d.name} ${d.specialty} ${d.rubric} ${JSON.stringify(d.specialtyData)}`).toLowerCase().includes(q)).sort((a,b)=>b.date.localeCompare(a.date));
+ box.innerHTML=arr.map(d=>`<div class="card"><div class="head"><div><div class="name">${esc(d.name)}</div><div class="small">${fd(d.date)} · ${esc(d.specialty)}</div></div><span class="badge info">${esc(d.rubric)}</span></div>${specialistHtml(d.specialtyData)}<div class="sharebar"><button class="secondary mini" onclick="shareDocument('${d.id}','analysis')">Auswertung teilen</button><button class="secondary mini" onclick="printDocument('${d.id}')">Drucken</button></div></div>`).join("")||"<div class='card'><p class='small'>Noch keine strukturierten Fachwerte vorhanden.</p></div>";
+}
+
 function render(){
  const l=latest(),bad=l.filter(v=>st(v)!=="ok");
  mCount.textContent=values.length;mOk.textContent=l.filter(v=>st(v)==="ok").length;mBad.textContent=bad.length;mFiles.textContent=documents.length;
  alerts.innerHTML=bad.length?bad.map(card).join(""):"<div class='success'>Keine aktuelle Überschreitung der eingetragenen Referenzbereiche.</div>";
- autoSummary.textContent=autoText();renderValues();renderFiles();renderDocuments();renderTrendOptions();renderDocCompareOptions();renderAkte();
+ autoSummary.textContent=autoText();renderValues();renderFiles();renderDocuments();renderTrendOptions();renderDocCompareOptions();renderAkte();renderSpecialtyOverview();
 }
 function renderValues(){let q=search.value.toLowerCase(),f=filter.value;let arr=[...values].sort((a,b)=>b.date.localeCompare(a.date));arr=arr.filter(v=>(v.name+" "+v.category).toLowerCase().includes(q));arr=arr.filter(v=>f==="all"||(f==="bad"&&st(v)!=="ok")||(f==="ok"&&st(v)==="ok"));valueList.innerHTML=arr.map(card).join("")||"<div class='card'>Keine Werte gefunden.</div>"}
 search.oninput=renderValues;filter.onchange=renderValues;
 vDate.value=new Date().toISOString().slice(0,10);vCat.innerHTML=cats.map(x=>`<option>${x}</option>`).join("");names.innerHTML=Object.keys(defs).map(x=>`<option>${x}</option>`).join("");
 vName.onchange=()=>{let d=defs[vName.value];if(d){vUnit.value=d.u;vMin.value=d.min;vMax.value=d.max;vCat.value=d.c}}
 valueForm.onsubmit=e=>{e.preventDefault();values.push({id:uid(),name:vName.value.trim(),value:+vValue.value,unit:vUnit.value.trim(),min:vMin.value===""?"":+vMin.value,max:vMax.value===""?"":+vMax.value,date:vDate.value,category:vCat.value,note:vNote.value.trim()});save();e.target.reset();vDate.value=new Date().toISOString().slice(0,10);render();showToast("Laborwert wurde gespeichert.","ok")};
-const APP_VERSION="1.3.1";let deferredInstallPrompt=null;
+const APP_VERSION="1.4.0";let deferredInstallPrompt=null;
 function completePayload(){return{app:"LaborKompass Pro",version:APP_VERSION,exportedAt:new Date().toISOString(),values,files,documents,diagnoses,meds,symptoms,vitals,vaccinations,allergies,operations}}
 function getBackups(){try{return JSON.parse(localStorage.getItem("lk_backup_versions")||"[]")}catch(e){showToast("Sicherungsliste konnte nicht gelesen werden.","error");return[]}}
 function storageEstimate(){let n=0;for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);n+=(k.length+(localStorage.getItem(k)||"").length)*2}return n}
@@ -437,13 +463,14 @@ renderBackupVersions();if(!getBackups().length)createAutoBackup("Erstsicherung")
 render();showPage("werte");
 
 
-const docRubrics=["Labor","Radiologie","Kardiologie","Neurologie","Orthopädie","Urologie","Gastroenterologie","Endokrinologie","Allgemeinmedizin","Medikamentenplan","Arztbrief","Krankenhaus","Sonstige"];
+const docRubrics=["Labor","Augenheilkunde","Optik / Brille","Zahnmedizin","HNO","Dermatologie","Radiologie","Kardiologie","Neurologie","Orthopädie","Urologie","Gastroenterologie","Endokrinologie","Pneumologie","Rheumatologie","Psychische Gesundheit","Allgemeinmedizin","Medikamentenplan","Arztbrief","Krankenhaus","Sonstige"];
 function classifyDocument(text,name=""){
  const s=(name+" "+text).toLowerCase();
  let type="Befund",rubric="Sonstige",specialty="Allgemeinmedizin";
  const rules=[
   [["labor","blutbild","serum","plasma","hämoglobin","leukozyten"],["Laborbefund","Labor","Innere Medizin / Labormedizin"]],
-  [["augenarzt","ophthalm","visus","fundus","makula","glaukom","netzhaut","linse","intraokular"],["Augenärztlicher Befund","Augenheilkunde","Augenheilkunde"]],
+  [["fielmann","optiker","gläserstärken","glasstärken","glasspezifikation","fassung","sphäre","zylinder","addition","pupillendist"],["Optiker- / Brillenpass","Optik / Brille","Augenoptik"]],
+  [["augenarzt","ophthalm","visus","fundus","makula","glaukom","netzhaut","linse","intraokular","augeninnendruck"],["Augenärztlicher Befund","Augenheilkunde","Augenheilkunde"]],
   [["hno","audiogramm","hörtest","tinnitus","innenohr"],["HNO-Befund","HNO","Hals-Nasen-Ohrenheilkunde"]],
   [["haut","dermatolog","melanom","ekzem"],["Hautärztlicher Befund","Dermatologie","Dermatologie"]],
   [["zahnarzt","zahn","kiefer","parodont"],["Zahnärztlicher Befund","Zahnmedizin","Zahnmedizin / Kieferheilkunde"]],
@@ -485,6 +512,71 @@ function extractLabValues(text,date){
  }
  return found;
 }
+
+function nnum(x){if(x==null)return null;const s=String(x).replace(",",".").replace(/[^\d+\-.]/g,"");const n=parseFloat(s);return Number.isFinite(n)?n:null}
+function uniq(a){return [...new Set((a||[]).filter(Boolean))]}
+function extractEyeData(text){
+ const raw=text.replace(/\r/g,"\n"),flat=raw.replace(/[|;]/g," ").replace(/\s+/g," ");
+ const out={kind:"eye",right:{},left:{},general:{},notes:[]};
+ const labels={sphere:["sphäre","sphaere","sph"],cylinder:["zylinder","cyl"],axis:["achse","axis","a"],addition:["addition","add"],pd:["pupillendist","pd"],visus:["visus","sehschärfe","sehstaerke"],iop:["augeninnendruck","tensio","iop"]};
+ function lineFor(side){const rx=new RegExp(side+"[^\\n]{0,180}","i");return raw.match(rx)?.[0]||""}
+ function parseSide(line,target){
+   const nums=(line.match(/[+\-]?\d+(?:[.,]\d+)?/g)||[]).map(nnum);
+   // Häufige Optiker-Reihenfolge: Sphäre, Zylinder, Achse, Addition, PD, Visus
+   if(nums.length>=6){target.sphere=nums[0];target.cylinder=nums[1];target.axis=nums[2];target.addition=nums[3];target.pd=nums[4];target.visus=nums[5]}
+   for(const [key,words] of Object.entries(labels)){
+     for(const w of words){const m=line.match(new RegExp(w+"[^+\\-0-9]{0,15}([+\\-]?\\d+(?:[.,]\\d+)?)","i"));if(m){target[key]=nnum(m[1]);break}}
+   }
+ }
+ parseSide(lineFor("rechts"),out.right);parseSide(lineFor("links"),out.left);
+ // Tabellen-OCR ohne saubere Zeilen: nach Rechts/Links suchen
+ for(const [word,target] of [["rechts",out.right],["links",out.left]]){
+   const m=flat.match(new RegExp(word+"\\s+(?:G\\s+)?([+\\-]?\\d+(?:[.,]\\d+)?)\\s+([+\\-]?\\d+(?:[.,]\\d+)?)\\s+(\\d{1,3})\\s+(?:\\S+\\s+){0,3}?([+\\-]?\\d+(?:[.,]\\d+)?)\\s+([+\\-]?\\d+(?:[.,]\\d+)?)\\s+([+\\-]?\\d+(?:[.,]\\d+)?)","i"));
+   if(m){target.sphere=nnum(m[1]);target.cylinder=nnum(m[2]);target.axis=nnum(m[3]);target.addition=nnum(m[4]);target.pd=nnum(m[5]);target.visus=nnum(m[6])}
+ }
+ const iopMatches=[...flat.matchAll(/(?:iop|tensio|augeninnendruck)[^0-9]{0,15}(\d{1,2}(?:[.,]\d+)?)/gi)].map(m=>nnum(m[1]));
+ if(iopMatches.length){out.general.iopRight=iopMatches[0];if(iopMatches[1]!=null)out.general.iopLeft=iopMatches[1]}
+ const diagnoses=uniq((flat.match(/glaukom|katarakt|makuladegeneration|netzhaut(?:ablösung|veränderung)?|amblyopie|myopie|hyperopie|astigmatismus|presbyopie/gi)||[]));
+ if(diagnoses.length)out.general.detectedTerms=diagnoses;
+ return out;
+}
+function extractDentalData(text){
+ const flat=text.replace(/\s+/g," ");
+ const teeth=uniq((flat.match(/\b(?:1[1-8]|2[1-8]|3[1-8]|4[1-8])\b/g)||[])).sort();
+ const findings=uniq((flat.match(/karies|parodontitis|gingivitis|wurzelentzündung|apikale aufhellung|zahnstein|lockerungsgrad|taschentiefe|implantat|krone|brücke|prothese|füllung|extraktion|wurzelbehandlung/gi)||[]));
+ const codes=uniq((flat.match(/\b(?:BEMA|GOZ)\s*[-:]?\s*\d+[a-z]?\b/gi)||[]));
+ const costs=[...flat.matchAll(/(?:gesamt|endbetrag|kosten|eigenanteil|zuzahlung)[^0-9]{0,20}(\d{1,5}[.,]\d{2})\s*(?:€|eur)?/gi)].map(m=>nnum(m[1]));
+ return {kind:"dental",teeth,findings,codes,costs};
+}
+function extractGenericMedicalData(text){
+ const flat=text.replace(/\s+/g," ");
+ const icd=uniq((flat.match(/\b[A-TV-Z]\d{2}(?:\.\d{1,2})?[GVARLBS]?\b/g)||[]));
+ const meds=uniq([...flat.matchAll(/(?:medikation|medikamente?|verordnung)\s*[:\-]?\s*([^.;\n]{3,120})/gi)].map(m=>m[1].trim()));
+ const procedures=uniq((flat.match(/mrt|ct|röntgen|sonographie|ultraschall|ekg|eeg|endoskopie|koloskopie|gastroskopie|biopsie|operation|infiltration/gi)||[]));
+ return {kind:"medical",icd,medications:meds,procedures};
+}
+function extractSpecialtyData(text,cls){
+ if(cls.rubric==="Augenheilkunde"||cls.rubric==="Optik / Brille"||cls.specialty==="Augenoptik")return extractEyeData(text);
+ if(cls.rubric==="Zahnmedizin")return extractDentalData(text);
+ return extractGenericMedicalData(text);
+}
+function hasSpecialtyData(s){
+ if(!s)return false;
+ if(s.kind==="eye")return Object.keys(s.right||{}).length+Object.keys(s.left||{}).length+Object.keys(s.general||{}).length>0;
+ if(s.kind==="dental")return (s.teeth?.length||0)+(s.findings?.length||0)+(s.codes?.length||0)+(s.costs?.length||0)>0;
+ return (s.icd?.length||0)+(s.medications?.length||0)+(s.procedures?.length||0)>0;
+}
+function valLabel(k){return({sphere:"Sphäre",cylinder:"Zylinder",axis:"Achse",addition:"Addition",pd:"Pupillendistanz",visus:"Visus",iopRight:"Augeninnendruck rechts",iopLeft:"Augeninnendruck links"}[k]||k)}
+function specialistHtml(s){
+ if(!hasSpecialtyData(s))return "<p class='small'>Keine sicher strukturierten Fachwerte erkannt. Der Originaltext bleibt gespeichert.</p>";
+ if(s.kind==="eye"){
+   const eye=(title,o)=>`<div class="specialistCard eyeSide"><h3>${title}</h3>${Object.entries(o||{}).map(([k,v])=>`<div class="kv"><span>${valLabel(k)}</span><b>${v}${k==="axis"?"°":""}</b></div>`).join("")||"<span class='small'>Keine Werte sicher erkannt</span>"}</div>`;
+   return `<div class="specialistGrid">${eye("Rechtes Auge",s.right)}${eye("Linkes Auge",s.left)}${Object.keys(s.general||{}).length?`<div class="specialistCard"><h3>Weitere Augenbefunde</h3>${Object.entries(s.general).map(([k,v])=>`<div class="kv"><span>${valLabel(k)}</span><b>${Array.isArray(v)?v.join(", "):v}</b></div>`).join("")}</div>`:""}</div>`;
+ }
+ if(s.kind==="dental")return `<div class="specialistGrid"><div class="specialistCard"><h3>Betroffene Zähne</h3><p>${s.teeth?.join(", ")||"Keine Zahnnummer sicher erkannt"}</p></div><div class="specialistCard"><h3>Erkannte Begriffe</h3><p>${s.findings?.join(", ")||"Keine eindeutigen Begriffe"}</p></div>${s.codes?.length?`<div class="specialistCard"><h3>Abrechnungscodes</h3><p>${s.codes.join(", ")}</p></div>`:""}${s.costs?.length?`<div class="specialistCard"><h3>Kostenangaben</h3><p>${s.costs.map(x=>x.toFixed(2)+" €").join(", ")}</p></div>`:""}</div>`;
+ return `<div class="specialistGrid">${s.icd?.length?`<div class="specialistCard"><h3>ICD-Codes</h3><p>${s.icd.join(", ")}</p></div>`:""}${s.medications?.length?`<div class="specialistCard"><h3>Medikationen</h3><p>${s.medications.join("<br>")}</p></div>`:""}${s.procedures?.length?`<div class="specialistCard"><h3>Untersuchungen / Verfahren</h3><p>${s.procedures.join(", ")}</p></div>`:""}</div>`;
+}
+
 function extractKeyStatements(text){
  const lines=text.split(/\n+/).map(x=>x.trim()).filter(x=>x.length>18);
  const keys=["beurteilung","zusammenfassung","diagnose","befund","empfehlung","therapie","kein hinweis","unauffällig","auffällig","kontrolle"];
@@ -495,7 +587,7 @@ function extractKeyStatements(text){
 function documentAnalysis(doc,level="simple"){
  const text=(doc.text||"").toLowerCase(), sections={summary:[],diagnoses:[],findings:[],recommendations:[],questions:[],alternatives:[],warnings:[]};
  sections.summary.push(`${doc.type} vom ${fd(doc.date)} aus dem Fachgebiet ${doc.specialty}.`);
- if(doc.labValues?.length)sections.summary.push(`${doc.labValues.length} Laborwerte wurden erkannt.`);
+ if(doc.labValues?.length)sections.summary.push(`${doc.labValues.length} Laborwerte wurden erkannt.`);if(hasSpecialtyData(doc.specialtyData))sections.summary.push("Strukturierte Facharztwerte wurden erkannt und in der Rubrik Fachwerte abgelegt.");
  (doc.keyStatements||[]).slice(0,6).forEach(x=>sections.findings.push(x));
  const diagnosisPatterns=[/diagnose[n]?\s*[:\-]\s*([^\n.;]{4,100})/gi,/(arthrose|bandscheibenvorfall|stenose|entzündung|glaukom|katarakt|tinnitus|diabetes|hypertonie|prostatahyperplasie|polyneuropathie)/gi];
  const original=doc.text||"";
@@ -535,7 +627,14 @@ async function textHash(text){const h=await crypto.subtle.digest("SHA-256",new T
 function findDuplicate(hash,textDigest){return documents.find(d=>(hash&&d.hash===hash)||(textDigest&&d.textDigest===textDigest))}
 async function shareTextFile(name,text,title="LaborKompass Bericht"){const f=new File([text],name,{type:"text/plain;charset=utf-8"});if(navigator.share&&(!navigator.canShare||navigator.canShare({files:[f]})))return navigator.share({title,text:"Erstellt mit LaborKompass Pro",files:[f]});const a=document.createElement("a");a.href=URL.createObjectURL(f);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
 async function shareDocument(id,kind="analysis"){const d=documents.find(x=>x.id===id);if(!d)return;if(kind==="original"){const f=await getOriginal(id);if(!f)return alert("Die Originaldatei wurde nicht lokal gespeichert.");if(navigator.share&&(!navigator.canShare||navigator.canShare({files:[f]})))return navigator.share({title:d.name,files:[f]});const a=document.createElement("a");a.href=URL.createObjectURL(f);a.download=f.name||d.name;a.click();return}const content=kind==="full"?`${d.name}\n${fd(d.date)} · ${d.specialty}\n\nORIGINALTEXT\n${d.text}\n\nAUSWERTUNG\n${explainDocument(d)}`:explainDocument(d);return shareTextFile(`LaborKompass_${kind==="full"?"Gesamtbericht":"Auswertung"}_${d.date}.txt`,content,d.name)}
-function printDocument(id){const d=documents.find(x=>x.id===id);if(!d)return;const w=open("","_blank");w.document.write(`<html><head><title>${esc(d.name)}</title><style>body{font-family:Arial;padding:24px;line-height:1.5;white-space:pre-wrap}h1{color:#0f766e}</style></head><body><h1>${esc(d.name)}</h1><b>${fd(d.date)} · ${esc(d.specialty)}</b><hr>${esc(explainDocument(d))}</body></html>`);w.document.close();w.print();showToast("Druckansicht wurde geöffnet.","ok")}
+function printDocument(id){const d=documents.find(x=>x.id===id);if(!d)return;const w=open("","_blank");w.document.write(`<html><head><title>${esc(d.name)}</title><style>body{font-family:Arial;padding:24px;line-height:1.5;white-space:pre-wrap}h1{color:#0f766e}
+.specialistGrid{display:grid;gap:10px;grid-template-columns:repeat(2,minmax(0,1fr))}
+.specialistCard{border:1px solid var(--line);border-radius:13px;padding:12px;background:#fff}
+.specialistCard h3{margin:0 0 8px;color:var(--brand);font-size:1rem}
+.kv{display:grid;grid-template-columns:1fr auto;gap:6px 12px;padding:4px 0;border-bottom:1px dashed #dbe3ea}
+.kv:last-child{border-bottom:0}.kv b{text-align:right}.eyeSide{border-left:5px solid #0f766e}
+@media(max-width:520px){.specialistGrid{grid-template-columns:1fr}}
+</style></head><body><h1>${esc(d.name)}</h1><b>${fd(d.date)} · ${esc(d.specialty)}</b><hr>${esc(explainDocument(d))}</body></html>`);w.document.close();w.print();showToast("Druckansicht wurde geöffnet.","ok")}
 
 async function readPDF(file){
  if(!window.pdfjsLib){
@@ -556,10 +655,10 @@ async function readImage(file){
  const r=await Tesseract.recognize(file,"deu");return r.data.text;
 }
 async function buildTempDocument(files,text,name){
- const primary=files[0],date=detectDate(text,name),cls=classifyDocument(text,name),labValues=extractLabValues(text,date),keyStatements=extractKeyStatements(text);
+ const primary=files[0],date=detectDate(text,name),cls=classifyDocument(text,name),labValues=extractLabValues(text,date),keyStatements=extractKeyStatements(text),specialtyData=extractSpecialtyData(text,cls);
  const hashes=[];for(const f of files)hashes.push(await fileHash(f));
  const textDigest=await textHash(text);
- return {id:uid(),name,size:files.reduce((s,f)=>s+f.size,0),mime:files.length>1?"application/x-photo-bundle":primary.type,date,...cls,text,keyStatements,labValues,created:new Date().toISOString(),hash:hashes.join(":"),textDigest,pageCount:files.length,sourceNames:files.map(f=>f.name),confidence:text.length>200?"hoch":"mittel"};
+ return {id:uid(),name,size:files.reduce((s,f)=>s+f.size,0),mime:files.length>1?"application/x-photo-bundle":primary.type,date,...cls,text,keyStatements,labValues,specialtyData,created:new Date().toISOString(),hash:hashes.join(":"),textDigest,pageCount:files.length,sourceNames:files.map(f=>f.name),confidence:text.length>200?"hoch":"mittel"};
 }
 const pendingImports={};
 function duplicatePreview(temp,dup){return `<div class="duplicate" id="pending-${temp.id}"><b>Dieser Befund ist wahrscheinlich bereits vorhanden.</b><p>${esc(dup.name)} vom ${fd(dup.date)} · ${esc(dup.specialty)}</p><div class="actions"><button class="secondary" onclick="replacePendingImport('${temp.id}','${dup.id}')">Vorhandenen ersetzen</button><button class="secondary" onclick="savePendingImport('${temp.id}',true)">Trotzdem als Kopie speichern</button><button class="dangerBtn" onclick="discardPendingImport('${temp.id}')">Import verwerfen</button></div></div>`}
@@ -575,7 +674,7 @@ async function processImportFiles(list){
      const text=parts.map((x,i)=>group.length>1?`\n--- SEITE ${i+1} ---\n${x}`:x).join("\n");
      const temp=await buildTempDocument(group,text,displayName),dup=findDuplicate(temp.hash,temp.textDigest);
      window.pendingImportFiles=window.pendingImportFiles||{};window.pendingImportFiles[temp.id]=group;pendingImports[temp.id]=temp;
-     importPreview.innerHTML+=`<div class="item"><div class="head"><div><div class="name">${esc(temp.name)}</div><div class="small">${temp.type} · ${temp.rubric} · ${fd(temp.date)} · ${temp.pageCount} Seite(n)</div></div><span class="confidence">Erkennung ${temp.confidence}</span></div><p class="small"><b>Fachgebiet:</b> ${esc(temp.specialty)}</p><div class="aiout">${esc(explainDocument(temp))}</div>${dup?duplicatePreview(temp,dup):`<div id="pending-${temp.id}"><button class="primary full" onclick="savePendingImport('${temp.id}')">Geprüften Befund speichern</button><button class="dangerBtn full" onclick="discardPendingImport('${temp.id}')">Import aus dieser Übersicht entfernen</button></div>`}</div>`;
+     importPreview.innerHTML+=`<div class="item"><div class="head"><div><div class="name">${esc(temp.name)}</div><div class="small">${temp.type} · ${temp.rubric} · ${fd(temp.date)} · ${temp.pageCount} Seite(n)</div></div><span class="confidence">Erkennung ${temp.confidence}</span></div><p class="small"><b>Fachgebiet:</b> ${esc(temp.specialty)}</p>${hasSpecialtyData(temp.specialtyData)?`<details open><summary>Erkannte Fachwerte</summary>${specialistHtml(temp.specialtyData)}</details>`:""}<div class="aiout">${esc(explainDocument(temp))}</div>${dup?duplicatePreview(temp,dup):`<div id="pending-${temp.id}"><button class="primary full" onclick="savePendingImport('${temp.id}')">Geprüften Befund speichern</button><button class="dangerBtn full" onclick="discardPendingImport('${temp.id}')">Import aus dieser Übersicht entfernen</button></div>`}</div>`;
      ocrText.value=text;
    }catch(e){importPreview.innerHTML+=`<div class="notice"><b>${esc(displayName)}</b>: konnte nicht automatisch gelesen werden (${esc(e.message)}).</div>`}
  }
@@ -610,10 +709,10 @@ function renderDocuments(){
  const q=(docSearch?.value||"").toLowerCase(),f=docFilter?.value||"all",sort=docSort?.value||"new";
  let arr=[...documents].filter(d=>(f==="all"||d.rubric===f)&&(`${d.name} ${d.type} ${d.rubric} ${d.specialty} ${d.text}`).toLowerCase().includes(q));
  arr.sort(sort==="old"?(a,b)=>a.date.localeCompare(b.date):sort==="specialty"?(a,b)=>a.specialty.localeCompare(b.specialty):((a,b)=>b.date.localeCompare(a.date)));
- if(documentArchive)documentArchive.innerHTML=arr.map(d=>`<div class="item"><div class="head"><div><div class="name">${esc(d.name)}</div><div class="small">${fd(d.date)} · ${esc(d.rubric)} · ${esc(d.specialty)} · ${d.pageCount||1} Seite(n)</div></div><span class="badge info">${esc(d.type)}</span></div><details open><summary>Verständliche Auswertung</summary><div class="aiout">${esc(explainDocument(d))}</div></details><details><summary>Erkannte Laborwerte</summary>${d.labValues?.length?d.labValues.map(card).join(""):"<p>Keine Laborwerte erkannt.</p>"}</details><div class="sharebar"><button class="secondary mini" onclick="shareDocument('${d.id}','analysis')">Auswertung teilen</button><button class="secondary mini" onclick="shareDocument('${d.id}','full')">Gesamtbericht teilen</button><button class="secondary mini" onclick="shareDocument('${d.id}','original')">Original teilen</button><button class="secondary mini" onclick="printDocument('${d.id}')">Drucken</button></div><button class="dangerBtn mini" onclick="deleteImportedDocumentOnly('${d.id}')">Nur aus Import-Übersicht entfernen</button></div>`).join("")||"<p class='small'>Noch keine importierten Befunde.</p>";
+ if(documentArchive)documentArchive.innerHTML=arr.map(d=>`<div class="item"><div class="head"><div><div class="name">${esc(d.name)}</div><div class="small">${fd(d.date)} · ${esc(d.rubric)} · ${esc(d.specialty)} · ${d.pageCount||1} Seite(n)</div></div><span class="badge info">${esc(d.type)}</span></div><details open><summary>Verständliche Auswertung</summary><div class="aiout">${esc(explainDocument(d))}</div></details>${hasSpecialtyData(d.specialtyData)?`<details open><summary>Strukturierte Fachwerte</summary>${specialistHtml(d.specialtyData)}</details>`:""}<details><summary>Erkannte Laborwerte</summary>${d.labValues?.length?d.labValues.map(card).join(""):"<p>Keine Laborwerte erkannt.</p>"}</details><div class="sharebar"><button class="secondary mini" onclick="shareDocument('${d.id}','analysis')">Auswertung teilen</button><button class="secondary mini" onclick="shareDocument('${d.id}','full')">Gesamtbericht teilen</button><button class="secondary mini" onclick="shareDocument('${d.id}','original')">Original teilen</button><button class="secondary mini" onclick="printDocument('${d.id}')">Drucken</button></div><button class="dangerBtn mini" onclick="deleteImportedDocumentOnly('${d.id}')">Nur aus Import-Übersicht entfernen</button></div>`).join("")||"<p class='small'>Noch keine importierten Befunde.</p>";
 }
 function deleteImportedDocumentOnly(id){if(confirm("Nur den importierten Bericht aus dieser Übersicht entfernen? Bereits übernommene Laborwerte, Diagnosen und andere Akteneinträge bleiben erhalten.")){documents=documents.filter(d=>d.id!==id);save();render();showToast("Bericht wurde nur aus der Import-Übersicht entfernt. Übernommene Daten bleiben erhalten.","ok",7000)}else showToast("Entfernen abgebrochen.","info")}
-if(docFilter)docFilter.onchange=renderDocuments;if(docSearch)docSearch.oninput=renderDocuments;if(window.explainLevel)explainLevel.onchange=renderDocuments;if(window.docSort)docSort.onchange=renderDocuments;
+if(docFilter)docFilter.onchange=renderDocuments;if(docSearch)docSearch.oninput=renderDocuments;if(window.explainLevel)explainLevel.onchange=renderDocuments;if(window.docSort)docSort.onchange=renderDocuments;if(window.specialtyFilter)specialtyFilter.onchange=renderSpecialtyOverview;if(window.specialtySearch)specialtySearch.oninput=renderSpecialtyOverview;
 function renderDocCompareOptions(){
  if(!docCompareSelect)return;
  const cur=docCompareSelect.value;
@@ -649,7 +748,7 @@ ocrBtn.onclick=async()=>{const f=window.lastImage||fileInput.files[0];if(!f){ale
 function loadScript(src){return new Promise((res,rej)=>{let s=document.createElement("script");s.src=src;s.onload=res;s.onerror=rej;document.head.appendChild(s)})}
 parseBtn.onclick=()=>{
  const text=ocrText.value,date=detectDate(text),cls=classifyDocument(text),found=extractLabValues(text,date),keyStatements=extractKeyStatements(text);
- const temp={id:uid(),name:"Manuell analysierter Befund",size:0,mime:"text/plain",date,...cls,text,keyStatements,labValues:found,created:new Date().toISOString(),pageCount:1,confidence:"mittel"};
+ const temp={id:uid(),name:"Manuell analysierter Befund",size:0,mime:"text/plain",date,...cls,text,keyStatements,labValues:found,specialtyData:extractSpecialtyData(text,cls),created:new Date().toISOString(),pageCount:1,confidence:"mittel"};
  parsed.innerHTML=`<div class="item"><b>${esc(cls.type)}</b><div class="small">${esc(cls.rubric)} · ${esc(cls.specialty)} · ${fd(date)}</div><div class="aiout">${esc(explainDocument(temp))}</div>${found.length?found.map(v=>`<div>${esc(v.name)}: <b>${v.value} ${esc(v.unit)}</b></div>`).join(""):"<div class='notice'>Keine sicheren Laborwerte erkannt.</div>"}<button class="primary full" onclick='saveImportedDocument(${JSON.stringify(temp).replace(/'/g,"&#39;")})'>Befund speichern</button></div>`;
 }
 function addParsed(a){document.querySelectorAll("[data-p]:checked").forEach(x=>{let v=a[+x.dataset.p];values.push({...v,id:uid(),date:new Date().toISOString().slice(0,10),note:"Aus OCR übernommen – bitte kontrollieren"})});save();render();showPage("werte")}
