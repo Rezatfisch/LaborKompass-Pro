@@ -1,7 +1,7 @@
 {
   "name": "LaborKompass Pro 1.0",
   "short_name": "LaborKompass",
-  "description": "Persönliche Gesundheitsakte mit Labor, Befunden, Vitalwerten und lokaler Analyse",
+  "description": "Intelligente private Gesundheitsakte für Laborwerte, Facharztbefunde, Dokumente, Vergleiche und verständliche Auswertungen",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

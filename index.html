@@ -42,10 +42,18 @@ canvas{width:100%;height:230px;background:white;border-radius:12px}
 .aiout{white-space:pre-wrap;line-height:1.48;background:#f8fbfc;border:1px solid var(--line);padding:12px;border-radius:12px}
 .bottom{position:fixed;bottom:0;left:0;right:0;background:rgba(255,255,255,.96);backdrop-filter:blur(9px);border-top:1px solid var(--line);padding:8px 11px;z-index:30}.bottom .inner{max-width:1100px;margin:auto;display:flex;gap:8px}.bottom button{flex:1}
 @media(min-width:760px){.grid{grid-template-columns:repeat(4,1fr)}.system-grid{grid-template-columns:repeat(4,1fr)}}
-.versionBadge{display:inline-flex;align-items:center;gap:6px;background:#e6fffb;color:#115e59;border:1px solid #99f6e4;border-radius:999px;padding:5px 9px;font-size:.76rem;font-weight:800}.backupRow{display:flex;justify-content:space-between;gap:10px;align-items:center;border:1px solid var(--line);padding:10px;border-radius:12px;margin:8px 0;background:white}.privacyBox{background:#eff6ff;border:1px solid #bfdbfe;color:#1e3a8a;border-radius:12px;padding:12px;line-height:1.45}.installBox{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46;border-radius:12px;padding:12px}</style>
+.versionBadge{display:inline-flex;align-items:center;gap:6px;background:#e6fffb;color:#115e59;border:1px solid #99f6e4;border-radius:999px;padding:5px 9px;font-size:.76rem;font-weight:800}.backupRow{display:flex;justify-content:space-between;gap:10px;align-items:center;border:1px solid var(--line);padding:10px;border-radius:12px;margin:8px 0;background:white}.privacyBox{background:#eff6ff;border:1px solid #bfdbfe;color:#1e3a8a;border-radius:12px;padding:12px;line-height:1.45}.installBox{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46;border-radius:12px;padding:12px}
+.importChoice{display:grid;grid-template-columns:repeat(2,1fr);gap:9px;margin-top:10px}
+.importChoice label{border:1px solid var(--line);border-radius:12px;padding:10px;background:white;font-weight:700}
+.importChoice input{width:auto;margin-right:6px}
+.duplicate{background:#fff7ed;border:2px solid #fb923c;border-radius:14px;padding:12px;margin:10px 0}
+.sharebar{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}.sharebar button{margin:0;flex:1;min-width:120px}
+.confidence{font-size:.78rem;background:#e0f2fe;color:#075985;padding:4px 8px;border-radius:999px;font-weight:800}
+@media(min-width:760px){.importChoice{grid-template-columns:repeat(4,1fr)}}
+</style>
 </head>
 <body>
-<header><h1>🧭 LaborKompass Pro</h1><p>Laborwerte, Befunde, Verlauf und persönliche medizinische Struktur</p><span class="versionBadge">Version 1.0.0 · persönliche Gesundheitsakte</span></header>
+<header><h1>🧭 LaborKompass Pro</h1><p>Laborwerte, Befunde, Verlauf und persönliche medizinische Struktur</p><span class="versionBadge">Version 1.1.0 · intelligentes Befundarchiv</span></header>
 <main>
 <nav class="tabs">
 <button class="tab active" data-page="home">Übersicht</button>
@@ -90,29 +98,36 @@ canvas{width:100%;height:230px;background:white;border-radius:12px}
 </section>
 
 <section id="import" class="page">
-<div class="card"><h2>Automatischer Befundimport</h2>
+<div class="card"><h2>Befunde und Berichte einlesen</h2>
 <div class="filebox">
-<input id="smartImportInput" type="file" accept=".pdf,image/*,.txt" multiple>
-<p><b>PDF, Foto, Scan oder Textdatei auswählen</b></p>
-<p class="small">Die App versucht Dokumentart, Datum, Fachgebiet, Rubrik, Laborwerte und Kernaussagen automatisch zu erkennen. Vor dem Speichern wird alles zur Kontrolle angezeigt.</p>
+<input id="smartImportInput" type="file" accept=".pdf,image/*,.txt,.csv,.json,.doc,.docx" multiple>
+<p><b>Dateien, PDFs, Scans oder mehrere Fotos auswählen</b></p>
+<p class="small">Über den Android-Dateidialog kannst du auch Dateien aus „Eigene Dateien“, OneDrive, Google Drive oder anderen verbundenen Cloud-Apps auswählen.</p>
+</div>
+<div class="importChoice">
+<label><input type="radio" name="importMode" value="separate" checked> Jede Datei einzeln</label>
+<label><input type="radio" name="importMode" value="bundle"> Mehrere Fotos = ein Bericht</label>
+<label><input type="checkbox" id="saveOriginal" checked> Original lokal speichern</label>
+<label><input type="checkbox" id="autoTakeLabs" checked> Laborwerte übernehmen</label>
 </div>
 <div id="importProgress" class="small"></div>
 <div id="importPreview"></div>
 </div>
 
-<div class="card"><h2>Direkt mit Kamera scannen</h2>
-<input id="cameraInput" type="file" accept="image/*" capture="environment">
-<p class="small">Auf Android öffnet sich normalerweise direkt die Kamera. Fotografiere den Befund gerade, vollständig und ohne Schatten.</p>
+<div class="card"><h2>Mehrseitigen Bericht fotografieren</h2>
+<input id="cameraInput" type="file" accept="image/*" capture="environment" multiple>
+<p class="small">Bei mehreren Seiten nacheinander fotografieren und anschließend „Mehrere Fotos = ein Bericht“ wählen.</p>
 </div>
 
-<div class="card"><h2>Manuelle Textkontrolle</h2>
-<textarea id="ocrText" placeholder="Ausgelesener Text erscheint hier und kann vor dem Import korrigiert werden."></textarea>
-<div class="actions"><button class="secondary" id="ocrBtn">Bildtext erkennen</button><button class="primary" id="parseBtn">Dokument analysieren</button></div>
+<div class="card"><h2>Text einfügen oder korrigieren</h2>
+<textarea id="ocrText" placeholder="Ausgelesener Text erscheint hier. Du kannst ihn vor dem Speichern korrigieren."></textarea>
+<div class="actions"><button class="secondary" id="ocrBtn">Bildtext erkennen</button><button class="primary" id="parseBtn">Befund analysieren</button></div>
 <div id="parsed"></div>
 </div>
 
 <div class="card"><h2>Importierte Befunde</h2>
-<div class="row"><div><label>Rubrik</label><select id="docFilter"><option value="all">Alle Rubriken</option></select></div><div><label>Suche</label><input id="docSearch" placeholder="Labor, MRT, Kardiologie …"></div></div>
+<div class="row"><div><label>Rubrik</label><select id="docFilter"><option value="all">Alle Rubriken</option></select></div><div><label>Suche</label><input id="docSearch" placeholder="Augenarzt, Schulter, PSA, Diagnose …"></div></div>
+<div class="row"><div><label>Darstellung</label><select id="explainLevel"><option value="simple">Einfache Sprache</option><option value="detailed">Ausführlich</option><option value="doctor">Arztgespräch vorbereiten</option></select></div><div><label>Sortierung</label><select id="docSort"><option value="new">Neueste zuerst</option><option value="old">Älteste zuerst</option><option value="specialty">Fachgebiet</option></select></div></div>
 <div id="documentArchive"></div>
 </div>
 
@@ -362,7 +377,7 @@ search.oninput=renderValues;filter.onchange=renderValues;
 vDate.value=new Date().toISOString().slice(0,10);vCat.innerHTML=cats.map(x=>`<option>${x}</option>`).join("");names.innerHTML=Object.keys(defs).map(x=>`<option>${x}</option>`).join("");
 vName.onchange=()=>{let d=defs[vName.value];if(d){vUnit.value=d.u;vMin.value=d.min;vMax.value=d.max;vCat.value=d.c}}
 valueForm.onsubmit=e=>{e.preventDefault();values.push({id:uid(),name:vName.value.trim(),value:+vValue.value,unit:vUnit.value.trim(),min:vMin.value===""?"":+vMin.value,max:vMax.value===""?"":+vMax.value,date:vDate.value,category:vCat.value,note:vNote.value.trim()});save();e.target.reset();vDate.value=new Date().toISOString().slice(0,10);
-const APP_VERSION="1.0.0";let deferredInstallPrompt=null;
+const APP_VERSION="1.1.0";let deferredInstallPrompt=null;
 function completePayload(){return{app:"LaborKompass Pro",version:APP_VERSION,exportedAt:new Date().toISOString(),values,files,documents,diagnoses,meds,symptoms,vitals,vaccinations,allergies,operations}}
 function getBackups(){try{return JSON.parse(localStorage.getItem("lk_backup_versions")||"[]")}catch(e){return[]}}
 function createAutoBackup(reason="Manuell"){const data=completePayload(),signature=JSON.stringify(data);let arr=getBackups();if(arr[0]&&arr[0].signature===signature)return arr[0];const item={id:Date.now().toString(36),created:new Date().toISOString(),reason,version:APP_VERSION,signature,data};arr.unshift(item);const limit=Math.max(5,parseInt(localStorage.getItem("lk_backup_limit")||"30",10));localStorage.setItem("lk_backup_versions",JSON.stringify(arr.slice(0,limit)));renderBackupVersions();return item}
@@ -384,16 +399,21 @@ function classifyDocument(text,name=""){
  const s=(name+" "+text).toLowerCase();
  let type="Befund",rubric="Sonstige",specialty="Allgemeinmedizin";
  const rules=[
-  [["labor","blutbild","serum","plasma","hämoglobin","leukozyten"],["Labor","Labor","Innere Medizin / Labormedizin"]],
-  [["mrt","magnetresonanz","kernspin"],["Radiologischer Befund","Radiologie","Radiologie"]],
-  [["ct ","computertomographie"],["Radiologischer Befund","Radiologie","Radiologie"]],
-  [["röntgen","roentgen"],["Radiologischer Befund","Radiologie","Radiologie"]],
-  [["ekg","echokardi","kardiolog"],["Kardiologischer Befund","Kardiologie","Kardiologie"]],
-  [["neurolog","hirn","hws","schwindel","vestib"],["Neurologischer Befund","Neurologie","Neurologie"]],
-  [["orthop","schulter","knie","wirbelsäule","gelenk"],["Orthopädischer Befund","Orthopädie","Orthopädie"]],
-  [["prostata","psa","urolog"],["Urologischer Befund","Urologie","Urologie"]],
-  [["magen","darm","koloskop","gastroskop","leber"],["Gastroenterologischer Befund","Gastroenterologie","Gastroenterologie"]],
-  [["schilddrüse","tsh","hormon","diabetes"],["Endokrinologischer Befund","Endokrinologie","Endokrinologie / Diabetologie"]],
+  [["labor","blutbild","serum","plasma","hämoglobin","leukozyten"],["Laborbefund","Labor","Innere Medizin / Labormedizin"]],
+  [["augenarzt","ophthalm","visus","fundus","makula","glaukom","netzhaut","linse","intraokular"],["Augenärztlicher Befund","Augenheilkunde","Augenheilkunde"]],
+  [["hno","audiogramm","hörtest","tinnitus","innenohr"],["HNO-Befund","HNO","Hals-Nasen-Ohrenheilkunde"]],
+  [["haut","dermatolog","melanom","ekzem"],["Hautärztlicher Befund","Dermatologie","Dermatologie"]],
+  [["zahnarzt","zahn","kiefer","parodont"],["Zahnärztlicher Befund","Zahnmedizin","Zahnmedizin / Kieferheilkunde"]],
+  [["mrt","magnetresonanz","kernspin","ct ","computertomographie","röntgen","roentgen","sonographie","ultraschall"],["Bildgebender Befund","Radiologie","Radiologie"]],
+  [["ekg","echokardi","kardiolog","herzkatheter"],["Kardiologischer Befund","Kardiologie","Kardiologie"]],
+  [["neurolog","hirn","schwindel","vestib","polyneuropath","epilep"],["Neurologischer Befund","Neurologie","Neurologie"]],
+  [["orthop","schulter","knie","wirbelsäule","gelenk","meniskus","bandscheibe"],["Orthopädischer Befund","Orthopädie","Orthopädie / Unfallchirurgie"]],
+  [["prostata","psa","urolog","blase","niere","hoden"],["Urologischer Befund","Urologie","Urologie"]],
+  [["magen","darm","koloskop","gastroskop","leber","galle"],["Gastroenterologischer Befund","Gastroenterologie","Gastroenterologie"]],
+  [["schilddrüse","tsh","hormon","diabetes","endokrin"],["Endokrinologischer Befund","Endokrinologie","Endokrinologie / Diabetologie"]],
+  [["lunge","pneumolog","spirometr","asthma","copd"],["Lungenfachärztlicher Befund","Pneumologie","Pneumologie"]],
+  [["rheuma","rheumatolog"],["Rheumatologischer Befund","Rheumatologie","Rheumatologie"]],
+  [["psych","psychiatr","depression","angststörung"],["Psychiatrischer / psychologischer Befund","Psychische Gesundheit","Psychiatrie / Psychotherapie"]],
   [["medikamentenplan","medikationsplan"],["Medikamentenplan","Medikamentenplan","Allgemeinmedizin"]],
   [["entlass","arztbrief","epikrise"],["Arztbrief","Arztbrief","Allgemeinmedizin"]],
   [["krankenhaus","stationär","aufnahme"],["Krankenhausbericht","Krankenhaus","Krankenhaus / Fachabteilung"]]
@@ -429,20 +449,51 @@ function extractKeyStatements(text){
  if(!picked.length)picked=lines.slice(0,5);
  return picked;
 }
-function explainDocument(doc){
- let out=[];
- out.push(`${doc.type} vom ${fd(doc.date)} – Rubrik ${doc.rubric}, Fachgebiet ${doc.specialty}.`);
- if(doc.labValues?.length)out.push(`${doc.labValues.length} Laborwerte wurden erkannt und können in die Verlaufsauswertung übernommen werden.`);
- if(doc.keyStatements?.length)out.push("Erkannte Kernaussagen: "+doc.keyStatements.join(" | "));
+function documentAnalysis(doc,level="simple"){
+ const text=(doc.text||"").toLowerCase(), sections={summary:[],diagnoses:[],findings:[],recommendations:[],questions:[],alternatives:[],warnings:[]};
+ sections.summary.push(`${doc.type} vom ${fd(doc.date)} aus dem Fachgebiet ${doc.specialty}.`);
+ if(doc.labValues?.length)sections.summary.push(`${doc.labValues.length} Laborwerte wurden erkannt.`);
+ (doc.keyStatements||[]).slice(0,6).forEach(x=>sections.findings.push(x));
+ const diagnosisPatterns=[/diagnose[n]?\s*[:\-]\s*([^\n.;]{4,100})/gi,/(arthrose|bandscheibenvorfall|stenose|entzündung|glaukom|katarakt|tinnitus|diabetes|hypertonie|prostatahyperplasie|polyneuropathie)/gi];
+ const original=doc.text||"";
+ diagnosisPatterns.forEach(rx=>{let m;while((m=rx.exec(original))&&sections.diagnoses.length<8)sections.diagnoses.push(m[1]||m[0])});
+ sections.recommendations.push(...original.split(/\n+/).filter(x=>/(empfehl|kontrolle|wiedervorstellung|therapie|sollte|weiterführ)/i.test(x)).slice(0,8));
+ if(!sections.recommendations.length)sections.recommendations.push("Den Befund mit der behandelnden Ärztin oder dem behandelnden Arzt besprechen und die empfohlene Verlaufskontrolle klären.");
+ sections.questions.push("Welche Bedeutung haben die wichtigsten Befunde für meine Beschwerden?","Welche Kontrolle ist wann sinnvoll?","Welche Warnzeichen erfordern eine frühere Vorstellung?");
+ sections.alternatives.push("Je nach Befund können Beobachtung, konservative Behandlung, weitere Diagnostik oder fachärztliche Mitbeurteilung infrage kommen. Die passende Auswahl hängt von Beschwerden, Untersuchung und Vorgeschichte ab.");
+ if(/dringend|sofort|notfall|malign|tumorverdacht|hochgradig|akut/i.test(text))sections.warnings.push("Der Text enthält möglicherweise dringliche Begriffe. Bitte zeitnah ärztlich klären und bei akuten Beschwerden medizinische Hilfe suchen.");
+ if(level==="simple")sections.summary.push("In einfacher Sprache: Die wichtigsten Aussagen wurden herausgefiltert und geordnet.");
+ else if(level==="doctor")sections.summary.push("Für das Arztgespräch wurden Fragen, Verlaufspunkte und mögliche nächste Schritte zusammengestellt.");
+ else sections.summary.push("Die Auswertung berücksichtigt Dokumentart, Fachgebiet, Diagnosen, Kernaussagen, Laborwerte und vergleichbare Befunde.");
+ return sections;
+}
+function explainDocument(doc,level=(window.explainLevel?.value||"simple")){
+ const s=documentAnalysis(doc,level),out=[];
+ out.push("ZUSAMMENFASSUNG\n• "+s.summary.join("\n• "));
+ if(s.diagnoses.length)out.push("ERKANNTE DIAGNOSEN / BEGRIFFE\n• "+[...new Set(s.diagnoses)].join("\n• "));
+ if(s.findings.length)out.push("WICHTIGE BEFUNDAUSSAGEN\n• "+s.findings.join("\n• "));
+ out.push("MÖGLICHE NÄCHSTE SCHRITTE\n• "+s.recommendations.join("\n• "));
+ out.push("ALTERNATIVEN UND EINORDNUNG\n• "+s.alternatives.join("\n• "));
+ out.push("FRAGEN FÜR DEN ARZTTERMIN\n• "+s.questions.join("\n• "));
+ if(s.warnings.length)out.push("WICHTIG\n• "+s.warnings.join("\n• "));
  const same=documents.filter(d=>d.id!==doc.id&&d.rubric===doc.rubric).sort((a,b)=>a.date.localeCompare(b.date));
- if(same.length){
-   const older=same.filter(d=>d.date<doc.date).pop(),newer=same.find(d=>d.date>doc.date);
-   if(older)out.push(`Älterer vergleichbarer Befund: ${fd(older.date)}.`);
-   if(newer)out.push(`Neuerer vergleichbarer Befund: ${fd(newer.date)}.`);
- }
- out.push("Automatische Erkennung kann Fehler enthalten. Vor medizinischen Entscheidungen immer Originalbefund und Arztbewertung heranziehen.");
+ const older=same.filter(d=>d.date<doc.date).pop(),newer=same.find(d=>d.date>doc.date);
+ if(older||newer)out.push("VERGLEICH\n"+(older?`• Älterer vergleichbarer Befund: ${fd(older.date)} – ${older.name}\n`:"")+(newer?`• Neuerer vergleichbarer Befund: ${fd(newer.date)} – ${newer.name}`:""));
+ out.push("Hinweis: Diese automatische Auswertung ist eine Orientierung und keine Diagnose. Vor Entscheidungen den Originalbefund ärztlich besprechen.");
  return out.join("\n\n");
 }
+
+const DB_NAME="LaborKompassFiles",DB_STORE="originals";
+function openFileDB(){return new Promise((res,rej)=>{const q=indexedDB.open(DB_NAME,1);q.onupgradeneeded=()=>{if(!q.result.objectStoreNames.contains(DB_STORE))q.result.createObjectStore(DB_STORE)};q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error)})}
+async function storeOriginal(id,file){const db=await openFileDB();return new Promise((res,rej)=>{const tx=db.transaction(DB_STORE,"readwrite");tx.objectStore(DB_STORE).put(file,id);tx.oncomplete=res;tx.onerror=()=>rej(tx.error)})}
+async function getOriginal(id){const db=await openFileDB();return new Promise((res,rej)=>{const q=db.transaction(DB_STORE).objectStore(DB_STORE).get(id);q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error)})}
+async function fileHash(file){const b=await file.arrayBuffer(),h=await crypto.subtle.digest("SHA-256",b);return [...new Uint8Array(h)].map(x=>x.toString(16).padStart(2,"0")).join("")}
+async function textHash(text){const h=await crypto.subtle.digest("SHA-256",new TextEncoder().encode((text||"").replace(/\s+/g," ").trim().toLowerCase()));return [...new Uint8Array(h)].map(x=>x.toString(16).padStart(2,"0")).join("")}
+function findDuplicate(hash,textDigest){return documents.find(d=>(hash&&d.hash===hash)||(textDigest&&d.textDigest===textDigest))}
+async function shareTextFile(name,text,title="LaborKompass Bericht"){const f=new File([text],name,{type:"text/plain;charset=utf-8"});if(navigator.share&&(!navigator.canShare||navigator.canShare({files:[f]})))return navigator.share({title,text:"Erstellt mit LaborKompass Pro",files:[f]});const a=document.createElement("a");a.href=URL.createObjectURL(f);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
+async function shareDocument(id,kind="analysis"){const d=documents.find(x=>x.id===id);if(!d)return;if(kind==="original"){const f=await getOriginal(id);if(!f)return alert("Die Originaldatei wurde nicht lokal gespeichert.");if(navigator.share&&(!navigator.canShare||navigator.canShare({files:[f]})))return navigator.share({title:d.name,files:[f]});const a=document.createElement("a");a.href=URL.createObjectURL(f);a.download=f.name||d.name;a.click();return}const content=kind==="full"?`${d.name}\n${fd(d.date)} · ${d.specialty}\n\nORIGINALTEXT\n${d.text}\n\nAUSWERTUNG\n${explainDocument(d)}`:explainDocument(d);return shareTextFile(`LaborKompass_${kind==="full"?"Gesamtbericht":"Auswertung"}_${d.date}.txt`,content,d.name)}
+function printDocument(id){const d=documents.find(x=>x.id===id);if(!d)return;const w=open("","_blank");w.document.write(`<html><head><title>${esc(d.name)}</title><style>body{font-family:Arial;padding:24px;line-height:1.5;white-space:pre-wrap}h1{color:#0f766e}</style></head><body><h1>${esc(d.name)}</h1><b>${fd(d.date)} · ${esc(d.specialty)}</b><hr>${esc(explainDocument(d))}</body></html>`);w.document.close();w.print()}
+
 async function readPDF(file){
  if(!window.pdfjsLib){
    await loadScript("https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168/build/pdf.min.mjs").catch(()=>{});
@@ -461,44 +512,52 @@ async function readImage(file){
  if(!window.Tesseract)await loadScript("https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js");
  const r=await Tesseract.recognize(file,"deu");return r.data.text;
 }
+async function buildTempDocument(files,text,name){
+ const primary=files[0],date=detectDate(text,name),cls=classifyDocument(text,name),labValues=extractLabValues(text,date),keyStatements=extractKeyStatements(text);
+ const hashes=[];for(const f of files)hashes.push(await fileHash(f));
+ const textDigest=await textHash(text);
+ return {id:uid(),name,size:files.reduce((s,f)=>s+f.size,0),mime:files.length>1?"application/x-photo-bundle":primary.type,date,...cls,text,keyStatements,labValues,created:new Date().toISOString(),hash:hashes.join(":"),textDigest,pageCount:files.length,sourceNames:files.map(f=>f.name),confidence:text.length>200?"hoch":"mittel"};
+}
+function duplicatePreview(temp,dup){return `<div class="duplicate"><b>Dieser Befund ist wahrscheinlich bereits vorhanden.</b><p>${esc(dup.name)} vom ${fd(dup.date)} · ${esc(dup.specialty)}</p><div class="actions"><button class="secondary" onclick='replaceImportedDocument("${dup.id}",${JSON.stringify(temp).replace(/'/g,"&#39;")})'>Vorhandenen ersetzen</button><button class="secondary" onclick='saveImportedDocument(${JSON.stringify(temp).replace(/'/g,"&#39;")},true)'>Trotzdem als Kopie speichern</button></div></div>`}
 async function processImportFiles(list){
- importPreview.innerHTML="";importProgress.textContent="";
- for(const file of list){
-   importProgress.textContent=`Lese ${file.name} …`;
+ const selected=[...list];importPreview.innerHTML="";importProgress.textContent="";
+ const mode=document.querySelector('input[name="importMode"]:checked')?.value||"separate";
+ const groups=mode==="bundle"&&selected.length>1?[selected]:selected.map(x=>[x]);
+ for(const group of groups){
+   const displayName=group.length>1?`Mehrseitiger Bericht (${group.length} Seiten)`:group[0].name;
    try{
-     let text="";
-     if(file.type==="application/pdf"||file.name.toLowerCase().endsWith(".pdf"))text=await readPDF(file);
-     else if(file.type.startsWith("image/"))text=await readImage(file);
-     else text=await file.text();
-     const date=detectDate(text,file.name),cls=classifyDocument(text,file.name),labValues=extractLabValues(text,date),keyStatements=extractKeyStatements(text);
-     const temp={id:uid(),name:file.name,size:file.size,mime:file.type,date,...cls,text,keyStatements,labValues,created:new Date().toISOString()};
-     importPreview.innerHTML+=`<div class="item"><div class="head"><div><div class="name">${esc(temp.name)}</div><div class="small">${temp.type} · ${temp.rubric} · ${fd(temp.date)}</div></div><span class="badge info">${labValues.length} Werte</span></div><p class="small"><b>Fachgebiet:</b> ${esc(temp.specialty)}</p><div class="aiout">${esc(explainDocument(temp))}</div><button class="primary full" onclick='saveImportedDocument(${JSON.stringify(temp).replace(/'/g,"&#39;")})'>Geprüften Befund speichern</button></div>`;
+     let parts=[];
+     for(let i=0;i<group.length;i++){const file=group[i];importProgress.textContent=`Lese ${displayName}: Seite ${i+1}/${group.length} …`;if(file.type==="application/pdf"||file.name.toLowerCase().endsWith(".pdf"))parts.push(await readPDF(file));else if(file.type.startsWith("image/"))parts.push(await readImage(file));else parts.push(await file.text())}
+     const text=parts.map((x,i)=>group.length>1?`\n--- SEITE ${i+1} ---\n${x}`:x).join("\n");
+     const temp=await buildTempDocument(group,text,displayName),dup=findDuplicate(temp.hash,temp.textDigest);
+     window.pendingImportFiles=window.pendingImportFiles||{};window.pendingImportFiles[temp.id]=group;
+     importPreview.innerHTML+=`<div class="item"><div class="head"><div><div class="name">${esc(temp.name)}</div><div class="small">${temp.type} · ${temp.rubric} · ${fd(temp.date)} · ${temp.pageCount} Seite(n)</div></div><span class="confidence">Erkennung ${temp.confidence}</span></div><p class="small"><b>Fachgebiet:</b> ${esc(temp.specialty)}</p><div class="aiout">${esc(explainDocument(temp))}</div>${dup?duplicatePreview(temp,dup):`<button class="primary full" onclick='saveImportedDocument(${JSON.stringify(temp).replace(/'/g,"&#39;")})'>Geprüften Befund speichern</button>`}</div>`;
      ocrText.value=text;
-   }catch(e){
-     importPreview.innerHTML+=`<div class="notice"><b>${esc(file.name)}</b>: konnte nicht automatisch gelesen werden (${esc(e.message)}). Du kannst den Text manuell einfügen.</div>`;
-   }
+   }catch(e){importPreview.innerHTML+=`<div class="notice"><b>${esc(displayName)}</b>: konnte nicht automatisch gelesen werden (${esc(e.message)}).</div>`}
  }
  importProgress.textContent="Importvorbereitung abgeschlossen.";
 }
-function saveImportedDocument(doc){
+async function saveImportedDocument(doc,forceCopy=false){
+ const dup=findDuplicate(doc.hash,doc.textDigest);if(dup&&!forceCopy)return alert("Dieser Befund ist bereits vorhanden. Bitte „Ersetzen“ oder „Als Kopie speichern“ wählen.");
  documents.push(doc);
- if(doc.labValues?.length){
-   const add=confirm(`${doc.labValues.length} erkannte Laborwerte zusätzlich in die Laborwert-Tabelle übernehmen?`);
-   if(add)values.push(...doc.labValues);
- }
- save();render();alert("Befund wurde automatisch eingeordnet und gespeichert.");
+ const originalFiles=window.pendingImportFiles?.[doc.id]||[];
+ if(window.saveOriginal?.checked&&originalFiles.length){try{const blob=originalFiles.length===1?originalFiles[0]:new File(originalFiles,doc.name,{type:"application/octet-stream"});await storeOriginal(doc.id,blob);doc.originalStored=true}catch(e){console.warn(e)}}
+ if(doc.labValues?.length&&window.autoTakeLabs?.checked)values.push(...doc.labValues);
+ save();render();alert("Befund wurde eingeordnet, analysiert und gespeichert.");
 }
+async function replaceImportedDocument(id,doc){const index=documents.findIndex(x=>x.id===id);if(index<0)return;doc.id=id;documents[index]=doc;save();render();alert("Der vorhandene Befund wurde ersetzt.")}
 smartImportInput.onchange=e=>processImportFiles(e.target.files);
-cameraInput.onchange=e=>{window.lastImage=e.target.files[0];processImportFiles(e.target.files)};
+cameraInput.onchange=e=>{window.lastImage=e.target.files[0];if(e.target.files.length>1){const r=document.querySelector('input[name="importMode"][value="bundle"]');if(r)r.checked=true}processImportFiles(e.target.files)};
 function renderDocuments(){
  const rubrics=[...new Set(documents.map(d=>d.rubric))].sort(),current=docFilter?.value||"all";
  if(docFilter){docFilter.innerHTML='<option value="all">Alle Rubriken</option>'+rubrics.map(r=>`<option>${esc(r)}</option>`).join("");if(rubrics.includes(current))docFilter.value=current}
- const q=(docSearch?.value||"").toLowerCase(),f=docFilter?.value||"all";
- const arr=[...documents].filter(d=>(f==="all"||d.rubric===f)&&(`${d.name} ${d.type} ${d.rubric} ${d.specialty} ${d.text}`).toLowerCase().includes(q)).sort((a,b)=>b.date.localeCompare(a.date));
- if(documentArchive)documentArchive.innerHTML=arr.map(d=>`<div class="item"><div class="head"><div><div class="name">${esc(d.name)}</div><div class="small">${fd(d.date)} · ${esc(d.rubric)} · ${esc(d.specialty)}</div></div><span class="badge info">${esc(d.type)}</span></div><details><summary>Erklärung und Kernaussagen</summary><div class="aiout">${esc(explainDocument(d))}</div></details><details><summary>Erkannte Laborwerte</summary>${d.labValues?.length?d.labValues.map(card).join(""):"<p>Keine Laborwerte erkannt.</p>"}</details><button class="secondary mini" onclick="deleteDocument('${d.id}')">Befund löschen</button></div>`).join("")||"<p class='small'>Noch keine importierten Befunde.</p>";
+ const q=(docSearch?.value||"").toLowerCase(),f=docFilter?.value||"all",sort=docSort?.value||"new";
+ let arr=[...documents].filter(d=>(f==="all"||d.rubric===f)&&(`${d.name} ${d.type} ${d.rubric} ${d.specialty} ${d.text}`).toLowerCase().includes(q));
+ arr.sort(sort==="old"?(a,b)=>a.date.localeCompare(b.date):sort==="specialty"?(a,b)=>a.specialty.localeCompare(b.specialty):((a,b)=>b.date.localeCompare(a.date)));
+ if(documentArchive)documentArchive.innerHTML=arr.map(d=>`<div class="item"><div class="head"><div><div class="name">${esc(d.name)}</div><div class="small">${fd(d.date)} · ${esc(d.rubric)} · ${esc(d.specialty)} · ${d.pageCount||1} Seite(n)</div></div><span class="badge info">${esc(d.type)}</span></div><details open><summary>Verständliche Auswertung</summary><div class="aiout">${esc(explainDocument(d))}</div></details><details><summary>Erkannte Laborwerte</summary>${d.labValues?.length?d.labValues.map(card).join(""):"<p>Keine Laborwerte erkannt.</p>"}</details><div class="sharebar"><button class="secondary mini" onclick="shareDocument('${d.id}','analysis')">Auswertung teilen</button><button class="secondary mini" onclick="shareDocument('${d.id}','full')">Gesamtbericht teilen</button><button class="secondary mini" onclick="shareDocument('${d.id}','original')">Original teilen</button><button class="secondary mini" onclick="printDocument('${d.id}')">Drucken</button></div><button class="dangerBtn mini" onclick="deleteDocument('${d.id}')">Befund löschen</button></div>`).join("")||"<p class='small'>Noch keine importierten Befunde.</p>";
 }
 function deleteDocument(id){if(confirm("Befund aus dem Archiv löschen?")){documents=documents.filter(d=>d.id!==id);save();render()}}
-if(docFilter)docFilter.onchange=renderDocuments;if(docSearch)docSearch.oninput=renderDocuments;
+if(docFilter)docFilter.onchange=renderDocuments;if(docSearch)docSearch.oninput=renderDocuments;if(window.explainLevel)explainLevel.onchange=renderDocuments;if(window.docSort)docSort.onchange=renderDocuments;
 function renderDocCompareOptions(){
  if(!docCompareSelect)return;
  const cur=docCompareSelect.value;
@@ -527,14 +586,14 @@ function renderDocumentComparison(){
 }
 if(docCompareSelect)docCompareSelect.onchange=renderDocumentComparison;
 
-cameraInput.onchange=e=>{window.lastImage=e.target.files[0];processImportFiles(e.target.files)};
+cameraInput.onchange=e=>{window.lastImage=e.target.files[0];if(e.target.files.length>1){const r=document.querySelector('input[name="importMode"][value="bundle"]');if(r)r.checked=true}processImportFiles(e.target.files)};
 function addFiles(list){for(const f of list)files.push({id:uid(),name:f.name,size:f.size,type:f.type,date:new Date().toISOString()});save();renderFiles()}
 function renderFiles(){if(!window.fileList)return;fileList.innerHTML=files.length?files.map((f,i)=>`<div class="file-row"><div><b>${esc(f.name)}</b><div class="small">${(f.size/1024).toFixed(1)} KB · ${new Date(f.date).toLocaleString("de-DE")}</div></div><button class="secondary mini" onclick="files.splice(${i},1);save();renderFiles()">Entfernen</button></div>`).join(""):"<p class='small'>Noch keine Dateien gespeichert.</p>"}
 ocrBtn.onclick=async()=>{const f=window.lastImage||fileInput.files[0];if(!f){alert("Zuerst ein Bild auswählen oder scannen.");return}ocrText.value="OCR wird geladen …";try{if(!window.Tesseract){await loadScript("https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js")}const r=await Tesseract.recognize(f,"deu");ocrText.value=r.data.text}catch(e){ocrText.value="OCR konnte nicht ausgeführt werden. Internetverbindung prüfen oder Text manuell einfügen."}}
 function loadScript(src){return new Promise((res,rej)=>{let s=document.createElement("script");s.src=src;s.onload=res;s.onerror=rej;document.head.appendChild(s)})}
 parseBtn.onclick=()=>{
  const text=ocrText.value,date=detectDate(text),cls=classifyDocument(text),found=extractLabValues(text,date),keyStatements=extractKeyStatements(text);
- const temp={id:uid(),name:"Manuell analysierter Befund",size:0,mime:"text/plain",date,...cls,text,keyStatements,labValues:found,created:new Date().toISOString()};
+ const temp={id:uid(),name:"Manuell analysierter Befund",size:0,mime:"text/plain",date,...cls,text,keyStatements,labValues:found,created:new Date().toISOString(),pageCount:1,confidence:"mittel"};
  parsed.innerHTML=`<div class="item"><b>${esc(cls.type)}</b><div class="small">${esc(cls.rubric)} · ${esc(cls.specialty)} · ${fd(date)}</div><div class="aiout">${esc(explainDocument(temp))}</div>${found.length?found.map(v=>`<div>${esc(v.name)}: <b>${v.value} ${esc(v.unit)}</b></div>`).join(""):"<div class='notice'>Keine sicheren Laborwerte erkannt.</div>"}<button class="primary full" onclick='saveImportedDocument(${JSON.stringify(temp).replace(/'/g,"&#39;")})'>Befund speichern</button></div>`;
 }
 function addParsed(a){document.querySelectorAll("[data-p]:checked").forEach(x=>{let v=a[+x.dataset.p];values.push({...v,id:uid(),date:new Date().toISOString().slice(0,10),note:"Aus OCR übernommen – bitte kontrollieren"})});save();render();showPage("werte")}
