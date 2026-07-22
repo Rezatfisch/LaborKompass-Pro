@@ -1,14 +1,11 @@
-# LaborKompass Pro 1.1.0
+# LaborKompass Pro 1.2.0
 
 Neu:
-- PDF-, Foto-, Scan-, Text- und mehrseitiger Fotoimport
-- Auswahl aus Android-Dateien sowie verbundenen Cloud-Apps
-- automatische Zuordnung zu vielen Fachgebieten
-- Erkennung doppelter Befunde
-- Auswahl: ersetzen oder als Kopie speichern
-- verständliche Auswertung mit Diagnosen, Kernaussagen, nächsten Schritten, Alternativen und Arztfragen
-- Original, Auswertung oder Gesamtbericht teilen
-- Drucken über Android beziehungsweise den Browser
-- optionale lokale Speicherung der Originaldatei
+- Jede Schaltfläche reagiert sichtbar beim Antippen.
+- Erfolgreiche, laufende, abgebrochene und fehlgeschlagene Aktionen werden als Meldung angezeigt.
+- Aktionsprotokoll in den Einstellungen.
+- Sicherungsfunktion mit Fehlerbehandlung bei vollem Browserspeicher.
+- Sicherungsdownload und Teilen bestätigen die ausgeführte Aktion.
+- Lokale Sicherungen werden bei Speicherknappheit automatisch reduziert.
 
-Persönliche Gesundheitsdaten werden lokal auf dem Gerät gespeichert und nicht automatisch zu GitHub übertragen.
+Hinweis: Vor Updates bitte immer zusätzlich eine JSON-Sicherung herunterladen.
