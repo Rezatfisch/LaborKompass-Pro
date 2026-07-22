@@ -1,0 +1,26 @@
+{
+  "name": "LaborKompass Pro",
+  "short_name": "LaborKompass",
+  "description": "Persönliche Gesundheitsakte mit Laborwerten, Befunden, Trends und lokalen Analysen.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f4f7f8",
+  "theme_color": "#155e75",
+  "lang": "de-DE",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
