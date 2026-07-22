@@ -4,12 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#155e75">
-<link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" href="icon-192.png">
-<link rel="apple-touch-icon" href="icon-192.png">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <title>LaborKompass Pro</title>
+<meta name="theme-color" content="#0f766e">
+<meta name="description" content="Private Gesundheitsakte, Laborwerte, Befunde, Verlauf und lokale Analyse">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
 <style>
 :root{
  --bg:#f4f7f8;--card:#fff;--ink:#17232b;--muted:#62727d;--brand:#155e75;--brand2:#0e7490;
@@ -43,10 +42,10 @@ canvas{width:100%;height:230px;background:white;border-radius:12px}
 .aiout{white-space:pre-wrap;line-height:1.48;background:#f8fbfc;border:1px solid var(--line);padding:12px;border-radius:12px}
 .bottom{position:fixed;bottom:0;left:0;right:0;background:rgba(255,255,255,.96);backdrop-filter:blur(9px);border-top:1px solid var(--line);padding:8px 11px;z-index:30}.bottom .inner{max-width:1100px;margin:auto;display:flex;gap:8px}.bottom button{flex:1}
 @media(min-width:760px){.grid{grid-template-columns:repeat(4,1fr)}.system-grid{grid-template-columns:repeat(4,1fr)}}
-</style>
+.versionBadge{display:inline-flex;align-items:center;gap:6px;background:#e6fffb;color:#115e59;border:1px solid #99f6e4;border-radius:999px;padding:5px 9px;font-size:.76rem;font-weight:800}.backupRow{display:flex;justify-content:space-between;gap:10px;align-items:center;border:1px solid var(--line);padding:10px;border-radius:12px;margin:8px 0;background:white}.privacyBox{background:#eff6ff;border:1px solid #bfdbfe;color:#1e3a8a;border-radius:12px;padding:12px;line-height:1.45}.installBox{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46;border-radius:12px;padding:12px}</style>
 </head>
 <body>
-<header><h1>🧭 LaborKompass Pro</h1><p>Laborwerte, Befunde, Verlauf und persönliche medizinische Struktur</p></div></div></header>
+<header><h1>🧭 LaborKompass Pro</h1><p>Laborwerte, Befunde, Verlauf und persönliche medizinische Struktur</p><span class="versionBadge">Version 1.0.0 · persönliche Gesundheitsakte</span></header>
 <main>
 <nav class="tabs">
 <button class="tab active" data-page="home">Übersicht</button>
@@ -55,7 +54,7 @@ canvas{width:100%;height:230px;background:white;border-radius:12px}
 <button class="tab" data-page="trend">Verlauf</button>
 <button class="tab" data-page="analyse">Analyse</button>
 <button class="tab" data-page="mensch">Körper & Fachgebiete</button>
-<button class="tab" data-page="akte">Gesundheitsakte</button>
+<button class="tab" data-page="akte">Gesundheitsakte</button><button class="tab" data-page="journal">Gesundheitsjournal</button>
 <button class="tab" data-page="wissen">Wissen</button>
 <button class="tab" data-page="settings">Einstellungen</button>
 </nav>
@@ -156,13 +155,28 @@ canvas{width:100%;height:230px;background:white;border-radius:12px}
 <div class="card"><h2>Beschwerden und Ereignisse</h2><div class="row"><input id="symName" placeholder="Beschwerde"><input id="symDate" type="date"></div><textarea id="symNote" placeholder="Stärke, Dauer, Zusammenhang"></textarea><button class="primary full" id="symAdd">Eintrag speichern</button><div id="symList"></div></div>
 </section>
 
+
+<section id="journal" class="page">
+<div class="grid">
+<div class="card metric"><span>Vitalwerte</span><b id="jVitalCount">0</b></div>
+<div class="card metric"><span>Impfungen</span><b id="jVaxCount">0</b></div>
+<div class="card metric"><span>Allergien</span><b id="jAllergyCount">0</b></div>
+<div class="card metric"><span>Operationen</span><b id="jOpCount">0</b></div>
+</div>
+<div class="card"><h2>Vitalwerte</h2><div class="row3"><input id="vitalType" placeholder="z. B. Blutdruck, Gewicht"><input id="vitalValue" placeholder="z. B. 128/78"><input id="vitalUnit" placeholder="mmHg, kg …"></div><div class="row"><input id="vitalDate" type="date"><input id="vitalNote" placeholder="Notiz"></div><button class="primary full" id="vitalAdd">Vitalwert speichern</button><div id="vitalList"></div></div>
+<div class="card"><h2>Impfungen</h2><div class="row"><input id="vaxName" placeholder="Impfung"><input id="vaxDate" type="date"></div><div class="row"><input id="vaxBatch" placeholder="Charge / Hersteller"><input id="vaxNext" type="date"></div><button class="primary full" id="vaxAdd">Impfung speichern</button><div id="vaxList"></div></div>
+<div class="card"><h2>Allergien und Unverträglichkeiten</h2><div class="row"><input id="allergyName" placeholder="Allergie / Stoff"><select id="allergySeverity"><option>leicht</option><option>mittel</option><option>schwer</option></select></div><textarea id="allergyReaction" placeholder="Reaktion, Notfallhinweis"></textarea><button class="primary full" id="allergyAdd">Allergie speichern</button><div id="allergyList"></div></div>
+<div class="card"><h2>Operationen und Eingriffe</h2><div class="row"><input id="opName" placeholder="Operation / Eingriff"><input id="opDate" type="date"></div><div class="row"><input id="opPlace" placeholder="Klinik / Arzt"><input id="opBody" placeholder="Körperbereich"></div><textarea id="opNote" placeholder="Verlauf, Implantate, Nachsorge"></textarea><button class="primary full" id="opAdd">Eingriff speichern</button><div id="opList"></div></div>
+<div class="card"><h2>Gesundheits-Zeitstrahl</h2><div id="timeline"></div></div>
+</section>
 <section id="wissen" class="page"><div class="card"><h2>Laborwerte verständlich erklärt</h2><div id="knowledge"></div></div></section>
 
 <section id="settings" class="page">
-<div class="card"><h2>App installieren</h2><p class="small">Installiere LaborKompass Pro wie eine normale App. Die Installation funktioniert, wenn diese Dateien über HTTPS bereitgestellt werden.</p><button class="primary full" id="installAppBtn">App installieren</button><div id="installStatus" class="small"></div></div>
-<div class="card"><h2>Automatische Sicherungen</h2><p class="small">Nach jeder Änderung wird lokal eine neue Sicherung angelegt. Es werden die letzten 20 Versionen behalten.</p><div class="actions"><button class="secondary" id="backupNowBtn">Backup jetzt erstellen</button><button class="secondary" id="shareBackupBtn">In OneDrive teilen</button></div><label>Gespeicherte Versionen</label><select id="backupVersionSelect"></select><div class="actions"><button class="primary" id="restoreBackupBtn">Version wiederherstellen</button><button class="dangerBtn" id="clearBackupsBtn">Backups löschen</button></div><div id="backupStatus" class="small"></div></div>
-<div class="card"><h2>Datensicherung</h2><button class="secondary full" id="exportBtn">Komplette Daten sichern</button><label>Sicherung einlesen</label><input id="importBackup" type="file" accept=".json"><button class="dangerBtn full" id="resetBtn">Alle lokalen Daten löschen</button></div>
-<div class="card"><h2>Erweiterbarkeit</h2><p class="small">Neue Laborwerte können jederzeit manuell angelegt werden. Nicht bekannte Werte bleiben gespeichert und werden in Verlauf, Vergleich und Export berücksichtigt. Die Erklärungsdatenbank kann in einer späteren Version ergänzt werden, ohne bestehende Daten zu verlieren.</p></div>
+<div class="card"><h2>Installation</h2><div class="installBox"><b>Installierbare Web-App:</b> Öffne diese Seite in Chrome und tippe auf „App installieren“ beziehungsweise „Zum Startbildschirm hinzufügen“.</div><button class="primary full" id="installBtn">App installieren</button><p class="small" id="installHint">Der Installationsknopf erscheint, sobald der Browser die Installation erlaubt.</p></div>
+<div class="card"><h2>Automatische Datensicherung</h2><p class="small">Bei jeder Änderung wird automatisch eine lokale Sicherungsversion angelegt. Es werden die letzten 30 Versionen aufbewahrt.</p><div class="row"><div><label>Automatische Sicherung</label><select id="autoBackupSelect"><option value="on">Ein</option><option value="off">Aus</option></select></div><div><label>Versionen behalten</label><select id="backupLimit"><option>10</option><option>20</option><option selected>30</option><option>50</option></select></div></div><div class="actions"><button class="secondary" id="backupNowBtn">Jetzt sichern</button><button class="secondary" id="downloadLatestBtn">Neueste Sicherung herunterladen</button></div><button class="primary full" id="shareBackupBtn">Sicherung teilen / in OneDrive speichern</button><label>Sicherung einlesen</label><input id="importBackup" type="file" accept=".json"><div id="backupStatus" class="small"></div><div id="backupVersions"></div></div>
+<div class="card"><h2>Datenschutz</h2><div class="privacyBox"><b>Was ist öffentlich?</b><br>Der Programmcode und die leere App auf GitHub Pages sind öffentlich zugänglich.<br><br><b>Was bleibt privat?</b><br>Laborwerte, Diagnosen, Medikamente und importierte Befundtexte werden ausschließlich im lokalen Speicher dieses Browsers abgelegt. Sie werden nicht automatisch zu GitHub hochgeladen.<br><br><b>Wichtig:</b><br>Lade niemals persönliche Befunde, Sicherungsdateien, Passwörter oder API-Schlüssel in dein öffentliches GitHub-Repository.</div></div>
+<div class="card"><h2>Komplette Sicherung und Wiederherstellung</h2><button class="secondary full" id="exportBtn">Komplette Daten als JSON exportieren</button><button class="dangerBtn full" id="resetBtn">Alle lokalen Daten löschen</button></div>
+<div class="card"><h2>App-Information</h2><p><b>LaborKompass Pro 1.0.0</b></p><p class="small">Persönliche Gesundheitsakte mit Labor, Befunden, Vitalwerten, Impfungen, Allergien, Operationen, Zeitstrahl, Backups und lokaler Analyse.</p></div>
 </section>
 </main>
 
@@ -217,17 +231,13 @@ let documents=JSON.parse(localStorage.getItem("lk_documents")||"[]");
 let diagnoses=JSON.parse(localStorage.getItem("lk_diag")||"[]");
 let meds=JSON.parse(localStorage.getItem("lk_meds")||"[]");
 let symptoms=JSON.parse(localStorage.getItem("lk_sym")||"[]");
+let vitals=JSON.parse(localStorage.getItem("lk_vitals")||"[]");
+let vaccinations=JSON.parse(localStorage.getItem("lk_vaccinations")||"[]");
+let allergies=JSON.parse(localStorage.getItem("lk_allergies")||"[]");
+let operations=JSON.parse(localStorage.getItem("lk_operations")||"[]");
 function uid(){return (crypto.randomUUID?crypto.randomUUID():Date.now()+"-"+Math.random())}
-let backupTimer=null;
-function currentData(){return {version:4,created:new Date().toISOString(),values,files,documents,diagnoses,meds,symptoms}}
-function createLocalBackup(reason="Automatisch"){
- const history=JSON.parse(localStorage.getItem("lk_backup_history")||"[]");
- history.unshift({id:Date.now(),reason,data:currentData()});
- localStorage.setItem("lk_backup_history",JSON.stringify(history.slice(0,20)));
- renderBackupVersions();
-}
-function scheduleBackup(){clearTimeout(backupTimer);backupTimer=setTimeout(()=>createLocalBackup("Automatisch nach Änderung"),700)}
-function save(){localStorage.setItem("lk_values",JSON.stringify(values));localStorage.setItem("lk_files",JSON.stringify(files));localStorage.setItem("lk_documents",JSON.stringify(documents));localStorage.setItem("lk_diag",JSON.stringify(diagnoses));localStorage.setItem("lk_meds",JSON.stringify(meds));localStorage.setItem("lk_sym",JSON.stringify(symptoms));scheduleBackup()}
+function save(){localStorage.setItem("lk_values",JSON.stringify(values));localStorage.setItem("lk_files",JSON.stringify(files));localStorage.setItem("lk_documents",JSON.stringify(documents));localStorage.setItem("lk_diag",JSON.stringify(diagnoses));localStorage.setItem("lk_meds",JSON.stringify(meds));localStorage.setItem("lk_sym",JSON.stringify(symptoms));localStorage.setItem("lk_vitals",JSON.stringify(vitals));localStorage.setItem("lk_vaccinations",JSON.stringify(vaccinations));localStorage.setItem("lk_allergies",JSON.stringify(allergies));localStorage.setItem("lk_operations",JSON.stringify(operations))
+try{if(localStorage.getItem("lk_auto_backup")!=="off")createAutoBackup("Automatisch");}catch(e){console.warn(e)}}
 function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 function fd(d){return d?new Date(d+"T00:00:00").toLocaleDateString("de-DE"):"–"}
 function st(v){if(v.min!==""&&v.min!=null&&+v.value<+v.min)return Math.abs(+v.value-+v.min)>(Math.abs(+v.max-+v.min)||1)*.5?"danger":"high";if(v.max!==""&&v.max!=null&&+v.value>+v.max)return (+v.value-+v.max)>(Math.abs(+v.max-(+v.min||0))||1)*.5?"danger":"high";return"ok"}
@@ -345,13 +355,28 @@ function render(){
  const l=latest(),bad=l.filter(v=>st(v)!=="ok");
  mCount.textContent=values.length;mOk.textContent=l.filter(v=>st(v)==="ok").length;mBad.textContent=bad.length;mFiles.textContent=documents.length;
  alerts.innerHTML=bad.length?bad.map(card).join(""):"<div class='success'>Keine aktuelle Überschreitung der eingetragenen Referenzbereiche.</div>";
- autoSummary.textContent=autoText();renderValues();renderFiles();renderDocuments();renderTrendOptions();renderDocCompareOptions();renderAkte();
+ autoSummary.textContent=autoText();renderValues();renderFiles();renderDocuments();renderTrendOptions();renderDocCompareOptions();renderAkte();renderJournal();
 }
 function renderValues(){let q=search.value.toLowerCase(),f=filter.value;let arr=[...values].sort((a,b)=>b.date.localeCompare(a.date));arr=arr.filter(v=>(v.name+" "+v.category).toLowerCase().includes(q));arr=arr.filter(v=>f==="all"||(f==="bad"&&st(v)!=="ok")||(f==="ok"&&st(v)==="ok"));valueList.innerHTML=arr.map(card).join("")||"<div class='card'>Keine Werte gefunden.</div>"}
 search.oninput=renderValues;filter.onchange=renderValues;
 vDate.value=new Date().toISOString().slice(0,10);vCat.innerHTML=cats.map(x=>`<option>${x}</option>`).join("");names.innerHTML=Object.keys(defs).map(x=>`<option>${x}</option>`).join("");
 vName.onchange=()=>{let d=defs[vName.value];if(d){vUnit.value=d.u;vMin.value=d.min;vMax.value=d.max;vCat.value=d.c}}
-valueForm.onsubmit=e=>{e.preventDefault();values.push({id:uid(),name:vName.value.trim(),value:+vValue.value,unit:vUnit.value.trim(),min:vMin.value===""?"":+vMin.value,max:vMax.value===""?"":+vMax.value,date:vDate.value,category:vCat.value,note:vNote.value.trim()});save();e.target.reset();vDate.value=new Date().toISOString().slice(0,10);render();showPage("werte")};
+valueForm.onsubmit=e=>{e.preventDefault();values.push({id:uid(),name:vName.value.trim(),value:+vValue.value,unit:vUnit.value.trim(),min:vMin.value===""?"":+vMin.value,max:vMax.value===""?"":+vMax.value,date:vDate.value,category:vCat.value,note:vNote.value.trim()});save();e.target.reset();vDate.value=new Date().toISOString().slice(0,10);
+const APP_VERSION="1.0.0";let deferredInstallPrompt=null;
+function completePayload(){return{app:"LaborKompass Pro",version:APP_VERSION,exportedAt:new Date().toISOString(),values,files,documents,diagnoses,meds,symptoms,vitals,vaccinations,allergies,operations}}
+function getBackups(){try{return JSON.parse(localStorage.getItem("lk_backup_versions")||"[]")}catch(e){return[]}}
+function createAutoBackup(reason="Manuell"){const data=completePayload(),signature=JSON.stringify(data);let arr=getBackups();if(arr[0]&&arr[0].signature===signature)return arr[0];const item={id:Date.now().toString(36),created:new Date().toISOString(),reason,version:APP_VERSION,signature,data};arr.unshift(item);const limit=Math.max(5,parseInt(localStorage.getItem("lk_backup_limit")||"30",10));localStorage.setItem("lk_backup_versions",JSON.stringify(arr.slice(0,limit)));renderBackupVersions();return item}
+function backupFilename(x){return `LaborKompass_Backup_${new Date(x.created).toISOString().replace(/[:.]/g,"-")}_v${x.version}.json`}
+function downloadObject(o,n){const b=new Blob([JSON.stringify(o,null,2)],{type:"application/json;charset=utf-8"}),a=document.createElement("a");a.href=URL.createObjectURL(b);a.download=n;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
+async function shareBackup(x){const f=new File([JSON.stringify(x.data,null,2)],backupFilename(x),{type:"application/json"});if(navigator.share&&(!navigator.canShare||navigator.canShare({files:[f]})))await navigator.share({title:"LaborKompass Sicherung",text:"Sicherung von LaborKompass Pro",files:[f]});else{downloadObject(x.data,backupFilename(x));alert("Sicherung heruntergeladen. Anschließend mit OneDrive öffnen oder dorthin verschieben.")}}
+function restoreBackup(id){const x=getBackups().find(v=>v.id===id);if(!x||!confirm("Diese Sicherung wiederherstellen? Aktuelle Daten werden ersetzt."))return;const d=x.data;values=d.values||[];files=d.files||[];documents=d.documents||[];diagnoses=d.diagnoses||[];meds=d.meds||[];symptoms=d.symptoms||[];vitals=d.vitals||[];vaccinations=d.vaccinations||[];allergies=d.allergies||[];operations=d.operations||[];localStorage.setItem("lk_values",JSON.stringify(values));localStorage.setItem("lk_files",JSON.stringify(files));localStorage.setItem("lk_documents",JSON.stringify(documents));localStorage.setItem("lk_diag",JSON.stringify(diagnoses));localStorage.setItem("lk_meds",JSON.stringify(meds));localStorage.setItem("lk_sym",JSON.stringify(symptoms));localStorage.setItem("lk_vitals",JSON.stringify(vitals));localStorage.setItem("lk_vaccinations",JSON.stringify(vaccinations));localStorage.setItem("lk_allergies",JSON.stringify(allergies));localStorage.setItem("lk_operations",JSON.stringify(operations));render();alert("Sicherung wiederhergestellt.")}
+function deleteBackup(id){if(confirm("Sicherung löschen?")){localStorage.setItem("lk_backup_versions",JSON.stringify(getBackups().filter(x=>x.id!==id)));renderBackupVersions()}}
+function renderBackupVersions(){if(!window.backupVersions)return;const a=getBackups();backupVersions.innerHTML=a.length?a.map(x=>`<div class="backupRow"><div><b>${new Date(x.created).toLocaleString("de-DE")}</b><div class="small">${x.reason} · Version ${x.version}</div></div><div><button class="secondary mini" onclick="restoreBackup('${x.id}')">Wiederherstellen</button><button class="dangerBtn mini" onclick="deleteBackup('${x.id}')">Löschen</button></div></div>`).join(""):"<p class='small'>Noch keine Sicherungen vorhanden.</p>";if(window.backupStatus)backupStatus.textContent=`${a.length} lokale Sicherungsversion(en) vorhanden.`}
+window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferredInstallPrompt=e;if(window.installHint)installHint.textContent="Die App kann jetzt installiert werden."});
+window.addEventListener("appinstalled",()=>{if(window.installHint)installHint.textContent="LaborKompass Pro wurde installiert.";deferredInstallPrompt=null});
+document.addEventListener("DOMContentLoaded",()=>{if("serviceWorker" in navigator)navigator.serviceWorker.register("./service-worker.js").catch(console.warn);if(window.autoBackupSelect){autoBackupSelect.value=localStorage.getItem("lk_auto_backup")||"on";autoBackupSelect.onchange=()=>localStorage.setItem("lk_auto_backup",autoBackupSelect.value)}if(window.backupLimit){backupLimit.value=localStorage.getItem("lk_backup_limit")||"30";backupLimit.onchange=()=>localStorage.setItem("lk_backup_limit",backupLimit.value)}if(window.installBtn)installBtn.onclick=async()=>{if(deferredInstallPrompt){deferredInstallPrompt.prompt();await deferredInstallPrompt.userChoice;deferredInstallPrompt=null}else alert("Chrome-Menü öffnen und ‘App installieren’ wählen.")};if(window.backupNowBtn)backupNowBtn.onclick=()=>{createAutoBackup("Manuell");alert("Sicherung angelegt.")};if(window.downloadLatestBtn)downloadLatestBtn.onclick=()=>{const x=getBackups()[0]||createAutoBackup("Manuell");downloadObject(x.data,backupFilename(x))};if(window.shareBackupBtn)shareBackupBtn.onclick=async()=>{const x=getBackups()[0]||createAutoBackup("Manuell");try{await shareBackup(x)}catch(e){if(e.name!=="AbortError")alert(e.message)}};renderBackupVersions();if(!getBackups().length)createAutoBackup("Erstsicherung")});
+
+render();showPage("werte")};
 
 
 const docRubrics=["Labor","Radiologie","Kardiologie","Neurologie","Orthopädie","Urologie","Gastroenterologie","Endokrinologie","Allgemeinmedizin","Medikamentenplan","Arztbrief","Krankenhaus","Sonstige"];
@@ -554,43 +579,6 @@ symAdd.onclick=()=>{if(!symName.value.trim())return;symptoms.push({id:uid(),name
 function renderAkte(){diagList.innerHTML=diagnoses.map((x,i)=>`<div class="item"><b>${esc(x.name)}</b><div class="small">${fd(x.date)} · ${esc(x.note)}</div><button class="secondary mini" onclick="diagnoses.splice(${i},1);save();renderAkte()">Löschen</button></div>`).join("");medList.innerHTML=meds.map((x,i)=>`<div class="item"><b>${esc(x.name)} ${esc(x.dose)}</b><div class="small">${esc(x.reason)}</div><button class="secondary mini" onclick="meds.splice(${i},1);save();renderAkte()">Löschen</button></div>`).join("");symList.innerHTML=symptoms.map((x,i)=>`<div class="item"><b>${esc(x.name)}</b><div class="small">${fd(x.date)} · ${esc(x.note)}</div><button class="secondary mini" onclick="symptoms.splice(${i},1);save();renderAkte()">Löschen</button></div>`).join("")}
 
 knowledge.innerHTML=Object.entries(defs).map(([n,d])=>`<details><summary>${esc(n)} – ${esc(d.t)}</summary><p>${esc(d.i)}</p><p><b>Hinterlegter Bereich:</b> ${d.min} bis ${d.max} ${esc(d.u)}</p><p class="small">Maßgeblich bleibt der Referenzbereich des jeweiligen Labors.</p></details>`).join("");
-exportBtn.onclick=()=>{let blob=new Blob([JSON.stringify({version:3,values,files,documents,diagnoses,meds,symptoms},null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="LaborKompass_komplette_Sicherung.json";a.click();URL.revokeObjectURL(a.href)}
-importBackup.onchange=e=>{let r=new FileReader();r.onload=()=>{try{let d=JSON.parse(r.result);values=d.values||[];files=d.files||[];documents=d.documents||[];diagnoses=d.diagnoses||[];meds=d.meds||[];symptoms=d.symptoms||[];save();render();alert("Sicherung eingelesen.")}catch{alert("Ungültige Sicherung.")}};r.readAsText(e.target.files[0])}
-resetBtn.onclick=()=>{if(confirm("Alle Daten wirklich löschen?")){["lk_values","lk_files","lk_documents","lk_diag","lk_meds","lk_sym"].forEach(x=>localStorage.removeItem(x));location.reload()}}
-render();
-
-let deferredInstallPrompt=null;
-window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferredInstallPrompt=e;installStatus.textContent="Die App kann jetzt installiert werden."});
-if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("service-worker.js").catch(e=>{if(window.installStatus)installStatus.textContent="Offline-Modus konnte nicht aktiviert werden: "+e.message}))}
-installAppBtn.onclick=async()=>{
- if(deferredInstallPrompt){deferredInstallPrompt.prompt();const r=await deferredInstallPrompt.userChoice;installStatus.textContent=r.outcome==="accepted"?"Installation gestartet.":"Installation abgebrochen.";deferredInstallPrompt=null}
- else installStatus.textContent="Öffne das Browsermenü und wähle „App installieren“ oder „Zum Startbildschirm hinzufügen“. Die Seite muss über HTTPS geöffnet sein.";
-};
-function renderBackupVersions(){
- if(!window.backupVersionSelect)return;
- const h=JSON.parse(localStorage.getItem("lk_backup_history")||"[]");
- backupVersionSelect.innerHTML=h.map((b,i)=>`<option value="${b.id}">${new Date(b.id).toLocaleString("de-DE")} – ${esc(b.reason||"Backup")}</option>`).join("")||'<option>Keine Sicherung vorhanden</option>';
-}
-function backupBlob(){return new Blob([JSON.stringify(currentData(),null,2)],{type:"application/json"})}
-async function saveBackupFile(){
- const name=`LaborKompass_Backup_${new Date().toISOString().replace(/[:.]/g,"-")}.json`,blob=backupBlob();
- if(window.showSaveFilePicker){try{const h=await showSaveFilePicker({suggestedName:name,types:[{description:"LaborKompass Backup",accept:{"application/json":[".json"]}}]});const w=await h.createWritable();await w.write(blob);await w.close();backupStatus.textContent="Backup wurde gespeichert.";return}catch(e){if(e.name==="AbortError")return}}
- const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;a.click();URL.revokeObjectURL(a.href);backupStatus.textContent="Backup wurde heruntergeladen.";
-}
-backupNowBtn.onclick=()=>{createLocalBackup("Manuell");saveBackupFile()};
-shareBackupBtn.onclick=async()=>{
- const name=`LaborKompass_Backup_${new Date().toISOString().replace(/[:.]/g,"-")}.json`,file=new File([backupBlob()],name,{type:"application/json"});
- if(navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({title:"LaborKompass Backup",text:"Backup in OneDrive oder einer anderen Cloud speichern",files:[file]});backupStatus.textContent="Teilen-Menü geöffnet. Dort OneDrive auswählen."}catch(e){if(e.name!=="AbortError")backupStatus.textContent=e.message}}
- else {await saveBackupFile();backupStatus.textContent="Direktes Teilen wird nicht unterstützt. Die Datei wurde stattdessen gespeichert; lade sie anschließend in OneDrive hoch."}
-};
-restoreBackupBtn.onclick=()=>{
- const h=JSON.parse(localStorage.getItem("lk_backup_history")||"[]"),b=h.find(x=>String(x.id)===backupVersionSelect.value);if(!b)return;
- if(!confirm("Diese Sicherung wiederherstellen? Die aktuellen Daten werden ersetzt."))return;
- const d=b.data;values=d.values||[];files=d.files||[];documents=d.documents||[];diagnoses=d.diagnoses||[];meds=d.meds||[];symptoms=d.symptoms||[];
- localStorage.setItem("lk_values",JSON.stringify(values));localStorage.setItem("lk_files",JSON.stringify(files));localStorage.setItem("lk_documents",JSON.stringify(documents));localStorage.setItem("lk_diag",JSON.stringify(diagnoses));localStorage.setItem("lk_meds",JSON.stringify(meds));localStorage.setItem("lk_sym",JSON.stringify(symptoms));render();backupStatus.textContent="Sicherung wurde wiederhergestellt.";
-};
-clearBackupsBtn.onclick=()=>{if(confirm("Alle lokalen Sicherungsversionen löschen?")){localStorage.removeItem("lk_backup_history");renderBackupVersions();backupStatus.textContent="Lokale Backups wurden gelöscht."}};
-renderBackupVersions();
-
+exportBtn.onclick=()=>downloadObject(completePayload(),`LaborKompass_Gesamtsicherung_${new Date().toISOString().slice(0,10)}.json`);
 </script>
 </body></html>
