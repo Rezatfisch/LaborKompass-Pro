@@ -29,10 +29,10 @@ small{display:block;line-height:1.5;color:#52616b}
    await Promise.all(names.map(name=>caches.delete(name)));
   }
   status.textContent="Cache wurde bereinigt. Neue Version wird geladen …";
-  setTimeout(()=>location.replace("./index.html?v=2.0.1&fresh="+Date.now()),1200);
+  setTimeout(()=>location.replace("./index.html?v=2.1.0&fresh="+Date.now()),1200);
  }catch(error){
   status.textContent="Bereinigung teilweise fehlgeschlagen: "+error.message+". Die neue Seite wird trotzdem geöffnet.";
-  setTimeout(()=>location.replace("./index.html?v=2.0.1&fresh="+Date.now()),2500);
+  setTimeout(()=>location.replace("./index.html?v=2.1.0&fresh="+Date.now()),2500);
  }
 })();
 </script></body></html>

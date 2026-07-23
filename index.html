@@ -81,7 +81,7 @@ button.busy{opacity:.7;cursor:wait;position:relative}button.busy:after{content:"
 </style>
 </head>
 <body>
-<header><h1><img src="logo-64.png" alt="" style="width:54px;height:54px;border-radius:14px;vertical-align:middle;margin-right:10px">Gesundheitsakte</h1><p>Ihre persönliche Gesundheitsakte – Dokumente, Werte, Körperbereiche und verständliche Analysen</p><span class="versionBadge">Version 2.0.1 · Update- und Cache-Korrektur</span></header>
+<header><h1><img src="logo-64.png" alt="" style="width:54px;height:54px;border-radius:14px;vertical-align:middle;margin-right:10px">Gesundheitsakte</h1><p>Ihre persönliche Gesundheitsakte – Dokumente, Werte, Körperbereiche und verständliche Analysen</p><span class="versionBadge">Version 2.1.0 · stabile Gesundheitsakte</span></header>
 <main>
 <nav class="tabs">
 <button class="tab active" data-page="home">Übersicht</button>
@@ -294,7 +294,7 @@ button.busy{opacity:.7;cursor:wait;position:relative}button.busy:after{content:"
 <p>Falls trotz eines GitHub-Updates eine alte Version erscheint, entfernt diese Funktion ausschließlich alte App-Caches und Service Worker. Deine Gesundheitsdaten in localStorage und IndexedDB bleiben erhalten.</p>
 <button class="primary full" onclick="location.href='./update.html'">Update jetzt erzwingen</button>
 </div>
-<div class="card"><h2>App-Information</h2><p><b>Gesundheitsakte 2.0.1</b></p><p class="small">Persönliche Gesundheitsakte mit Labor, Befunden, Vitalwerten, Impfungen, Allergien, Operationen, Zeitstrahl, Backups und lokaler Analyse.</p></div>
+<div class="card"><h2>App-Information</h2><p><b>Gesundheitsakte 2.1.0</b></p><p class="small">Persönliche Gesundheitsakte mit Labor, Befunden, Vitalwerten, Impfungen, Allergien, Operationen, Zeitstrahl, Backups und lokaler Analyse.</p></div>
 </section>
 </main>
 
@@ -493,14 +493,14 @@ function render(){
  const l=latest(),bad=l.filter(v=>st(v)!=="ok");
  mCount.textContent=values.length;mOk.textContent=l.filter(v=>st(v)==="ok").length;mBad.textContent=bad.length;mFiles.textContent=documents.length;
  alerts.innerHTML=bad.length?bad.map(card).join(""):"<div class='success'>Keine aktuelle Überschreitung der eingetragenen Referenzbereiche.</div>";
- autoSummary.textContent=autoText();renderValues();renderFiles();renderDocuments();renderTrendOptions();renderDocCompareOptions();renderAkte();renderSpecialtyOverview();
+ autoSummary.textContent=autoText();renderValues();renderFiles();renderDocuments();renderTrendOptions();renderDocCompareOptions();renderAkte();renderSpecialtyOverview();renderJournal();
 }
 function renderValues(){let q=search.value.toLowerCase(),f=filter.value;let arr=[...values].sort((a,b)=>b.date.localeCompare(a.date));arr=arr.filter(v=>(v.name+" "+v.category).toLowerCase().includes(q));arr=arr.filter(v=>f==="all"||(f==="bad"&&st(v)!=="ok")||(f==="ok"&&st(v)==="ok"));valueList.innerHTML=arr.map(card).join("")||"<div class='card'>Keine Werte gefunden.</div>"}
 search.oninput=renderValues;filter.onchange=renderValues;
 vDate.value=new Date().toISOString().slice(0,10);vCat.innerHTML=cats.map(x=>`<option>${x}</option>`).join("");names.innerHTML=Object.keys(defs).map(x=>`<option>${x}</option>`).join("");
 vName.onchange=()=>{let d=defs[vName.value];if(d){vUnit.value=d.u;vMin.value=d.min;vMax.value=d.max;vCat.value=d.c}}
 valueForm.onsubmit=e=>{e.preventDefault();values.push({id:uid(),name:vName.value.trim(),value:+vValue.value,unit:vUnit.value.trim(),min:vMin.value===""?"":+vMin.value,max:vMax.value===""?"":+vMax.value,date:vDate.value,category:vCat.value,note:vNote.value.trim()});save();e.target.reset();vDate.value=new Date().toISOString().slice(0,10);render();showToast("Laborwert wurde gespeichert.","ok")};
-const APP_VERSION="2.0.1";let deferredInstallPrompt=null;
+const APP_VERSION="2.1.0";let deferredInstallPrompt=null;
 function completePayload(){return{app:"Gesundheitsakte Pro",version:APP_VERSION,exportedAt:new Date().toISOString(),values,files,documents,diagnoses,meds,symptoms,vitals,vaccinations,allergies,operations}}
 function getBackups(){try{return JSON.parse(localStorage.getItem("lk_backup_versions")||"[]")}catch(e){showToast("Sicherungsliste konnte nicht gelesen werden.","error");return[]}}
 function storageEstimate(){let n=0;for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);n+=(k.length+(localStorage.getItem(k)||"").length)*2}return n}
@@ -535,8 +535,8 @@ function renderBackupVersions(){if(!window.backupVersions)return;const a=getBack
 window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferredInstallPrompt=e;if(window.installHint)installHint.textContent="Die App kann jetzt installiert werden."});
 window.addEventListener("appinstalled",()=>{if(window.installHint)installHint.textContent="Gesundheitsakte Pro wurde installiert.";deferredInstallPrompt=null});
 document.addEventListener("DOMContentLoaded",()=>{if("serviceWorker" in navigator){
- navigator.serviceWorker.register("./service-worker.js?v=2.0.1",{updateViaCache:"none"})
-  .then(async reg=>{await reg.update();console.log("Gesundheitsakte Service Worker 2.0.1 aktiv")})
+ navigator.serviceWorker.register("./service-worker.js?v=2.1.0",{updateViaCache:"none"})
+  .then(async reg=>{await reg.update();console.log("Gesundheitsakte Service Worker 2.1.0 aktiv")})
   .catch(console.warn);
 }if(window.autoBackupSelect){autoBackupSelect.value=localStorage.getItem("lk_auto_backup")||"on";autoBackupSelect.onchange=()=>localStorage.setItem("lk_auto_backup",autoBackupSelect.value)}if(window.backupLimit){backupLimit.value=localStorage.getItem("lk_backup_limit")||"30";backupLimit.onchange=()=>localStorage.setItem("lk_backup_limit",backupLimit.value)}if(window.installBtn)installBtn.onclick=async()=>{if(deferredInstallPrompt){deferredInstallPrompt.prompt();await deferredInstallPrompt.userChoice;deferredInstallPrompt=null}else alert("Chrome-Menü öffnen und ‘App installieren’ wählen.")};if(window.backupNowBtn)backupNowBtn.onclick=()=>{try{const x=createAutoBackup("Manuell");showToast(`Sicherung angelegt: ${new Date(x.created).toLocaleTimeString("de-DE")}.`,"ok")}catch(e){showToast(e.message,"error",5000)}};if(window.downloadLatestBtn)downloadLatestBtn.onclick=()=>{setButtonBusy(downloadLatestBtn,true,"Sicherung wird erstellt");try{const x=createAutoBackup("Vor Update – lokal");downloadObject(x.data,backupFilename(x))}catch(e){showToast("Lokale Sicherung fehlgeschlagen: "+e.message,"error",7000)}finally{setButtonBusy(downloadLatestBtn,false)}};if(window.shareBackupBtn)shareBackupBtn.onclick=async()=>{setButtonBusy(shareBackupBtn,true,"OneDrive wird vorbereitet");try{const x=createAutoBackup("Vor Update – OneDrive");await shareBackup(x)}catch(e){if(e.name!=="AbortError")showToast("Cloud-Sicherung fehlgeschlagen: "+e.message,"error",7000);else showToast("Teilen wurde abgebrochen. Es wurde nichts in OneDrive gespeichert.","info",5000)}finally{setButtonBusy(shareBackupBtn,false)}};
 if(window.importBackup)importBackup.onchange=async e=>{const f=e.target.files?.[0];if(!f)return;try{const d=JSON.parse(await f.text());if(!d||!Array.isArray(d.values)||!confirm(`Sicherung aus Version ${d.version||"unbekannt"} vom ${d.exportedAt?new Date(d.exportedAt).toLocaleString("de-DE"):"unbekannten Datum"} wiederherstellen?`)){showToast("Wiederherstellung abgebrochen.","info");return}values=d.values||[];files=d.files||[];documents=d.documents||[];diagnoses=d.diagnoses||[];meds=d.meds||[];symptoms=d.symptoms||[];vitals=d.vitals||[];vaccinations=d.vaccinations||[];allergies=d.allergies||[];operations=d.operations||[];localStorage.setItem("lk_values",JSON.stringify(values));localStorage.setItem("lk_files",JSON.stringify(files));localStorage.setItem("lk_documents",JSON.stringify(documents));localStorage.setItem("lk_diag",JSON.stringify(diagnoses));localStorage.setItem("lk_meds",JSON.stringify(meds));localStorage.setItem("lk_sym",JSON.stringify(symptoms));localStorage.setItem("lk_vitals",JSON.stringify(vitals));localStorage.setItem("lk_vaccinations",JSON.stringify(vaccinations));localStorage.setItem("lk_allergies",JSON.stringify(allergies));localStorage.setItem("lk_operations",JSON.stringify(operations));createAutoBackup("Nach Wiederherstellung");render();showToast("Sicherung vollständig wiederhergestellt.","ok",7000)}catch(err){showToast("Sicherungsdatei konnte nicht eingelesen werden: "+err.message,"error",8000)}finally{e.target.value=""}};
@@ -911,29 +911,94 @@ const systemData=[
 ["🦵","Hüfte, Knie & Beine",["Entzündung"],"Orthopädie / Gefäßmedizin",["hüfte","knie","bein","meniskus","orthop"]],
 ["🦷","Zähne & Mund",["Entzündung"],"Zahnmedizin",["zahn","kiefer","parodont","implantat"]]
 ];
-systems.innerHTML=systemData.map((s,i)=>`<div class="system" onclick="systemShow(${i})"><strong>${s[0]} ${s[1]}</strong><span>${s[3]}</span></div>`).join("");
+const systemsBox=document.getElementById("systems");
+if(systemsBox)systemsBox.innerHTML=systemData.map((s,i)=>`<div class="system" onclick="systemShow(${i})"><strong>${s[0]} ${s[1]}</strong><span>${s[3]}</span></div>`).join("");
 function systemShow(i){
  let s=systemData[i],v=latest().filter(x=>s[2].includes(x.category)),docs=documents.filter(d=>s[4].some(k=>`${d.name} ${d.specialty} ${d.rubric} ${d.text}`.toLowerCase().includes(k))),di=diagnoses.filter(x=>s[4].some(k=>`${x.name} ${x.area||""} ${x.note||""}`.toLowerCase().includes(k)));
  systemDetail.innerHTML=`<h3>${s[0]} ${s[1]}</h3><p><b>Zuständige Fachgebiete:</b> ${s[3]}</p><p><b>Zugeordnete Dokumente:</b> ${docs.length}</p>${docs.slice(0,8).map(d=>`<div class="item"><b>${fd(d.date)} · ${esc(d.name)}</b><div class="small">${esc(d.specialty)}</div><button class="secondary mini" onclick="showPage('import')">Dokumente öffnen</button></div>`).join("")||"<p>Keine Dokumente zugeordnet.</p>"}<p><b>Aktuelle Laborwerte:</b></p>${v.length?v.map(card).join(""):"<p>Keine Werte zugeordnet.</p>"}<p><b>Diagnosen:</b> ${di.length?di.map(x=>esc(x.name)).join(", "):"Keine hinterlegt."}</p>`;
 }
-const specs=[...new Set(systemData.map(x=>x[3]))];specialties.innerHTML=specs.map(x=>`<details><summary>${x}</summary><p>Hier können passende Befunde, Diagnosen, Beschwerden und Laborwerte gesammelt werden.</p></details>`).join("");
+const specs=[...new Set(systemData.map(x=>x[3]))];
+const specialtiesBox=document.getElementById("specialties");
+if(specialtiesBox)specialtiesBox.innerHTML=specs.map(x=>`<details><summary>${x}</summary><p>Hier werden passende Befunde, Diagnosen, Beschwerden und Laborwerte gesammelt.</p></details>`).join("");
 
 diagAdd.onclick=()=>{if(!diagName.value.trim())return;diagnoses.push({id:uid(),name:diagName.value.trim(),date:diagDate.value,note:diagNote.value.trim(),area:""});diagName.value=diagNote.value="";save();renderAkte()}
 medAdd.onclick=()=>{if(!medName.value.trim())return;meds.push({id:uid(),name:medName.value.trim(),dose:medDose.value.trim(),reason:medReason.value.trim()});medName.value=medDose.value=medReason.value="";save();renderAkte()}
 symAdd.onclick=()=>{if(!symName.value.trim())return;symptoms.push({id:uid(),name:symName.value.trim(),date:symDate.value,note:symNote.value.trim()});symName.value=symNote.value="";save();renderAkte()}
 function renderAkte(){diagList.innerHTML=diagnoses.map((x,i)=>`<div class="item"><b>${esc(x.name)}</b><div class="small">${fd(x.date)} · ${esc(x.note)}</div><button class="secondary mini" onclick="diagnoses.splice(${i},1);save();renderAkte()">Löschen</button></div>`).join("");medList.innerHTML=meds.map((x,i)=>`<div class="item"><b>${esc(x.name)} ${esc(x.dose)}</b><div class="small">${esc(x.reason)}</div><button class="secondary mini" onclick="meds.splice(${i},1);save();renderAkte()">Löschen</button></div>`).join("");symList.innerHTML=symptoms.map((x,i)=>`<div class="item"><b>${esc(x.name)}</b><div class="small">${fd(x.date)} · ${esc(x.note)}</div><button class="secondary mini" onclick="symptoms.splice(${i},1);save();renderAkte()">Löschen</button></div>`).join("")}
 
-knowledge.innerHTML=Object.entries(defs).map(([n,d])=>`<details><summary>${esc(n)} – ${esc(d.t)}</summary><p>${esc(d.i)}</p><p><b>Hinterlegter Bereich:</b> ${d.min} bis ${d.max} ${esc(d.u)}</p><p class="small">Maßgeblich bleibt der Referenzbereich des jeweiligen Labors.</p></details>`).join("");
-exportBtn.onclick=()=>{setButtonBusy(exportBtn,true,"Export wird erstellt");try{const x=createAutoBackup("Komplettexport");downloadObject(x.data,backupFilename(x))}catch(e){showToast("Export fehlgeschlagen: "+e.message,"error",7000)}finally{setButtonBusy(exportBtn,false)}};
+
+function renderJournal(){
+ const vitalCount=document.getElementById("jVitalCount"),vaxCount=document.getElementById("jVaxCount"),allergyCount=document.getElementById("jAllergyCount"),opCount=document.getElementById("jOpCount");
+ if(vitalCount)vitalCount.textContent=vitals.length;
+ if(vaxCount)vaxCount.textContent=vaccinations.length;
+ if(allergyCount)allergyCount.textContent=allergies.length;
+ if(opCount)opCount.textContent=operations.length;
+ const vitalBox=document.getElementById("vitalList"),vaxBox=document.getElementById("vaxList"),allergyBox=document.getElementById("allergyList"),opBox=document.getElementById("opList");
+ if(vitalBox)vitalBox.innerHTML=[...vitals].sort((a,b)=>(b.date||"").localeCompare(a.date||"")).map(x=>`<div class="item"><b>${esc(x.type)}: ${esc(x.value)} ${esc(x.unit||"")}</b><div class="small">${fd(x.date)} · ${esc(x.note||"")}</div><button class="secondary mini" onclick="removeJournalItem('vital','${x.id}')">Löschen</button></div>`).join("")||"<p class='small'>Noch keine Vitalwerte.</p>";
+ if(vaxBox)vaxBox.innerHTML=[...vaccinations].sort((a,b)=>(b.date||"").localeCompare(a.date||"")).map(x=>`<div class="item"><b>${esc(x.name)}</b><div class="small">${fd(x.date)} · ${esc(x.batch||"")}${x.next?` · nächste Kontrolle ${fd(x.next)}`:""}</div><button class="secondary mini" onclick="removeJournalItem('vax','${x.id}')">Löschen</button></div>`).join("")||"<p class='small'>Noch keine Impfungen.</p>";
+ if(allergyBox)allergyBox.innerHTML=allergies.map(x=>`<div class="item"><b>${esc(x.name)}</b><div class="small">${esc(x.reaction||"")} · ${esc(x.severity||"")}</div><button class="secondary mini" onclick="removeJournalItem('allergy','${x.id}')">Löschen</button></div>`).join("")||"<p class='small'>Noch keine Allergien oder Unverträglichkeiten.</p>";
+ if(opBox)opBox.innerHTML=[...operations].sort((a,b)=>(b.date||"").localeCompare(a.date||"")).map(x=>`<div class="item"><b>${esc(x.name)}</b><div class="small">${fd(x.date)} · ${esc(x.place||"")} · ${esc(x.note||"")}</div><button class="secondary mini" onclick="removeJournalItem('op','${x.id}')">Löschen</button></div>`).join("")||"<p class='small'>Noch keine Operationen oder Eingriffe.</p>";
+}
+function removeJournalItem(kind,id){
+ if(!confirm("Diesen Eintrag wirklich löschen?"))return;
+ if(kind==="vital")vitals=vitals.filter(x=>x.id!==id);
+ if(kind==="vax")vaccinations=vaccinations.filter(x=>x.id!==id);
+ if(kind==="allergy")allergies=allergies.filter(x=>x.id!==id);
+ if(kind==="op")operations=operations.filter(x=>x.id!==id);
+ save();renderJournal();showToast("Eintrag gelöscht","success");
+}
+function setupJournalActions(){
+ const vitalButton=document.getElementById("vitalAdd");
+ if(vitalButton)vitalButton.onclick=()=>{
+  const type=document.getElementById("vitalType"),value=document.getElementById("vitalValue"),unit=document.getElementById("vitalUnit"),date=document.getElementById("vitalDate"),note=document.getElementById("vitalNote");
+  if(!type.value.trim()||!value.value.trim())return showToast("Bitte Art und Wert eintragen.","error");
+  vitals.push({id:uid(),type:type.value.trim(),value:value.value.trim(),unit:unit.value.trim(),date:date.value||new Date().toISOString().slice(0,10),note:note.value.trim()});
+  type.value=value.value=unit.value=note.value="";save();renderJournal();showToast("Vitalwert gespeichert","success");
+ };
+ const vaxButton=document.getElementById("vaxAdd");
+ if(vaxButton)vaxButton.onclick=()=>{
+  const name=document.getElementById("vaxName"),date=document.getElementById("vaxDate"),batch=document.getElementById("vaxBatch"),next=document.getElementById("vaxNext");
+  if(!name.value.trim())return showToast("Bitte Impfung eintragen.","error");
+  vaccinations.push({id:uid(),name:name.value.trim(),date:date.value||new Date().toISOString().slice(0,10),batch:batch.value.trim(),next:next.value});
+  name.value=batch.value="";date.value=next.value="";save();renderJournal();showToast("Impfung gespeichert","success");
+ };
+ const allergyButton=document.getElementById("allergyAdd");
+ if(allergyButton)allergyButton.onclick=()=>{
+  const name=document.getElementById("allergyName"),reaction=document.getElementById("allergyReaction"),severity=document.getElementById("allergySeverity");
+  if(!name.value.trim())return showToast("Bitte Allergie oder Unverträglichkeit eintragen.","error");
+  allergies.push({id:uid(),name:name.value.trim(),reaction:reaction.value.trim(),severity:severity.value});
+  name.value=reaction.value="";save();renderJournal();showToast("Allergie gespeichert","success");
+ };
+ const opButton=document.getElementById("opAdd");
+ if(opButton)opButton.onclick=()=>{
+  const name=document.getElementById("opName"),date=document.getElementById("opDate"),place=document.getElementById("opPlace"),note=document.getElementById("opNote");
+  if(!name.value.trim())return showToast("Bitte Operation oder Eingriff eintragen.","error");
+  operations.push({id:uid(),name:name.value.trim(),date:date.value||new Date().toISOString().slice(0,10),place:place.value.trim(),note:note.value.trim()});
+  name.value=place.value=note.value="";date.value="";save();renderJournal();showToast("Operation gespeichert","success");
+ };
+}
+setupJournalActions();
+
+const knowledgeBox=document.getElementById("knowledge");
+if(knowledgeBox)knowledgeBox.innerHTML=Object.entries(defs).map(([n,d])=>`<details><summary>${esc(n)} – ${esc(d.t)}</summary><p>${esc(d.i)}</p><p><b>Hinterlegter Bereich:</b> ${d.min} bis ${d.max} ${esc(d.u)}</p><p class="small">Maßgeblich bleibt der Referenzbereich des jeweiligen Labors.</p></details>`).join("");
+const exportButton=document.getElementById("exportBtn");
+if(exportButton)exportButton.onclick=()=>{setButtonBusy(exportButton,true,"Export wird erstellt");try{const x=createAutoBackup("Komplettexport");downloadObject(x.data,backupFilename(x))}catch(e){showToast("Export fehlgeschlagen: "+e.message,"error",7000)}finally{setButtonBusy(exportButton,false)}};
 </script>
 <script>
 document.addEventListener("click",e=>{const b=e.target.closest("button");if(!b||b.disabled)return;b.classList.add("actionPulse");setTimeout(()=>b.classList.remove("actionPulse"),180);const label=(b.textContent||"Aktion").trim().replace(/\s+/g," ");if(!["Wiederherstellen","Löschen"].includes(label))logAction(`Taste „${label}“ gedrückt`,"info")},true);
 document.addEventListener("change",e=>{if(e.target.matches("input[type=file]")){const n=e.target.files?.length||0;if(n)showToast(`${n} Datei${n===1?"":"en"} ausgewählt. Verarbeitung startet.`,"info")}});
 
 function appSelfCheck(){
- const required=["render","renderValues","renderFiles","renderDocuments","renderTrendOptions","renderDocCompareOptions","renderAkte","save"];
+ const required=["render","renderValues","renderFiles","renderDocuments","renderTrendOptions","renderDocCompareOptions","renderAkte","renderJournal","save","downloadObject"];
  const missing=required.filter(n=>typeof window[n]!=="function");
- if(missing.length){console.error("Fehlende App-Funktionen:",missing);showToast?.("Technischer Fehler: "+missing.join(", "),"error");return false}
+ const requiredIds=["mCount","valueList","documentArchive","trendSelect","diagList","vitalList","specialties","systemDetail"];
+ const missingIds=requiredIds.filter(id=>!document.getElementById(id));
+ if(missing.length||missingIds.length){
+  console.error("Selbsttest fehlgeschlagen",{missing,missingIds});
+  showToast?.("Technischer Selbsttest: "+[...missing,...missingIds.map(x=>"#"+x)].join(", "),"error",9000);
+  return false;
+ }
+ console.log("Gesundheitsakte 2.1 Selbsttest erfolgreich");
  return true;
 }
 
@@ -954,4 +1019,15 @@ function localAssistant(q){
 function specialistPlain(s){if(!s)return"";if(s.kind==="eye")return`Rechts: ${JSON.stringify(s.right)} | Links: ${JSON.stringify(s.left)}`;return JSON.stringify(s)}
 if(window.assistantBtn)assistantBtn.onclick=()=>{setButtonBusy(assistantBtn,true,"Akte wird durchsucht");try{assistantResult.textContent=localAssistant(assistantQuestion.value);showToast("Gesundheitsakte durchsucht","success")}finally{setButtonBusy(assistantBtn,false)}};
 document.querySelectorAll(".bodyPart").forEach(el=>el.addEventListener("click",()=>{document.querySelectorAll(".bodyPart").forEach(x=>x.classList.remove("active"));el.classList.add("active");systemShow(Number(el.dataset.system))}));
+
+window.addEventListener("load",()=>{
+ try{
+  appSelfCheck();
+  render();
+  showToast("Gesundheitsakte 2.1 wurde vollständig geladen.","success",3500);
+ }catch(error){
+  console.error("Startfehler",error);
+  showToast("Startfehler: "+error.message,"error",10000);
+ }
+});
 </script></body></html>

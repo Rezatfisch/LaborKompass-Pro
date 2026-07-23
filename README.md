@@ -1,9 +1,16 @@
-# Gesundheitsakte 2.0.1
+# Gesundheitsakte 2.1.0
 
-Diese Version behebt hartnäckige Anzeigeprobleme durch alte PWA- und Service-Worker-Caches.
+Stabilitätsversion mit vollständigem Start-Selbsttest.
 
-Nach dem Upload aller Dateien einmal öffnen:
+Behoben und ergänzt:
+- Fehler `systems is not defined`
+- vollständige Funktionen für Vitalwerte, Impfungen, Allergien und Operationen
+- sichere DOM-Prüfungen statt ungeschützter globaler Elementvariablen
+- Hauptansicht aktualisiert alle Bereiche gemeinsam
+- sichtbare Erfolgsmeldung nach dem vollständigen Laden
+- technischer Selbsttest für wichtige Funktionen und Bildschirmbereiche
+- Cache-Version und Aktualisierungsseite auf 2.1.0 angehoben
+- bestehende lokale Daten und Sicherungen bleiben kompatibel
 
+Nach dem Hochladen aller Dateien einmal öffnen:
 https://rezatfisch.github.io/LaborKompass-Pro/update.html
-
-Die Seite entfernt ausschließlich alte Programm-Caches und Service-Worker. Lokale Gesundheitsdaten in localStorage und IndexedDB werden nicht gelöscht. Anschließend wird Version 2.0.1 automatisch geöffnet.

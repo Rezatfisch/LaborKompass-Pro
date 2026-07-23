@@ -1,4 +1,4 @@
-const CACHE="gesundheitsakte-v2.0.1";
+const CACHE="gesundheitsakte-v2.1.0";
 const STATIC=["./manifest.webmanifest","./icon-192.png","./icon-512.png","./logo-64.png"];
 self.addEventListener("install",event=>{
  self.skipWaiting();
