@@ -1,8 +1,8 @@
 {
-  "name": "Gesundheitsakte 3.3.6",
+  "name": "Gesundheitsakte 3.3.7",
   "short_name": "Gesundheitsakte",
-  "description": "Gesundheitsakte mit erweitertem Dokumentenarchiv, Sortierung, Filtern und Sammelbearbeitung.",
-  "start_url": "./index.html?v=3.3.6",
+  "description": "Stabilitätskorrektur für Dokumentenarchiv, Rubriklisten und Sammelbearbeitung.",
+  "start_url": "./index.html?v=3.3.7",
   "id": "./index.html",
   "display": "standalone",
   "background_color": "#f1f7f8",

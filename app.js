@@ -231,7 +231,8 @@
  }
  function updateBulkRubricOptions(){
   const el=$("bulkRubric");if(!el)return;
-  const values=[...new Set([...GAChoices.lists.rubrics,...state.documents.map(d=>d.rubric).filter(Boolean)])].sort((a,b)=>a.localeCompare(b,"de"));
+  const standardRubrics=Array.isArray(window.GAChoices?.catalogs?.rubricOptions)?window.GAChoices.catalogs.rubricOptions:[];
+  const values=[...new Set([...standardRubrics,...state.documents.map(d=>d.rubric).filter(Boolean)])].sort((a,b)=>a.localeCompare(b,"de"));
   const cur=el.value;el.innerHTML='<option value="">Rubrik für Auswahl …</option>'+values.map(x=>`<option>${GAUI.esc(x)}</option>`).join("");if(values.includes(cur))el.value=cur
  }
  function updateSelectedCount(){
@@ -416,7 +417,8 @@
   editArchive:id=>{
    const d=state.documents.find(x=>x.id===id);if(!d)return;
    const newName=prompt("Neuer Dokumentname:",d.name);if(newName===null)return;
-   const rubrics=[...new Set([...GAChoices.lists.rubrics,...state.documents.map(x=>x.rubric).filter(Boolean)])].sort((a,b)=>a.localeCompare(b,"de"));
+   const standardRubrics=Array.isArray(window.GAChoices?.catalogs?.rubricOptions)?window.GAChoices.catalogs.rubricOptions:[];
+   const rubrics=[...new Set([...standardRubrics,...state.documents.map(x=>x.rubric).filter(Boolean)])].sort((a,b)=>a.localeCompare(b,"de"));
    const newRubric=prompt(`Neue Hauptrubrik:\\n\\n${rubrics.join("\\n")}`,d.rubric||"");if(newRubric===null)return;
    d.name=newName.trim()||d.name;d.rubric=newRubric.trim()||d.rubric;d.manualChanges=(d.manualChanges||0)+1;d.updatedAt=new Date().toISOString();
    save();renderDocuments();GAUI.toast(`Dokument gespeichert: ${d.name}`)
@@ -436,6 +438,6 @@
   useReference:name=>{navigate("labs");const r=GALabRefs.find(name);$("newLabName").value=name;$("newLabUnit").value=r?.unit||"";$("newLabMin").value=r?.min??"";$("newLabMax").value=r?.max??"";$("newLabValue").focus();scrollTo(0,250)},
   assign:id=>{const d=state.documents.find(x=>x.id===id),v=$(`assign-${id}`).value;if(!d||!v)return;d.specialty=v;d.rubric=v==="Augenoptik"?"Optik / Brille":v==="Zahnmedizin"?"Zahnmedizin":v.split(" / ")[0];d.manualClassification=true;GAExtract.reanalyse(d);save();render();GAUI.toast("Fachgebiet zugeordnet.")}
  }; window.addEventListener("error",e=>{recordProgramError("JavaScript",e.message,`${e.filename||""}:${e.lineno||""}:${e.colno||""}\n${e.error?.stack||""}`);GAUI.toast(`Programmfehler protokolliert: ${e.message}`,"error")});window.addEventListener("unhandledrejection",e=>{recordProgramError("Promise",e.reason?.message||e.reason,e.reason?.stack||"");GAUI.toast(`Importfehler protokolliert: ${e.reason?.message||e.reason}`,"error")});
- wire();state.documents.forEach(GAExtract.reanalyse);save();render();selfTest();GAUI.toast("Gesundheitsakte 3.3.6 mit Sortierung, Filtern und Sammelbearbeitung wurde vollständig geladen.");
- if("serviceWorker"in navigator)navigator.serviceWorker.register("./service-worker.js?v=3.3.6",{updateViaCache:"none"}).catch(console.warn);
+ wire();state.documents.forEach(GAExtract.reanalyse);save();render();selfTest();GAUI.toast("Gesundheitsakte 3.3.7 mit repariertem Dokumentenarchiv wurde vollständig geladen.");
+ if("serviceWorker"in navigator)navigator.serviceWorker.register("./service-worker.js?v=3.3.7",{updateViaCache:"none"}).catch(console.warn);
 })();
