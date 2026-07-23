@@ -1,5 +1,5 @@
 (()=>{"use strict";
- const state=GAStorage.load();let mode="simple",pending={},lastSaveReceipt=null;
+ const state=GAStorage.load();let mode="simple",pending={},lastSaveReceipt=null,selectedDocumentIds=new Set();
  const $=id=>document.getElementById(id);
 
  const CHOICE_DEFAULTS=GAChoices.catalogs;
@@ -229,15 +229,87 @@
   const s=d.reviewStatus||"unreviewed",labels={unreviewed:"🔴 ungeprüft",partial:"🟡 teilweise geprüft",reviewed:"🟢 geprüft",uncertain:"⚠ OCR unsicher"};
   return `<span class="tag review-${s}">${labels[s]||labels.unreviewed}</span>`
  }
+ function updateBulkRubricOptions(){
+  const el=$("bulkRubric");if(!el)return;
+  const values=[...new Set([...GAChoices.lists.rubrics,...state.documents.map(d=>d.rubric).filter(Boolean)])].sort((a,b)=>a.localeCompare(b,"de"));
+  const cur=el.value;el.innerHTML='<option value="">Rubrik für Auswahl …</option>'+values.map(x=>`<option>${GAUI.esc(x)}</option>`).join("");if(values.includes(cur))el.value=cur
+ }
+ function updateSelectedCount(){
+  const visible=[...document.querySelectorAll(".document-select")];
+  const selected=visible.filter(x=>x.checked).length;
+  if($("selectedDocumentCount"))$("selectedDocumentCount").textContent=`${selectedDocumentIds.size} ausgewählt`;
+  if($("selectAllDocuments")){
+   $("selectAllDocuments").checked=visible.length>0&&selected===visible.length;
+   $("selectAllDocuments").indeterminate=selected>0&&selected<visible.length
+  }
+ }
  function renderDocuments(){
-  const q=$("documentSearch").value.toLowerCase(),f=$("documentFilter").value,rubs=[...new Set(state.documents.map(d=>d.rubric))].sort(),cur=f;
+  const q=($("documentSearch")?.value||"").toLowerCase().trim();
+  const f=$("documentFilter")?.value||"all";
+  const status=$("documentStatusFilter")?.value||"all";
+  const original=$("documentOriginalFilter")?.value||"all";
+  const favorite=$("documentFavoriteFilter")?.value||"all";
+  const sort=$("documentSort")?.value||"date-desc";
+  const rubs=[...new Set(state.documents.map(d=>d.rubric).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"de")),cur=f;
   $("documentFilter").innerHTML='<option value="all">Alle Rubriken</option>'+rubs.map(x=>`<option>${GAUI.esc(x)}</option>`).join("");if(rubs.includes(cur))$("documentFilter").value=cur;
-  const arr=[...state.documents].filter(d=>(f==="all"||d.rubric===f)&&`${d.name} ${d.text} ${d.specialty} ${d.creatorSpecialty||""} ${d.topicSpecialty||""} ${(d.diagnoses||[]).join(" ")}`.toLowerCase().includes(q)).sort((a,b)=>(b.date||"").localeCompare(a.date||""));
-  $("documentList").innerHTML=saveReceiptHtml()+arr.map(d=>`<article class="item document-card" data-document-id="${d.id}">
-   <div class="document-card-head"><div><div class="import-title">${GAUI.esc(d.name)}</div><div class="import-status"><span class="tag">${GAUI.date(d.date)}</span><span class="tag">${GAUI.esc(d.rubric)}</span><span class="tag">${GAUI.esc(d.topicSpecialty||d.specialty)}</span>${reviewBadge(d)}${d.originalStored?'<span class="tag new">Original vorhanden</span>':'<span class="tag uncertain">Original fehlt</span>'}</div></div></div>
-   <p class="small">${GAUI.esc((d.keyStatements||[]).slice(0,2).join(" · ")||"Noch keine klare Kurzfassung.")}</p>
-   <div class="actions"><button class="primary" onclick="GAApp.review('${d.id}')">Original & Daten prüfen</button><button onclick="GAApp.analyse('${d.id}')">Analyse</button><button onclick="GAApp.share('${d.id}')">Teilen</button><button onclick="GAApp.remove('${d.id}')">Dokument entfernen</button></div>
-  </article>`).join("")||"<article class='card'>Keine Dokumente gefunden.</article>";
+  updateBulkRubricOptions();
+
+  let arr=[...state.documents].filter(d=>{
+   const hay=`${d.name} ${d.text} ${d.type||""} ${d.rubric||""} ${d.specialty||""} ${d.creatorSpecialty||""} ${d.topicSpecialty||""} ${(d.diagnoses||[]).join(" ")} ${(d.medications||[]).join(" ")}`.toLowerCase();
+   return (f==="all"||d.rubric===f)
+    &&(status==="all"||(d.reviewStatus||"unreviewed")===status)
+    &&(original==="all"||(original==="present"&&d.originalStored)||(original==="missing"&&!d.originalStored))
+    &&(favorite==="all"||d.favorite===true)
+    &&hay.includes(q)
+  });
+
+  const cmpText=(a,b,key)=>(a[key]||"").localeCompare(b[key]||"","de",{sensitivity:"base"});
+  const sorters={
+   "date-desc":(a,b)=>(b.date||"").localeCompare(a.date||""),
+   "date-asc":(a,b)=>(a.date||"").localeCompare(b.date||""),
+   "name-asc":(a,b)=>cmpText(a,b,"name"),
+   "name-desc":(a,b)=>cmpText(b,a,"name"),
+   "specialty-asc":(a,b)=>(a.topicSpecialty||a.specialty||"").localeCompare(b.topicSpecialty||b.specialty||"","de"),
+   "type-asc":(a,b)=>(a.type||"").localeCompare(b.type||"","de")
+  };
+  arr.sort(sorters[sort]||sorters["date-desc"]);
+
+  const cards=arr.map(d=>{
+   const summary=(d.keyStatements||[]).slice(0,2).join(" · ")||"Noch keine klare Kurzfassung.";
+   const diagnoses=(d.diagnoses||[]).slice(0,8),medications=(d.medications||[]).slice(0,8),recommendations=(d.recommendations||[]).slice(0,8);
+   const detailParts=[
+    diagnoses.length?`<div class="document-detail-block"><b>Diagnosen / Befunde</b><ul>${diagnoses.map(x=>`<li>${GAUI.esc(x)}</li>`).join("")}</ul></div>`:"",
+    medications.length?`<div class="document-detail-block"><b>Medikamente</b><ul>${medications.map(x=>`<li>${GAUI.esc(x)}</li>`).join("")}</ul></div>`:"",
+    recommendations.length?`<div class="document-detail-block"><b>Empfehlungen</b><ul>${recommendations.map(x=>`<li>${GAUI.esc(x)}</li>`).join("")}</ul></div>`:""
+   ].join("")||`<p class="small">Keine weiteren strukturierten Angaben vorhanden.</p>`;
+   return `<article class="item document-card document-card-collapsed${selectedDocumentIds.has(d.id)?" selected-document":""}" data-document-id="${d.id}">
+    <div class="document-card-tools">
+     <label class="document-select-label"><input class="document-select" type="checkbox" data-select-id="${d.id}"${selectedDocumentIds.has(d.id)?" checked":""}> auswählen</label>
+     <button class="favorite-button${d.favorite?" active":""}" onclick="GAApp.toggleFavorite('${d.id}')" title="${d.favorite?"Favorit entfernen":"Als Favorit markieren"}">${d.favorite?"★":"☆"}</button>
+    </div>
+    <div class="document-card-head"><div><div class="import-title document-title">${GAUI.esc(d.name)}</div><div class="import-status"><span class="tag">${GAUI.date(d.date)}</span><span class="tag">${GAUI.esc(d.rubric)}</span><span class="tag">${GAUI.esc(d.topicSpecialty||d.specialty)}</span>${reviewBadge(d)}${d.originalStored?'<span class="tag new">Original vorhanden</span>':'<span class="tag uncertain">Original fehlt</span>'}</div></div></div>
+    <p class="small document-summary">${GAUI.esc(summary)}</p>
+    <div class="document-more-content" aria-hidden="true">${detailParts}</div>
+    <div class="document-card-footer">
+     <button class="more-button secondary" onclick="GAApp.toggleDocumentMore('${d.id}',this)" aria-expanded="false">… mehr</button>
+     <div class="actions document-actions">
+      <button class="primary" onclick="GAApp.review('${d.id}')">Original & Daten prüfen</button>
+      <button onclick="GAApp.analyse('${d.id}')">Analyse</button>
+      <button onclick="GAApp.editArchive('${d.id}')">Umbenennen / Rubrik</button>
+      <button onclick="GAApp.duplicateDocument('${d.id}')">Duplizieren</button>
+      <button onclick="GAApp.share('${d.id}')">Teilen</button>
+      <button onclick="GAApp.remove('${d.id}')">Entfernen</button>
+     </div>
+    </div>
+   </article>`
+  }).join("");
+
+  $("documentList").innerHTML=saveReceiptHtml()+(arr.length?`<div class="document-grid">${cards}</div>`:"<article class='card'>Keine Dokumente gefunden.</article>");
+  document.querySelectorAll(".document-select").forEach(cb=>cb.onchange=()=>{
+   cb.checked?selectedDocumentIds.add(cb.dataset.selectId):selectedDocumentIds.delete(cb.dataset.selectId);
+   cb.closest(".document-card")?.classList.toggle("selected-document",cb.checked);updateSelectedCount()
+  });
+  updateSelectedCount()
  } function renderSpecialties(){
   const q=$("specialtySearch").value.toLowerCase(),f=$("specialtyFilter").value,docs=state.documents.filter(isSpecial),specs=[...new Set(docs.map(d=>d.specialty))].sort(),cur=f;$("specialtyFilter").innerHTML='<option value="all">Alle Fachgebiete</option>'+specs.map(x=>`<option>${GAUI.esc(x)}</option>`).join("");if(specs.includes(cur))$("specialtyFilter").value=cur;
   const arr=docs.filter(d=>(f==="all"||d.specialty===f)&&`${d.name} ${d.text} ${d.creatorSpecialty||""} ${d.topicSpecialty||d.specialty||""} ${JSON.stringify(d.specialtyData)}`.toLowerCase().includes(q)).sort((a,b)=>(b.date||"").localeCompare(a.date||""));
@@ -309,7 +381,12 @@
   $("fileInput").onchange=async e=>{const files=[...e.target.files];if(!files.length)return;const docs=await GAImporter.process(files,document.querySelector('input[name="bundleMode"]:checked').value==="bundle");for(const d of docs){pending[d.id]=d;if($("saveOriginal").checked&&d._files?.length)try{await GAStorage.putOriginalPackage(d.id,d._files);d.originalStored=true;d.originalStaged=true}catch{}}renderPendingCards();e.target.value=""};
   $("manualAnalyse").onclick=()=>{const t=$("manualText").value.trim();if(!t)return GAUI.toast("Bitte Text einfügen.","error");const d=GAExtract.document(t,"Manuell eingefügtes Dokument","text/plain");pending[d.id]=d;renderPendingCards();GAUI.toast("Text analysiert – bitte Vorschau kontrollieren.")};
   $("clearImport").onclick=async()=>{for(const d of Object.values(pending))if(d.originalStaged)await GAStorage.deleteOriginal(d.id).catch(()=>{});pending={};GAImporter.reset();GAImporter.step("Anzeige geleert. Bereit für neuen Import.");renderPendingCards();GAUI.toast("Importanzeige geleert.")};
-  ["documentSearch","documentFilter"].forEach(id=>$(id).oninput=renderDocuments);["specialtySearch","specialtyFilter"].forEach(id=>$(id).oninput=renderSpecialties);["labSearch","labNameFilter"].forEach(id=>$(id).oninput=renderLabs);$("trendSelect").onchange=drawTrend;
+  ["documentSearch","documentFilter","documentStatusFilter","documentOriginalFilter","documentFavoriteFilter","documentSort"].forEach(id=>$(id).oninput=renderDocuments);
+  $("selectAllDocuments").onchange=e=>{document.querySelectorAll(".document-select").forEach(cb=>{cb.checked=e.target.checked;cb.checked?selectedDocumentIds.add(cb.dataset.selectId):selectedDocumentIds.delete(cb.dataset.selectId);cb.closest(".document-card")?.classList.toggle("selected-document",cb.checked)});updateSelectedCount()};
+  $("bulkApplyRubric").onclick=()=>{const rubric=$("bulkRubric").value;if(!selectedDocumentIds.size)return GAUI.toast("Bitte zuerst Dokumente auswählen.","error");if(!rubric)return GAUI.toast("Bitte eine Zielrubrik auswählen.","error");state.documents.forEach(d=>{if(selectedDocumentIds.has(d.id))d.rubric=rubric});save();renderDocuments();GAUI.toast(`${selectedDocumentIds.size} Dokument(e) der Rubrik „${rubric}“ zugeordnet.`)};
+  $("bulkMarkReviewed").onclick=()=>{if(!selectedDocumentIds.size)return GAUI.toast("Bitte zuerst Dokumente auswählen.","error");state.documents.forEach(d=>{if(selectedDocumentIds.has(d.id)){d.reviewStatus="reviewed";d.reviewedAt=new Date().toISOString()}});save();renderDocuments();GAUI.toast(`${selectedDocumentIds.size} Dokument(e) als geprüft markiert.`)};
+  $("bulkDelete").onclick=async()=>{if(!selectedDocumentIds.size)return GAUI.toast("Bitte zuerst Dokumente auswählen.","error");const count=selectedDocumentIds.size;if(!confirm(`${count} ausgewählte Dokument(e) einschließlich Originalbelegen löschen?`))return;for(const id of [...selectedDocumentIds])await GAStorage.deleteOriginal(id).catch(()=>{});state.documents=state.documents.filter(d=>!selectedDocumentIds.has(d.id));selectedDocumentIds.clear();save();render();GAUI.toast(`${count} Dokument(e) gelöscht.`)};
+  ["specialtySearch","specialtyFilter"].forEach(id=>$(id).oninput=renderSpecialties);["labSearch","labNameFilter"].forEach(id=>$(id).oninput=renderLabs);$("trendSelect").onchange=drawTrend;
   $("newLabDate").value=new Date().toISOString().slice(0,10);
   $("newLabName").onchange=()=>{const r=GALabRefs.find($("newLabName").value);if(r&&!$("newLabUnit").value)$("newLabUnit").value=r.unit};
   $("fillReference").onclick=()=>{const r=GALabRefs.find($("newLabName").value);if(!r)return GAUI.toast("Für diesen Wert ist kein Orientierungsbereich hinterlegt.","error");$("newLabUnit").value=r.unit;$("newLabMin").value=r.min??"";$("newLabMax").value=r.max??"";GAUI.toast("Orientierungsbereich übernommen. Bitte mit dem Laborbericht abgleichen.")};
@@ -327,15 +404,38 @@
  }
  window.GAApp={
   saveDoc,replace:replaceDoc,
+  toggleDocumentMore:(id,button)=>{
+   const card=document.querySelector(`[data-document-id="${id}"]`);if(!card)return;
+   const expanded=card.classList.toggle("document-card-expanded");
+   card.classList.toggle("document-card-collapsed",!expanded);
+   const content=card.querySelector(".document-more-content");
+   if(content)content.setAttribute("aria-hidden",String(!expanded));
+   if(button){button.textContent=expanded?"weniger":"… mehr";button.setAttribute("aria-expanded",String(expanded))}
+  },
+  toggleFavorite:id=>{const d=state.documents.find(x=>x.id===id);if(!d)return;d.favorite=!d.favorite;save();renderDocuments();GAUI.toast(d.favorite?"Dokument als Favorit markiert.":"Favoritenmarkierung entfernt.")},
+  editArchive:id=>{
+   const d=state.documents.find(x=>x.id===id);if(!d)return;
+   const newName=prompt("Neuer Dokumentname:",d.name);if(newName===null)return;
+   const rubrics=[...new Set([...GAChoices.lists.rubrics,...state.documents.map(x=>x.rubric).filter(Boolean)])].sort((a,b)=>a.localeCompare(b,"de"));
+   const newRubric=prompt(`Neue Hauptrubrik:\\n\\n${rubrics.join("\\n")}`,d.rubric||"");if(newRubric===null)return;
+   d.name=newName.trim()||d.name;d.rubric=newRubric.trim()||d.rubric;d.manualChanges=(d.manualChanges||0)+1;d.updatedAt=new Date().toISOString();
+   save();renderDocuments();GAUI.toast(`Dokument gespeichert: ${d.name}`)
+  },
+  duplicateDocument:async id=>{
+   const source=state.documents.find(x=>x.id===id);if(!source)return;
+   const copy=JSON.parse(JSON.stringify(source));copy.id=GAExtract.uid();copy.name=source.name.replace(/(\.[^.]+)?$/,m=>`_Kopie${m||""}`);copy.favorite=false;copy.reviewStatus="unreviewed";copy.createdAt=new Date().toISOString();
+   const pkg=await GAStorage.getOriginalPackage(id).catch(()=>null);if(pkg?.files?.length){await GAStorage.putOriginalPackage(copy.id,pkg.files.map(f=>new File([f.blob],f.name,{type:f.type,lastModified:f.lastModified||Date.now()})));copy.originalStored=true}
+   state.documents.push(copy);save();renderDocuments();GAUI.toast(`Kopie erstellt: ${copy.name}`)
+  },
   discard:async id=>{const d=pending[id];if(d?.originalStaged)await GAStorage.deleteOriginal(id).catch(()=>{});delete pending[id];renderPendingCards();GAUI.toast("Vorbereiteter Import verworfen.")},
   review:id=>{const d=state.documents.find(x=>x.id===id);if(d)GAReviewer.open(d,{onSave:updated=>{Object.assign(d,updated);save();render()}})},
   reviewPending:id=>{const d=pending[id];if(d)GAReviewer.open(d,{pending:true,onSave:updated=>{Object.assign(d,updated);renderPendingCards()},onFinalize:async updated=>{Object.assign(d,updated);GAReviewer.close();await saveDoc(id)}})},
   analyse:id=>{navigate("analysis");$("analysisDocument").value=id;$("runAnalysis").click()},share,
-  remove:async id=>{if(confirm("Dokument und den lokal gespeicherten Originalbeleg entfernen? Bereits übernommene Laborwerte bleiben erhalten.")){state.documents=state.documents.filter(x=>x.id!==id);await GAStorage.deleteOriginal(id).catch(()=>{});save();render();GAUI.toast("Dokument und Originalbeleg entfernt.")}},
+  remove:async id=>{if(confirm("Dokument und den lokal gespeicherten Originalbeleg entfernen? Bereits übernommene Laborwerte bleiben erhalten.")){state.documents=state.documents.filter(x=>x.id!==id);selectedDocumentIds.delete(id);await GAStorage.deleteOriginal(id).catch(()=>{});save();render();GAUI.toast("Dokument und Originalbeleg entfernt.")}},
   removeLab:id=>{if(confirm("Diesen Laborwert löschen?")){state.values=state.values.filter(x=>x.id!==id);save();render();GAUI.toast("Laborwert gelöscht.")}},
   useReference:name=>{navigate("labs");const r=GALabRefs.find(name);$("newLabName").value=name;$("newLabUnit").value=r?.unit||"";$("newLabMin").value=r?.min??"";$("newLabMax").value=r?.max??"";$("newLabValue").focus();scrollTo(0,250)},
   assign:id=>{const d=state.documents.find(x=>x.id===id),v=$(`assign-${id}`).value;if(!d||!v)return;d.specialty=v;d.rubric=v==="Augenoptik"?"Optik / Brille":v==="Zahnmedizin"?"Zahnmedizin":v.split(" / ")[0];d.manualClassification=true;GAExtract.reanalyse(d);save();render();GAUI.toast("Fachgebiet zugeordnet.")}
  }; window.addEventListener("error",e=>{recordProgramError("JavaScript",e.message,`${e.filename||""}:${e.lineno||""}:${e.colno||""}\n${e.error?.stack||""}`);GAUI.toast(`Programmfehler protokolliert: ${e.message}`,"error")});window.addEventListener("unhandledrejection",e=>{recordProgramError("Promise",e.reason?.message||e.reason,e.reason?.stack||"");GAUI.toast(`Importfehler protokolliert: ${e.reason?.message||e.reason}`,"error")});
- wire();state.documents.forEach(GAExtract.reanalyse);save();render();selfTest();GAUI.toast("Gesundheitsakte 3.3.4 mit bestätigter Dokumentspeicherung wurde vollständig geladen.");
- if("serviceWorker"in navigator)navigator.serviceWorker.register("./service-worker.js?v=3.3.4",{updateViaCache:"none"}).catch(console.warn);
+ wire();state.documents.forEach(GAExtract.reanalyse);save();render();selfTest();GAUI.toast("Gesundheitsakte 3.3.6 mit Sortierung, Filtern und Sammelbearbeitung wurde vollständig geladen.");
+ if("serviceWorker"in navigator)navigator.serviceWorker.register("./service-worker.js?v=3.3.6",{updateViaCache:"none"}).catch(console.warn);
 })();

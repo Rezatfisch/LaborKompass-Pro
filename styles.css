@@ -48,3 +48,34 @@ select[data-region-target]{margin-bottom:8px}
 .save-receipt{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:16px 18px;margin:0 0 14px;border:2px solid #16a34a;border-radius:14px;background:#ecfdf5;color:#14532d;box-shadow:0 8px 22px rgba(22,163,74,.16)}
 .save-receipt b{font-size:1.05rem}.save-receipt span{overflow-wrap:anywhere}
 @media(max-width:650px){.save-receipt{align-items:flex-start;flex-direction:column}.save-receipt button{width:100%}}
+
+/* Version 3.3.5 – gleich große, aufklappbare Dokumentkacheln */
+.document-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;align-items:start}
+.document-grid .document-card{margin:0;display:flex;flex-direction:column;min-width:0;transition:min-height .2s ease,box-shadow .2s ease}
+.document-card-collapsed{height:390px;overflow:hidden}
+.document-card-expanded{min-height:390px;height:auto;overflow:visible;grid-row:span 2}
+.document-title{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere;min-height:2.7em}
+.document-summary{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;line-height:1.45;min-height:4.1em;margin:14px 0 8px}
+.document-more-content{display:none;border-top:1px solid var(--line);padding-top:12px;margin-top:5px}
+.document-card-expanded .document-more-content{display:block}
+.document-detail-block{margin:0 0 12px}.document-detail-block b{color:var(--brand2)}.document-detail-block ul{margin:6px 0 0;padding-left:20px}.document-detail-block li{margin:4px 0}
+.document-card-footer{margin-top:auto;padding-top:10px}.more-button{width:100%;margin-bottom:9px;padding:9px 12px}
+.document-actions{align-items:stretch}.document-actions button{flex:1 1 145px;padding:10px 11px;font-size:.9rem}
+.document-card-expanded .document-summary{-webkit-line-clamp:unset;display:block;min-height:0}
+@media(max-width:760px){
+ .document-grid{grid-template-columns:1fr}
+ .document-card-collapsed{height:405px}
+ .document-card-expanded{min-height:405px}
+}
+
+/* Version 3.3.6 – Archivsortierung, Filter und Sammelbearbeitung */
+.archive-filter-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.archive-bulkbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
+.archive-bulkbar label{display:flex;align-items:center;gap:7px;margin:0}.archive-bulkbar select{min-width:210px}
+.document-card-tools{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.document-select-label{display:flex;align-items:center;gap:7px;margin:0;font-size:.88rem;color:var(--muted)}
+.favorite-button{font-size:1.7rem;line-height:1;background:transparent;border:0;padding:2px 7px;color:#64748b}.favorite-button.active{color:#d97706}
+.selected-document{outline:3px solid #0b7285;box-shadow:0 10px 28px rgba(11,114,133,.18)}
+button.danger,.danger{background:#b91c1c;color:white}
+@media(max-width:900px){.archive-filter-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:620px){.archive-filter-grid{grid-template-columns:1fr}.archive-bulkbar>*{width:100%}.archive-bulkbar label{width:auto}.archive-bulkbar select{min-width:0}}

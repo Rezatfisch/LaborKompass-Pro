@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0b7285">
 <meta name="description" content="Persönliche Gesundheitsakte für Befunde, Laborwerte, Fachwerte, Verläufe und Arztgespräche.">
-<title>Gesundheitsakte 3.3.4</title>
+<title>Gesundheitsakte 3.3.6</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -15,7 +15,7 @@
 <header class="top">
   <img src="logo-64.png" class="logo" alt="">
   <div><h1>Gesundheitsakte</h1><p>Dokumente, Werte, Verläufe und verständliche Analysen</p>
-  <span class="version">Version 3.3.4 · Bestätigtes Speichern und Dateiname JJJJMMTT</span></div>
+  <span class="version">Version 3.3.6 · Sortieren, Filtern und Sammelbearbeitung</span></div>
 </header>
 
 <nav id="tabs" class="tabs" aria-label="Hauptnavigation">
@@ -75,10 +75,44 @@
 </section>
 
 <section id="documents" class="page">
- <article class="card">
+ <article class="card archive-controls">
   <h2>Dokumentenarchiv</h2>
-  <div class="two"><input id="documentSearch" placeholder="Suche nach Arzt, Diagnose, Fachgebiet …">
-  <select id="documentFilter"><option value="all">Alle Rubriken</option></select></div>
+  <div class="archive-filter-grid">
+   <input id="documentSearch" placeholder="Suche nach Arzt, Diagnose, Fachgebiet …">
+   <select id="documentFilter"><option value="all">Alle Rubriken</option></select>
+   <select id="documentStatusFilter">
+    <option value="all">Alle Prüfstatus</option>
+    <option value="unreviewed">Ungeprüft</option>
+    <option value="partial">Teilweise geprüft</option>
+    <option value="reviewed">Geprüft</option>
+    <option value="uncertain">OCR unsicher</option>
+   </select>
+   <select id="documentOriginalFilter">
+    <option value="all">Original vorhanden oder fehlend</option>
+    <option value="present">Nur mit Original</option>
+    <option value="missing">Nur ohne Original</option>
+   </select>
+   <select id="documentFavoriteFilter">
+    <option value="all">Alle Dokumente</option>
+    <option value="favorites">Nur Favoriten</option>
+   </select>
+   <select id="documentSort">
+    <option value="date-desc">Datum: neueste zuerst</option>
+    <option value="date-asc">Datum: älteste zuerst</option>
+    <option value="name-asc">Name: A–Z</option>
+    <option value="name-desc">Name: Z–A</option>
+    <option value="specialty-asc">Fachgebiet: A–Z</option>
+    <option value="type-asc">Dokumentart: A–Z</option>
+   </select>
+  </div>
+  <div class="archive-bulkbar">
+   <label><input id="selectAllDocuments" type="checkbox"> Alle sichtbaren auswählen</label>
+   <span id="selectedDocumentCount">0 ausgewählt</span>
+   <select id="bulkRubric"><option value="">Rubrik für Auswahl …</option></select>
+   <button id="bulkApplyRubric" class="secondary">Rubrik ändern</button>
+   <button id="bulkMarkReviewed" class="secondary">Als geprüft markieren</button>
+   <button id="bulkDelete" class="danger">Auswahl löschen</button>
+  </div>
  </article>
  <div id="documentList"></div>
 </section>

@@ -1,23 +1,26 @@
-# Gesundheitsakte 3.3.4 – Bestätigtes Speichern
+# Gesundheitsakte 3.3.6 – Dokumentenarchiv
 
-## Änderungen
+## Neu
 
-- Einheitlicher Dokumentname: `JJJJMMTT_Beschreibung.Dateiendung`
-- Beispiel: `20231001_Hautarztbericht.pdf`
-- PDF, JPG oder PNG werden anhand des Originalformats automatisch beibehalten.
-- Nach dem Speichern wird der lokale Speicher unmittelbar geprüft.
-- Erst nach erfolgreicher Prüfung wird der vorbereitete Import entfernt.
-- Die App wechselt automatisch zu **Dokumente**.
-- Dort erscheint eine grüne, dauerhafte Erfolgsbestätigung mit dem exakten Dokumentnamen.
-- Das neu gespeicherte Dokument wird hervorgehoben und in den sichtbaren Bereich gescrollt.
-- Im Prüfarbeitsplatz gibt es bei neuen Importen einen eindeutigen grünen Knopf:
-  **„Geprüft und endgültig unter Dokumente speichern“**
-- Suche und Rubrikfilter werden nach dem Speichern zurückgesetzt.
+- Sortierung nach Datum, Name, Fachgebiet und Dokumentart
+- Filter nach Rubrik
+- Filter nach Prüfstatus
+- Filter nach vorhandenem oder fehlendem Original
+- Filter „Nur Favoriten“
+- Favoritenstern an jeder Dokumentkachel
+- Dokument umbenennen
+- Hauptrubrik nachträglich ändern
+- Dokument einschließlich Original duplizieren
+- Mehrere sichtbare Dokumente auswählen
+- Sammelaktion: Rubrik ändern
+- Sammelaktion: als geprüft markieren
+- Sammelaktion: löschen
+- Anzahl ausgewählter Dokumente wird angezeigt
 
 ## Installation
 
 Alle Dateien auf GitHub ersetzen. Danach `update.html` öffnen und den Cache aktualisieren.
 
-Erwartete Versionsanzeige:
+Erwartete Anzeige:
 
-**Version 3.3.4 · Bestätigtes Speichern und Dateiname JJJJMMTT**
+**Version 3.3.6 · Sortieren, Filtern und Sammelbearbeitung**
