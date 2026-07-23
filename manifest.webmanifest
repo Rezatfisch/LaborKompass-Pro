@@ -1,32 +1,22 @@
 {
-  "name": "Gesundheitsakte 2.1.1",
+  "name": "Gesundheitsakte 3.0",
   "short_name": "Gesundheitsakte",
-  "description": "Persönliche Gesundheitsakte für Befunde, Laborwerte, Facharztwerte, Körperbereiche, Verläufe und verständliche Analysen",
-  "start_url": "./index.html?v=2.1.1",
-  "scope": "./",
+  "description": "Persönliche Gesundheitsakte mit stabilem Dokumentimport, Fachwerten, Laborverlauf und Arztgespräch.",
+  "start_url": "./index.html?v=3.0.0",
+  "id": "./index.html",
   "display": "standalone",
-  "background_color": "#071827",
-  "theme_color": "#0b4f6c",
-  "orientation": "portrait-primary",
-  "lang": "de-DE",
-  "categories": [
-    "medical",
-    "health",
-    "utilities"
-  ],
+  "background_color": "#f1f7f8",
+  "theme_color": "#0b7285",
   "icons": [
     {
       "src": "icon-192.png",
       "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/png"
     },
     {
       "src": "icon-512.png",
       "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/png"
     }
-  ],
-  "id": "./index.html"
+  ]
 }

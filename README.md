@@ -1,15 +1,20 @@
-# Gesundheitsakte 2.1.1
+# Gesundheitsakte 3.0.0
 
-Fachwerte-Migration und manuelle Fachgebietszuordnung.
+Komplett neu aufgebauter, modularer Kern.
 
-Neu:
-- bereits importierte ältere Befunde werden beim Start erneut ausgewertet
-- Facharztberichte erscheinen auch dann unter Fachwerte, wenn noch keine einzelnen Zahlen sicher erkannt wurden
-- Schaltfläche „Alle Befunde neu auswerten“
-- Liste „Nicht zugeordnete Befunde“
-- manuelle Zuordnung zu Augenarzt, Optiker, Zahnarzt, Orthopädie, Neurologie, Urologie, Kardiologie, Radiologie, HNO, Dermatologie oder Allgemeinmedizin
-- strukturierte Daten werden nach der Zuordnung erneut aus dem gespeicherten Text extrahiert
-- vorhandene Gesundheitsdaten bleiben erhalten
+## Dateien
+- index.html – Oberfläche
+- styles.css – Gestaltung
+- storage.js – Datenspeicher und Migration
+- extractors.js – Dokument-, Labor- und Fachwerterkennung
+- importer.js – PDF-, Bild-, OCR- und Textimport mit Schrittanzeige
+- ui.js – sichere Darstellung und Analyseformen
+- app.js – App-Steuerung
+- service-worker.js – PWA-Cache
+- update.html – Cachebereinigung vor dem ersten Start
 
-Nach dem Upload aller Dateien einmal öffnen:
+## Wichtig
+Die bisherigen lokalen Daten unter den Schlüsseln `lk_values`, `lk_documents`, `lk_diag`, `lk_meds`, `lk_sym`, `lk_vitals`, `lk_vaccinations`, `lk_allergies` und `lk_operations` werden weiterverwendet.
+
+Nach dem Hochladen aller Dateien einmal öffnen:
 https://rezatfisch.github.io/LaborKompass-Pro/update.html

@@ -3,1104 +3,143 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#155e75">
-<title>Gesundheitsakte 2.0</title>
-<meta name="theme-color" content="#0f766e">
-<meta name="description" content="Private Gesundheitsakte, Laborwerte, Befunde, Verlauf und lokale Analyse">
+<meta name="theme-color" content="#0b7285">
+<meta name="description" content="Persönliche Gesundheitsakte für Befunde, Laborwerte, Fachwerte, Verläufe und Arztgespräche.">
+<title>Gesundheitsakte 3.0</title>
 <link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
-<style>
-:root{
- --bg:#f4f7f8;--card:#fff;--ink:#17232b;--muted:#62727d;--brand:#155e75;--brand2:#0e7490;
- --line:#d9e3e7;--ok:#15803d;--warn:#b7791f;--high:#ea580c;--danger:#b91c1c;--info:#0369a1;
- --shadow:0 8px 26px rgba(15,48,62,.09)
-}
-*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink)}
-header{position:sticky;top:0;z-index:20;background:linear-gradient(135deg,var(--brand),var(--brand2));color:white;padding:15px 14px 12px;box-shadow:var(--shadow)}
-header h1{font-size:1.28rem;margin:0}header p{font-size:.84rem;margin:4px 0 0;opacity:.9}
-main{max-width:1100px;margin:auto;padding:12px 11px 94px}
-.tabs{display:flex;gap:7px;overflow:auto;padding:3px 0 11px;scrollbar-width:none}.tabs::-webkit-scrollbar{display:none}
-.tab{border:0;border-radius:999px;padding:10px 13px;background:#e2e9ec;color:#31434d;font-weight:800;white-space:nowrap}.tab.active{background:var(--brand);color:white}
-.page{display:none}.page.active{display:block}
-.card{background:var(--card);border:1px solid var(--line);border-radius:17px;padding:14px;box-shadow:var(--shadow);margin-bottom:12px}
-.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.metric{padding:12px}.metric b{font-size:1.55rem;display:block;margin-top:4px}.metric span{font-size:.78rem;color:var(--muted)}
-h2{font-size:1.05rem;margin:2px 0 10px}h3{font-size:.96rem;margin:4px 0 8px}
-label{display:block;font-size:.8rem;color:var(--muted);font-weight:800;margin:9px 0 5px}
-input,select,textarea{width:100%;padding:11px;border:1px solid #cbd6db;border-radius:11px;background:white;font:inherit}textarea{min-height:85px;resize:vertical}
-.row{display:grid;grid-template-columns:1fr 1fr;gap:9px}.row3{display:grid;grid-template-columns:1.5fr 1fr 1fr;gap:9px}
-button{font:inherit}.primary,.secondary,.dangerBtn,.mini{border:0;border-radius:11px;padding:11px 13px;font-weight:850}.primary{background:var(--brand);color:white}.secondary{background:#e8eef1;color:#22343e}.dangerBtn{background:#fee2e2;color:#991b1b}.mini{padding:7px 9px;font-size:.78rem}
-.full{width:100%;margin-top:9px}.actions{display:flex;gap:8px;flex-wrap:wrap}.actions button{flex:1}
-.badge{display:inline-flex;border-radius:999px;padding:5px 8px;font-size:.75rem;font-weight:850}.ok{background:#dcfce7;color:#166534}.warn{background:#fef9c3;color:#854d0e}.high{background:#ffedd5;color:#9a3412}.danger{background:#fee2e2;color:#991b1b}.info{background:#e0f2fe;color:#075985}
-.item{border:1px solid var(--line);border-left:5px solid #94a3b8;border-radius:14px;padding:12px;margin:9px 0;background:white}.item.okb{border-left-color:var(--ok)}.item.highb{border-left-color:var(--high)}.item.dangerb{border-left-color:var(--danger)}
-.head{display:flex;justify-content:space-between;gap:12px}.name{font-weight:900}.num{font-size:1.1rem;font-weight:900;text-align:right}.small{font-size:.8rem;color:var(--muted)}
-.scale{height:10px;background:linear-gradient(90deg,#fde68a 0 18%,#bbf7d0 18% 82%,#fed7aa 82%);border-radius:999px;position:relative;margin:10px 0 5px}.pin{position:absolute;top:-5px;width:4px;height:20px;background:#17232b;border-radius:4px;transform:translateX(-50%)}
-.notice{padding:11px;border-radius:12px;background:#fff7ed;border:1px solid #fed7aa;color:#7c2d12;font-size:.84rem}.success{padding:11px;border-radius:12px;background:#ecfdf5;border:1px solid #bbf7d0;color:#166534;font-size:.84rem}
-.system-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.system{border:1px solid var(--line);border-radius:15px;padding:12px;background:#fbfdfe;cursor:pointer}.system strong{display:block}.system span{font-size:.78rem;color:var(--muted)}
-details{border-top:1px solid var(--line);padding:9px 0}summary{font-weight:850;cursor:pointer}
-.filebox{border:2px dashed #9eb0ba;border-radius:15px;padding:15px;text-align:center;background:#f8fbfc}.file-row{display:flex;justify-content:space-between;gap:8px;align-items:center;border:1px solid var(--line);border-radius:12px;padding:10px;margin:8px 0}
-canvas{width:100%;height:230px;background:white;border-radius:12px}
-.aiout{white-space:pre-wrap;line-height:1.48;background:#f8fbfc;border:1px solid var(--line);padding:12px;border-radius:12px}
-.bottom{position:fixed;bottom:0;left:0;right:0;background:rgba(255,255,255,.96);backdrop-filter:blur(9px);border-top:1px solid var(--line);padding:8px 11px;z-index:30}.bottom .inner{max-width:1100px;margin:auto;display:flex;gap:8px}.bottom button{flex:1}
-@media(min-width:760px){.grid{grid-template-columns:repeat(4,1fr)}.system-grid{grid-template-columns:repeat(4,1fr)}}
-.versionBadge{display:inline-flex;align-items:center;gap:6px;background:#e6fffb;color:#115e59;border:1px solid #99f6e4;border-radius:999px;padding:5px 9px;font-size:.76rem;font-weight:800}.backupRow{display:flex;justify-content:space-between;gap:10px;align-items:center;border:1px solid var(--line);padding:10px;border-radius:12px;margin:8px 0;background:white}.privacyBox{background:#eff6ff;border:1px solid #bfdbfe;color:#1e3a8a;border-radius:12px;padding:12px;line-height:1.45}.installBox{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46;border-radius:12px;padding:12px}
-.importChoice{display:grid;grid-template-columns:repeat(2,1fr);gap:9px;margin-top:10px}
-.importChoice label{border:1px solid var(--line);border-radius:12px;padding:10px;background:white;font-weight:700}
-.importChoice input{width:auto;margin-right:6px}
-.duplicate{background:#fff7ed;border:2px solid #fb923c;border-radius:14px;padding:12px;margin:10px 0}
-.sharebar{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}.sharebar button{margin:0;flex:1;min-width:120px}
-.confidence{font-size:.78rem;background:#e0f2fe;color:#075985;padding:4px 8px;border-radius:999px;font-weight:800}
-@media(min-width:760px){.importChoice{grid-template-columns:repeat(4,1fr)}}
-
-.toastBox{position:fixed;left:50%;bottom:88px;transform:translateX(-50%);z-index:9999;width:min(92vw,520px);display:grid;gap:8px;pointer-events:none}
-.toast{background:#133b5c;color:white;padding:12px 14px;border-radius:12px;box-shadow:0 8px 28px #0004;font-weight:750;animation:toastIn .2s ease}
-.toast.ok{background:#166534}.toast.error{background:#991b1b}.toast.info{background:#1e40af}
-@keyframes toastIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
-button.actionPulse{transform:scale(.97);filter:brightness(.94)}
-button.busy{opacity:.7;cursor:wait;position:relative}button.busy:after{content:" …"}
-.actionLog{margin-top:10px;border:1px solid var(--line);border-radius:12px;padding:10px;background:#f8fafc;max-height:180px;overflow:auto}.actionLog div{padding:4px 0;border-bottom:1px dashed #dbe3ea}.actionLog div:last-child{border:0}
-
-.specialistGrid{display:grid;gap:10px;grid-template-columns:repeat(2,minmax(0,1fr))}
-.specialistCard{border:1px solid var(--line);border-radius:13px;padding:12px;background:#fff}
-.specialistCard h3{margin:0 0 8px;color:var(--brand);font-size:1rem}
-.kv{display:grid;grid-template-columns:1fr auto;gap:6px 12px;padding:4px 0;border-bottom:1px dashed #dbe3ea}
-.kv:last-child{border-bottom:0}.kv b{text-align:right}.eyeSide{border-left:5px solid #0f766e}
-@media(max-width:520px){.specialistGrid{grid-template-columns:1fr}}
-
-.brandLogo{width:54px;height:54px;border-radius:15px;vertical-align:middle;margin-right:10px;box-shadow:0 5px 18px #0004}
-.analysisModes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:10px 0}
-.modeBtn{border:2px solid var(--line);border-radius:13px;padding:12px;background:#fff;text-align:left;font-weight:800}
-.modeBtn.active{border-color:var(--brand);background:#e6fffb;color:var(--brand)}
-.bodyModelWrap{display:grid;grid-template-columns:190px 1fr;gap:16px;align-items:start}
-.bodySvg{width:180px;max-width:100%;margin:auto;display:block}
-.bodyPart{cursor:pointer;transition:.15s}.bodyPart:hover,.bodyPart.active{filter:drop-shadow(0 0 6px #14b8a6);stroke:#14b8a6;stroke-width:4}
-.quickQuestions{display:flex;flex-wrap:wrap;gap:7px}.quickQuestions button{margin:0}
-.doctorSheet{border:2px solid #2563eb;border-radius:14px;padding:14px;background:#eff6ff}
-.warningSheet{border:2px solid #dc2626;border-radius:14px;padding:14px;background:#fef2f2}
-.healthTile{border-radius:14px;padding:13px;background:linear-gradient(135deg,#fff,#f0fdfa);border:1px solid var(--line)}
-@media(max-width:620px){.bodyModelWrap{grid-template-columns:1fr}.analysisModes{grid-template-columns:1fr}}
-</style>
+<link rel="stylesheet" href="styles.css">
 </head>
 <body>
-<header><h1><img src="logo-64.png" alt="" style="width:54px;height:54px;border-radius:14px;vertical-align:middle;margin-right:10px">Gesundheitsakte</h1><p>Ihre persönliche Gesundheitsakte – Dokumente, Werte, Körperbereiche und verständliche Analysen</p><span class="versionBadge">Version 2.1.1 · Fachwerte-Migration</span></header>
-<main>
-<nav class="tabs">
-<button class="tab active" data-page="home">Übersicht</button>
-<button class="tab" data-page="werte">Laborwerte</button>
-<button class="tab" data-page="import">Import & Scan</button><button class="tab" data-page="fachwerte">Fachwerte</button>
-<button class="tab" data-page="trend">Verlauf</button>
-<button class="tab" data-page="analyse">Analyse</button>
-<button class="tab" data-page="mensch">Körper & Fachgebiete</button>
-<button class="tab" data-page="akte">Gesundheitsakte</button><button class="tab" data-page="journal">Gesundheitsjournal</button>
-<button class="tab" data-page="wissen">Wissen</button>
-<button class="tab" data-page="settings">Einstellungen</button>
+<header class="top">
+  <img src="logo-64.png" class="logo" alt="">
+  <div><h1>Gesundheitsakte</h1><p>Dokumente, Werte, Verläufe und verständliche Analysen</p>
+  <span class="version">Version 3.0.0 · neuer stabiler Kern</span></div>
+</header>
+
+<nav id="tabs" class="tabs" aria-label="Hauptnavigation">
+  <button data-page="dashboard" class="active">Übersicht</button>
+  <button data-page="import">Import</button>
+  <button data-page="documents">Dokumente</button>
+  <button data-page="specialties">Fachwerte</button>
+  <button data-page="labs">Labor</button>
+  <button data-page="timeline">Chronik</button>
+  <button data-page="analysis">Analyse</button>
+  <button data-page="backup">Sicherung</button>
 </nav>
 
-<section id="home" class="page active">
-<div class="grid">
-<div class="card metric"><span>Messwerte</span><b id="mCount">0</b></div>
-<div class="card metric"><span>Im Normbereich</span><b id="mOk">0</b></div>
-<div class="card metric"><span>Auffällig</span><b id="mBad">0</b></div>
-<div class="card metric"><span>Befunde</span><b id="mFiles">0</b></div>
-</div>
-<div class="card"><h2>Aktuelle Auffälligkeiten</h2><div id="alerts"></div></div>
-<div class="card"><h2>Automatische Gesamteinschätzung</h2><div id="autoSummary" class="aiout"></div></div>
-<div class="card"><div class="notice"><b>Medizinischer Hinweis:</b> Die App unterstützt beim Ordnen und Verstehen. Sie ersetzt keine Diagnose und keine ärztliche Behandlung. Kritische Werte, neue Beschwerden oder starke Verschlechterungen müssen medizinisch abgeklärt werden.</div></div>
-</section>
-
-<section id="werte" class="page">
-<div class="card">
-<div class="row"><div><label>Suche</label><input id="search" placeholder="MCV, Niere, Cholesterin …"></div><div><label>Filter</label><select id="filter"><option value="all">Alle</option><option value="bad">Nur auffällige</option><option value="ok">Nur normale</option></select></div></div>
-</div>
-<div class="card">
-<h2>Neuen Wert eintragen</h2>
-<form id="valueForm">
-<div class="row3"><div><label>Laborwert</label><input id="vName" list="names" required></div><div><label>Wert</label><input id="vValue" type="number" step="any" required></div><div><label>Einheit</label><input id="vUnit"></div></div>
-<datalist id="names"></datalist>
-<div class="row"><div><label>Untergrenze</label><input id="vMin" type="number" step="any"></div><div><label>Obergrenze</label><input id="vMax" type="number" step="any"></div></div>
-<div class="row"><div><label>Datum</label><input id="vDate" type="date" required></div><div><label>Bereich</label><select id="vCat"></select></div></div>
-<label>Notiz</label><textarea id="vNote" placeholder="nüchtern, Beschwerden, Medikamente, Alkohol …"></textarea>
-<button class="primary full">Speichern</button>
-</form>
-</div>
-<div id="valueList"></div>
+<main>
+<section id="dashboard" class="page active">
+ <div class="metrics">
+  <article><span>Dokumente</span><b id="metricDocuments">0</b></article>
+  <article><span>Laborwerte</span><b id="metricLabs">0</b></article>
+  <article><span>Fachbefunde</span><b id="metricSpecialties">0</b></article>
+  <article><span>Auffällig</span><b id="metricAbnormal">0</b></article>
+ </div>
+ <article class="card"><h2>Aktuelle Übersicht</h2><div id="dashboardSummary"></div></article>
+ <article class="card"><h2>Letzte Einträge</h2><div id="recentItems"></div></article>
 </section>
 
 <section id="import" class="page">
-<div class="card"><h2>Befunde und Berichte einlesen</h2><div class="notice"><b>Neu:</b> Optiker-, Augenarzt- und Zahnarztdokumente werden selbständig erkannt. Verwertbare Werte werden strukturiert in „Fachwerte“ abgelegt. Die lokale Auswertung arbeitet regelbasiert; eine echte Online-KI-Auswertung wird erst nach sicherer API-Anbindung aktiviert.</div>
-<div class="filebox">
-<input id="smartImportInput" type="file" accept=".pdf,image/*,.txt,.csv,.json,.doc,.docx" multiple>
-<p><b>Dateien, PDFs, Scans oder mehrere Fotos auswählen</b></p>
-<p class="small">Über den Android-Dateidialog kannst du auch Dateien aus „Eigene Dateien“, OneDrive, Google Drive oder anderen verbundenen Cloud-Apps auswählen.</p>
-</div>
-<div class="importChoice">
-<label><input type="radio" name="importMode" value="separate" checked> Jede Datei einzeln</label>
-<label><input type="radio" name="importMode" value="bundle"> Mehrere Fotos = ein Bericht</label>
-<label><input type="checkbox" id="saveOriginal" checked> Original lokal speichern</label>
-<label><input type="checkbox" id="autoTakeLabs" checked> Laborwerte übernehmen</label>
-</div>
-<div id="importProgress" class="small"></div>
-<div id="importPreview"></div>
-</div>
-
-<div class="card"><h2>Mehrseitigen Bericht fotografieren</h2>
-<input id="cameraInput" type="file" accept="image/*" capture="environment" multiple>
-<p class="small">Bei mehreren Seiten nacheinander fotografieren und anschließend „Mehrere Fotos = ein Bericht“ wählen.</p>
-</div>
-
-<div class="card"><h2>Text einfügen oder korrigieren</h2>
-<textarea id="ocrText" placeholder="Ausgelesener Text erscheint hier. Du kannst ihn vor dem Speichern korrigieren."></textarea>
-<div class="actions"><button class="secondary" id="ocrBtn">Bildtext erkennen</button><button class="primary" id="parseBtn">Befund analysieren</button></div>
-<div id="parsed"></div>
-</div>
-
-<div class="card"><h2>Importierte Befunde</h2>
-<div class="row"><div><label>Rubrik</label><select id="docFilter"><option value="all">Alle Rubriken</option></select></div><div><label>Suche</label><input id="docSearch" placeholder="Augenarzt, Schulter, PSA, Diagnose …"></div></div>
-<div class="row"><div><label>Darstellung</label><select id="explainLevel">
-<option value="simple">Einfache Sprache</option>
-<option value="detailed">Ausführlich mit Hintergrundwissen</option>
-<option value="expanded">Erweitert: Symptome, Ursachen, Varianten, Alternativen</option>
-<option value="medical">Medizinisch strukturiert</option>
-<option value="doctor">Form für Ärztinnen und Ärzte</option>
-<option value="compact">Kompakt für das Arztgespräch</option>
-</select></div><div><label>Sortierung</label><select id="docSort"><option value="new">Neueste zuerst</option><option value="old">Älteste zuerst</option><option value="specialty">Fachgebiet</option></select></div></div>
-<div id="documentArchive"></div>
-</div>
-
-<div class="card"><h2>Schnellimport von Laborwerten</h2><p class="small">Eine Zeile je Wert: Name;Wert;Einheit;Minimum;Maximum;Datum</p>
-<textarea id="bulk" placeholder="MCV;106;fl;80;100;2026-07-15"></textarea>
-<button class="secondary full" id="bulkBtn">Übernehmen</button></div>
+ <article class="card">
+  <h2>Dokumente importieren</h2>
+  <p>PDF, Bild, Scan, Textdatei oder mehrere Fotos auswählen. Dateien aus OneDrive und Google Drive können über den Android-Dateidialog gewählt werden.</p>
+  <input id="fileInput" type="file" accept=".pdf,image/*,.txt,.csv,.json" multiple>
+  <div class="options">
+   <label><input type="radio" name="bundleMode" value="separate" checked> Jede Datei einzeln</label>
+   <label><input type="radio" name="bundleMode" value="bundle"> Mehrere Bilder = ein Bericht</label>
+   <label><input id="saveOriginal" type="checkbox" checked> Original lokal speichern</label>
+   <label><input id="takeLabs" type="checkbox" checked> Laborwerte übernehmen</label>
+  </div>
+ </article>
+ <article class="card">
+  <h2>Importstatus</h2>
+  <ol id="importSteps" class="steps"><li>Bereit – bitte Datei auswählen.</li></ol>
+  <div id="importResults"></div>
+ </article>
+ <article class="card">
+  <h2>Text manuell einfügen</h2>
+  <textarea id="manualText" placeholder="Text eines Befundes hier einfügen oder erkannte Inhalte korrigieren."></textarea>
+  <button id="manualAnalyse" class="primary">Text analysieren</button>
+ </article>
 </section>
 
-
-<section id="fachwerte" class="page">
-<div class="card">
-<h2>Facharztwerte und Fachbefunde</h2>
-<p class="small">Hier erscheinen Facharzt-, Optiker- und Zahnarztunterlagen. Auch ältere bereits importierte Befunde werden neu ausgewertet. Ein Fachbefund bleibt sichtbar, selbst wenn daraus noch keine einzelnen Zahlen sicher erkannt wurden.</p>
-<div class="actions">
-<button class="primary" id="rebuildSpecialtyBtn">Alle Befunde neu auswerten</button>
-<button class="secondary" id="showUnassignedBtn">Nicht zugeordnete Befunde anzeigen</button>
-</div>
-<div class="row"><div><label>Fachgebiet</label><select id="specialtyFilter"><option value="all">Alle Fachgebiete</option></select></div><div><label>Suche</label><input id="specialtySearch" placeholder="Visus, Sphäre, Zahn 16, Glaukom …"></div></div>
-<div id="specialtyMigrationStatus" class="small"></div>
-</div>
-<div id="specialtyOverview"></div>
-<div id="unassignedOverview"></div>
-</section>
-<section id="trend" class="page">
-<div class="card"><h2>Zeitliche Entwicklung</h2><label>Laborwert</label><select id="trendSelect"></select><canvas id="chart" width="960" height="320"></canvas><div id="trendInfo" class="aiout"></div></div>
-<div class="card"><h2>Dokument- und Befundvergleich</h2>
-<label>Dokument auswählen</label><select id="docCompareSelect"></select>
-<div id="docCompareOut" class="aiout">Wähle einen importierten Befund. Die App zeigt passende ältere und neuere Dokumente derselben Rubrik.</div>
-</div>
-<div class="card"><h2>Vergleich zweier Labortermine</h2><div class="row"><div><label>Älteres Datum</label><select id="dateA"></select></div><div><label>Neueres Datum</label><select id="dateB"></select></div></div><button class="secondary full" id="compareBtn">Unterschiede anzeigen</button><div id="compareOut"></div></div>
+<section id="documents" class="page">
+ <article class="card">
+  <h2>Dokumentenarchiv</h2>
+  <div class="two"><input id="documentSearch" placeholder="Suche nach Arzt, Diagnose, Fachgebiet …">
+  <select id="documentFilter"><option value="all">Alle Rubriken</option></select></div>
+ </article>
+ <div id="documentList"></div>
 </section>
 
-<section id="analyse" class="page">
-<div class="card">
-<h2>Analyseart auswählen</h2>
-<p class="small">Wähle die gewünschte Darstellung. Die Auswahl gilt für alle Befunde in der Dokumentenübersicht.</p>
-<div class="analysisModes" id="analysisModeButtons">
-<button class="modeBtn active" data-mode="simple">🙂 Einfache Sprache<br><small>Kurz und verständlich</small></button>
-<button class="modeBtn" data-mode="detailed">📚 Ausführlich<br><small>Mit Erklärungen und Hintergrund</small></button>
-<button class="modeBtn" data-mode="expanded">🧭 Erweitert<br><small>Symptome, Ursachen, Varianten, Alternativen, Vorteile, Nachteile, Gefahren und Gegenmaßnahmen</small></button>
-<button class="modeBtn" data-mode="medical">🩺 Medizinisch<br><small>Strukturiert mit Fachbegriffen</small></button>
-<button class="modeBtn" data-mode="doctor">📄 Für den Arzt<br><small>Fachliche Übergabeform</small></button>
-<button class="modeBtn" data-mode="compact">💬 Arztgespräch kompakt<br><small>Kurzer Text und wichtige Fragen</small></button>
-</div>
-<div class="actions"><button class="primary" id="localAnalysisBtn">Gesamte Akte analysieren</button><button class="secondary" id="reportBtn">Analyse speichern</button></div>
-<div id="localAnalysis" class="aiout" style="margin-top:10px"></div>
-</div>
-
-<div class="card">
-<h2>Gesundheitsassistent</h2>
-<p class="small">Durchsucht ausschließlich die lokal gespeicherten Daten deiner Gesundheitsakte.</p>
-<textarea id="assistantQuestion" placeholder="z. B. Zeige alle Befunde zu meinen Augen. Wie haben sich meine MCV-Werte entwickelt? Welche Fragen sollte ich beim Orthopäden stellen?"></textarea>
-<div class="quickQuestions">
-<button class="secondary mini" data-q="Zeige alle auffälligen Werte und zugehörigen Befunde.">Auffälligkeiten</button>
-<button class="secondary mini" data-q="Zeige alle Augen- und Optikerbefunde chronologisch.">Augenverlauf</button>
-<button class="secondary mini" data-q="Erstelle einen kompakten Text für mein nächstes Arztgespräch.">Arztgespräch</button>
-</div>
-<button class="primary full" id="assistantBtn">Meine Gesundheitsakte durchsuchen</button>
-<div id="assistantResult" class="aiout" style="margin-top:10px"></div>
-</div>
-
-<div class="card"><h2>Optionale echte KI-Analyse</h2>
-<div class="notice">Für eine echte KI-Auswertung ist ein geschützter Vermittlungsserver erforderlich. Der API-Schlüssel darf nicht direkt in GitHub oder öffentlich in dieser App stehen. Bis dahin arbeitet die App lokal und regelbasiert.</div>
-<label>Sicherer API-Endpunkt / eigener Proxy</label><input id="aiEndpoint" placeholder="https://dein-geschuetzter-server.example/analyse">
-<label>API-Schlüssel nur für privaten Test</label><input id="aiKey" type="password" placeholder="Nicht in GitHub eintragen">
-<label>Modell</label><input id="aiModel" value="gpt-5-mini">
-<label>Fragestellung</label><textarea id="aiQuestion">Analysiere den ausgewählten Befund in der gewählten Darstellungsform. Erkläre Befunde, mögliche Zusammenhänge, Symptome, Alternativen, Vorteile, Nachteile, Gefahren, Gegenmaßnahmen, Warnzeichen und Fragen für das Arztgespräch. Trenne gesicherte Befundangaben von allgemeinen Informationen und stelle keine Diagnose.</textarea>
-<div class="actions"><button class="secondary" id="saveAi">Zugang lokal merken</button><button class="primary" id="aiBtn">KI-Analyse starten</button></div>
-<div id="aiResult" class="aiout" style="margin-top:10px"></div>
-</div>
+<section id="specialties" class="page">
+ <article class="card">
+  <h2>Fachwerte und Fachbefunde</h2>
+  <p>Alle Facharztberichte werden angezeigt – auch dann, wenn noch keine Einzelwerte sicher erkannt wurden.</p>
+  <div class="actions"><button id="reanalyseAll" class="primary">Alle Befunde neu auswerten</button>
+  <button id="showUnassigned" class="secondary">Nicht zugeordnete anzeigen</button></div>
+  <div class="two"><select id="specialtyFilter"><option value="all">Alle Fachgebiete</option></select>
+  <input id="specialtySearch" placeholder="Visus, Zahn, Schulter, PSA …"></div>
+ </article>
+ <div id="specialtyList"></div>
+ <div id="unassignedList"></div>
 </section>
 
-<section id="mensch" class="page">
-<div class="card"><h2>Körpermodell</h2>
-<div class="bodyModelWrap">
-<svg class="bodySvg" viewBox="0 0 180 430" aria-label="Körpermodell">
-<circle class="bodyPart" data-system="0" cx="90" cy="38" r="27" fill="#fde68a" stroke="#92400e"/>
-<path class="bodyPart" data-system="1" d="M62 72 Q90 58 118 72 L128 172 Q118 210 112 252 L68 252 Q62 210 52 172Z" fill="#bfdbfe" stroke="#1d4ed8"/>
-<path class="bodyPart" data-system="2" d="M76 92 Q90 80 104 92 L105 137 Q91 151 75 136Z" fill="#f87171" stroke="#991b1b"/>
-<ellipse class="bodyPart" data-system="3" cx="72" cy="126" rx="18" ry="32" fill="#a7f3d0" stroke="#047857"/>
-<ellipse class="bodyPart" data-system="3" cx="108" cy="126" rx="18" ry="32" fill="#a7f3d0" stroke="#047857"/>
-<path class="bodyPart" data-system="4" d="M65 151 Q90 137 115 151 L112 210 Q90 229 68 207Z" fill="#fdba74" stroke="#c2410c"/>
-<path class="bodyPart" data-system="5" d="M58 77 L26 185 L42 194 L70 111Z" fill="#ddd6fe" stroke="#6d28d9"/>
-<path class="bodyPart" data-system="5" d="M122 77 L154 185 L138 194 L110 111Z" fill="#ddd6fe" stroke="#6d28d9"/>
-<path class="bodyPart" data-system="6" d="M70 245 L58 397 L80 397 L91 251Z" fill="#bae6fd" stroke="#0369a1"/>
-<path class="bodyPart" data-system="6" d="M110 245 L122 397 L100 397 L89 251Z" fill="#bae6fd" stroke="#0369a1"/>
-<circle class="bodyPart" data-system="7" cx="77" cy="404" r="15" fill="#fecdd3" stroke="#be123c"/>
-<circle class="bodyPart" data-system="7" cx="108" cy="404" r="15" fill="#fecdd3" stroke="#be123c"/>
-</svg>
-<div>
-<div class="grid" id="bodyQuick">
-<div class="healthTile" onclick="systemShow(0)">🧠 Kopf, Augen & Sinne</div>
-<div class="healthTile" onclick="systemShow(2)">❤️ Herz & Kreislauf</div>
-<div class="healthTile" onclick="systemShow(3)">🫁 Lunge & Atmung</div>
-<div class="healthTile" onclick="systemShow(4)">🫃 Bauchorgane</div>
-<div class="healthTile" onclick="systemShow(5)">🦴 Arme, Schulter & Wirbelsäule</div>
-<div class="healthTile" onclick="systemShow(6)">🦵 Hüfte, Knie & Beine</div>
-<div class="healthTile" onclick="systemShow(7)">🦷 Zähne & Mund</div>
-</div>
-<div id="systemDetail" class="aiout" style="margin-top:12px">Tippe auf einen Körperbereich.</div>
-</div>
-</div></div>
-<div class="card"><h2>Nach Fachgebiet</h2><div id="specialties"></div></div>
+<section id="labs" class="page">
+ <article class="card">
+  <h2>Laborwerte</h2>
+  <div class="two"><input id="labSearch" placeholder="MCV, PSA, Kreatinin …">
+  <select id="labNameFilter"><option value="all">Alle Werte</option></select></div>
+ </article>
+ <div id="labList"></div>
+ <article class="card"><h2>Verlauf</h2><select id="trendSelect"></select><canvas id="trendCanvas" width="900" height="320"></canvas><div id="trendText"></div></article>
 </section>
 
-<section id="akte" class="page">
-<div class="card"><h2>Diagnosen und Erkrankungen</h2><div class="row"><input id="diagName" placeholder="z. B. Bluthochdruck"><input id="diagDate" type="date"></div><textarea id="diagNote" placeholder="Details, Arzt, Status"></textarea><button class="primary full" id="diagAdd">Diagnose speichern</button><div id="diagList"></div></div>
-<div class="card"><h2>Medikamente</h2><div class="row"><input id="medName" placeholder="Medikament"><input id="medDose" placeholder="Dosis"></div><input id="medReason" placeholder="Grund / Indikation"><button class="primary full" id="medAdd">Medikament speichern</button><div id="medList"></div></div>
-<div class="card"><h2>Beschwerden und Ereignisse</h2><div class="row"><input id="symName" placeholder="Beschwerde"><input id="symDate" type="date"></div><textarea id="symNote" placeholder="Stärke, Dauer, Zusammenhang"></textarea><button class="primary full" id="symAdd">Eintrag speichern</button><div id="symList"></div></div>
+<section id="timeline" class="page">
+ <article class="card"><h2>Gesundheitschronik</h2><p>Alle Dokumente und Laborwerte chronologisch.</p></article>
+ <div id="timelineList"></div>
 </section>
 
-
-<section id="journal" class="page">
-<div class="grid">
-<div class="card metric"><span>Vitalwerte</span><b id="jVitalCount">0</b></div>
-<div class="card metric"><span>Impfungen</span><b id="jVaxCount">0</b></div>
-<div class="card metric"><span>Allergien</span><b id="jAllergyCount">0</b></div>
-<div class="card metric"><span>Operationen</span><b id="jOpCount">0</b></div>
-</div>
-<div class="card"><h2>Vitalwerte</h2><div class="row3"><input id="vitalType" placeholder="z. B. Blutdruck, Gewicht"><input id="vitalValue" placeholder="z. B. 128/78"><input id="vitalUnit" placeholder="mmHg, kg …"></div><div class="row"><input id="vitalDate" type="date"><input id="vitalNote" placeholder="Notiz"></div><button class="primary full" id="vitalAdd">Vitalwert speichern</button><div id="vitalList"></div></div>
-<div class="card"><h2>Impfungen</h2><div class="row"><input id="vaxName" placeholder="Impfung"><input id="vaxDate" type="date"></div><div class="row"><input id="vaxBatch" placeholder="Charge / Hersteller"><input id="vaxNext" type="date"></div><button class="primary full" id="vaxAdd">Impfung speichern</button><div id="vaxList"></div></div>
-<div class="card"><h2>Allergien und Unverträglichkeiten</h2><div class="row"><input id="allergyName" placeholder="Allergie / Stoff"><select id="allergySeverity"><option>leicht</option><option>mittel</option><option>schwer</option></select></div><textarea id="allergyReaction" placeholder="Reaktion, Notfallhinweis"></textarea><button class="primary full" id="allergyAdd">Allergie speichern</button><div id="allergyList"></div></div>
-<div class="card"><h2>Operationen und Eingriffe</h2><div class="row"><input id="opName" placeholder="Operation / Eingriff"><input id="opDate" type="date"></div><div class="row"><input id="opPlace" placeholder="Klinik / Arzt"><input id="opBody" placeholder="Körperbereich"></div><textarea id="opNote" placeholder="Verlauf, Implantate, Nachsorge"></textarea><button class="primary full" id="opAdd">Eingriff speichern</button><div id="opList"></div></div>
-<div class="card"><h2>Gesundheits-Zeitstrahl</h2><div id="timeline"></div></div>
+<section id="analysis" class="page">
+ <article class="card"><h2>Darstellungsform</h2>
+  <div id="analysisModes" class="mode-grid">
+   <button data-mode="simple" class="active">Einfache Sprache</button>
+   <button data-mode="detailed">Ausführlich</button>
+   <button data-mode="expanded">Erweitert</button>
+   <button data-mode="medical">Medizinisch</button>
+   <button data-mode="doctor">Form für den Arzt</button>
+   <button data-mode="compact">Arztgespräch kompakt</button>
+  </div>
+  <select id="analysisDocument"><option value="">Befund auswählen …</option></select>
+  <button id="runAnalysis" class="primary full">Analyse erstellen</button>
+  <pre id="analysisOutput" class="output">Wähle einen Befund und eine Darstellungsform.</pre>
+ </article>
+ <article class="card"><h2>Gesundheitsassistent</h2>
+  <textarea id="assistantQuestion" placeholder="z. B. Zeige alle Augenbefunde oder erstelle Fragen für den Orthopäden."></textarea>
+  <button id="assistantRun" class="primary full">Gesundheitsakte durchsuchen</button>
+  <pre id="assistantOutput" class="output"></pre>
+ </article>
 </section>
-<section id="wissen" class="page"><div class="card"><h2>Laborwerte verständlich erklärt</h2><div id="knowledge"></div></div></section>
 
-<section id="settings" class="page">
-<div class="card"><h2>Installation</h2><div class="installBox"><b>Installierbare Web-App:</b> Öffne diese Seite in Chrome und tippe auf „App installieren“ beziehungsweise „Zum Startbildschirm hinzufügen“.</div><button class="primary full" id="installBtn">App installieren</button><p class="small" id="installHint">Der Installationsknopf erscheint, sobald der Browser die Installation erlaubt.</p></div>
-<div class="card"><h2>Sichere Datensicherung vor Updates</h2><div class="notice"><b>Vor jeder neuen App-Version:</b> zuerst eine lokale Sicherungsdatei erstellen und danach dieselbe Sicherung über den Teilen-Dialog in OneDrive speichern. Die Sicherung enthält alle strukturierten Gesundheitsdaten, Laborwerte und Befundtexte. Lokal gespeicherte Original-PDFs und Originalfotos bleiben zusätzlich im App-Speicher dieses Geräts.</div><div class="actions"><button class="secondary" id="downloadLatestBtn">1. Lokal als JSON sichern</button><button class="primary" id="shareBackupBtn">2. In OneDrive / Cloud speichern</button></div><div id="preUpdateStatus" class="success" style="display:none"></div></div>
-<div class="card"><h2>Automatische Datensicherung</h2><p class="small">Bei jeder Änderung wird automatisch eine lokale Sicherungsversion angelegt. Es werden die letzten gewählten Versionen aufbewahrt.</p><div class="row"><div><label>Automatische Sicherung</label><select id="autoBackupSelect"><option value="on">Ein</option><option value="off">Aus</option></select></div><div><label>Versionen behalten</label><select id="backupLimit"><option>10</option><option>20</option><option selected>30</option><option>50</option></select></div></div><button class="secondary full" id="backupNowBtn">Zusätzliche lokale Sicherung anlegen</button><label>Sicherung aus Datei wiederherstellen</label><input id="importBackup" type="file" accept=".json,application/json"><div id="backupStatus" class="small"></div><div id="backupVersions"></div><h3>Letzte Aktionen</h3><div id="actionLog" class="actionLog"><div class="small">Noch keine Aktion.</div></div></div>
-<div class="card"><h2>Datenschutz</h2><div class="privacyBox"><b>Was ist öffentlich?</b><br>Der Programmcode und die leere App auf GitHub Pages sind öffentlich zugänglich.<br><br><b>Was bleibt privat?</b><br>Laborwerte, Diagnosen, Medikamente und importierte Befundtexte werden ausschließlich im lokalen Speicher dieses Browsers abgelegt. Sie werden nicht automatisch zu GitHub hochgeladen.<br><br><b>Wichtig:</b><br>Lade niemals persönliche Befunde, Sicherungsdateien, Passwörter oder API-Schlüssel in dein öffentliches GitHub-Repository.</div></div>
-<div class="card"><h2>Komplette Sicherung und Wiederherstellung</h2><button class="secondary full" id="exportBtn">Komplette Daten als JSON exportieren</button><button class="dangerBtn full" id="resetBtn">Alle lokalen Daten löschen</button></div>
-<div class="card"><h2>App aktualisieren</h2>
-<p>Falls trotz eines GitHub-Updates eine alte Version erscheint, entfernt diese Funktion ausschließlich alte App-Caches und Service Worker. Deine Gesundheitsdaten in localStorage und IndexedDB bleiben erhalten.</p>
-<button class="primary full" onclick="location.href='./update.html'">Update jetzt erzwingen</button>
-</div>
-<div class="card"><h2>App-Information</h2><p><b>Gesundheitsakte 2.1.1</b></p><p class="small">Persönliche Gesundheitsakte mit Labor, Befunden, Vitalwerten, Impfungen, Allergien, Operationen, Zeitstrahl, Backups und lokaler Analyse.</p></div>
+<section id="backup" class="page">
+ <article class="card"><h2>Sichern und Wiederherstellen</h2>
+  <button id="downloadBackup" class="primary full">Komplette Sicherung lokal speichern</button>
+  <button id="shareBackup" class="secondary full">Sicherung an OneDrive / Cloud teilen</button>
+  <label class="file-label">Sicherung wiederherstellen<input id="restoreBackup" type="file" accept=".json"></label>
+  <p id="backupInfo" class="status"></p>
+ </article>
+ <article class="card"><h2>App-Status</h2><div id="selfTest"></div>
+  <button id="forceUpdate" class="secondary full">Programmcache aktualisieren</button>
+ </article>
 </section>
 </main>
 
-<div id="toastBox" class="toastBox" aria-live="polite"></div><div class="bottom"><div class="inner"><button class="primary" onclick="showPage('werte')">＋ Wert</button><button class="secondary" onclick="showPage('import')">📷 Scan/PDF</button><button class="secondary" onclick="showPage('analyse')">🧠 Analyse</button></div></div>
-
-<script>
-const cats=["Blutbild","Differentialblutbild","Blutfette","Niere","Leber","Blutzucker","Schilddrüse","Prostata","Vitamine & Mineralstoffe","Entzündung","Hormone","Gerinnung","Sonstige"];
-const defs={
-"Leukozyten":{u:"Tsd/µl",min:4,max:10,c:"Blutbild",t:"Weiße Blutkörperchen",i:"Teil der Immunabwehr. Veränderungen können bei Infektionen, Entzündungen, Medikamenten oder Erkrankungen der Blutbildung vorkommen."},
-"Erythrozyten":{u:"Mio/µl",min:4.2,max:5.8,c:"Blutbild",t:"Rote Blutkörperchen",i:"Transportieren über das Hämoglobin Sauerstoff."},
-"Hämoglobin":{u:"g/dl",min:13,max:17.5,c:"Blutbild",t:"Roter Blutfarbstoff",i:"Niedrige Werte können auf eine Blutarmut hinweisen."},
-"Hämatokrit":{u:"%",min:39,max:50,c:"Blutbild",t:"Zellanteil des Blutes",i:"Zeigt den Anteil der Blutzellen am Blutvolumen."},
-"MCV":{u:"fl",min:80,max:100,c:"Blutbild",t:"Mittlere Größe roter Blutkörperchen",i:"Erhöht unter anderem bei Vitamin-B12-/Folsäuremangel, Alkohol, Lebererkrankungen oder bestimmten Medikamenten."},
-"RDW":{u:"%",min:0,max:15,c:"Blutbild",t:"Größenstreuung roter Blutkörperchen",i:"Erhöht, wenn die roten Blutkörperchen unterschiedlich groß sind."},
-"MCH":{u:"pg",min:26,max:32,c:"Blutbild",t:"Hämoglobinmenge pro roter Blutzelle",i:"Hilft bei der Einordnung verschiedener Formen einer Blutarmut."},
-"MCHC":{u:"g/dl",min:30,max:36,c:"Blutbild",t:"Hämoglobinkonzentration",i:"Beschreibt die mittlere Konzentration des Hämoglobins in roten Blutkörperchen."},
-"Thrombozyten":{u:"Tsd/µl",min:150,max:400,c:"Blutbild",t:"Blutplättchen",i:"Wichtig für die Blutgerinnung."},
-"Neutrophile":{u:"%",min:40,max:80,c:"Differentialblutbild",t:"Neutrophile Granulozyten",i:"Wichtige Zellen der Abwehr, besonders gegen Bakterien."},
-"Eosinophile":{u:"%",min:0,max:7,c:"Differentialblutbild",t:"Eosinophile Granulozyten",i:"Können bei Allergien und Parasiten erhöht sein."},
-"Basophile":{u:"%",min:0,max:1.5,c:"Differentialblutbild",t:"Basophile Granulozyten",i:"Beteiligt an allergischen und entzündlichen Reaktionen."},
-"Monozyten":{u:"%",min:0,max:13,c:"Differentialblutbild",t:"Monozyten",i:"Fresszellen des Immunsystems."},
-"Lymphozyten":{u:"%",min:15,max:45,c:"Differentialblutbild",t:"Lymphozyten",i:"Wichtig für die gezielte Immunabwehr."},
-"Neutrophile absolut":{u:"Tsd/µl",min:1.8,max:8.3,c:"Differentialblutbild",t:"Absolute neutrophile Granulozyten",i:"Absolute Zellzahl, häufig aussagekräftiger als der Prozentwert."},
-"Eosinophile absolut":{u:"Tsd/µl",min:0,max:.5,c:"Differentialblutbild",t:"Absolute Eosinophile",i:"Absolute Zahl eosinophiler Granulozyten."},
-"Basophile absolut":{u:"Tsd/µl",min:0,max:.1,c:"Differentialblutbild",t:"Absolute Basophile",i:"Absolute Zahl basophiler Granulozyten."},
-"Monozyten absolut":{u:"Tsd/µl",min:0,max:1,c:"Differentialblutbild",t:"Absolute Monozyten",i:"Absolute Zahl der Monozyten."},
-"Lymphozyten absolut":{u:"Tsd/µl",min:.9,max:3.4,c:"Differentialblutbild",t:"Absolute Lymphozyten",i:"Absolute Zahl der Lymphozyten."},
-"Triglyceride":{u:"mg/dl",min:0,max:150,c:"Blutfette",t:"Neutralfette",i:"Werden durch Ernährung, Alkohol, Gewicht, Bewegung und Stoffwechsel beeinflusst. Nüchternwerte sind besser vergleichbar."},
-"Cholesterin":{u:"mg/dl",min:0,max:200,c:"Blutfette",t:"Gesamtcholesterin",i:"Muss zusammen mit LDL, HDL und dem persönlichen Herz-Kreislauf-Risiko beurteilt werden."},
-"HDL-Cholesterin":{u:"mg/dl",min:45,max:999,c:"Blutfette",t:"HDL-Cholesterin",i:"Ein höherer Wert wird meist als günstig angesehen, ersetzt aber keine Gesamtrisikobewertung."},
-"LDL-Cholesterin":{u:"mg/dl",min:0,max:116,c:"Blutfette",t:"LDL-Cholesterin",i:"Der Zielwert hängt vom persönlichen Herz-Kreislauf-Risiko ab und kann deutlich unter 116 liegen."},
-"Non-HDL-Cholesterin":{u:"mg/dl",min:0,max:130,c:"Blutfette",t:"Alle ungünstigen Cholesterinanteile",i:"Hilfreicher zusätzlicher Zielwert, besonders bei erhöhten Triglyceriden."},
-"Kreatinin":{u:"mg/dl",min:0,max:1.2,c:"Niere",t:"Kreatinin",i:"Dient gemeinsam mit Alter und Geschlecht zur Abschätzung der Nierenfunktion."},
-"eGFR":{u:"ml/min",min:60,max:999,c:"Niere",t:"Geschätzte Nierenfilterleistung",i:"Ein Einzelwert unter 90 bedeutet nicht automatisch eine Nierenerkrankung; Verlauf und Urinbefunde sind wichtig."},
-"Harnsäure":{u:"mg/dl",min:0,max:7,c:"Niere",t:"Harnsäure",i:"Erhöhte Werte können das Gichtrisiko steigern."},
-"Gamma-GT":{u:"U/l",min:0,max:60,c:"Leber",t:"Leber- und Gallenenzym",i:"Kann bei Leber-/Gallenwegserkrankungen, Alkohol oder Medikamenten erhöht sein."},
-"Glucose":{u:"mg/dl",min:60,max:125,c:"Blutzucker",t:"Glukose im Plasma",i:"Die Bewertung hängt davon ab, ob die Blutabnahme nüchtern erfolgte."},
-"TSH":{u:"µIU/ml",min:.27,max:4.2,c:"Schilddrüse",t:"Steuerhormon der Schilddrüse",i:"Wichtiger Suchwert für Unter- oder Überfunktion."},
-"PSA gesamt":{u:"ng/ml",min:0,max:3.4,c:"Prostata",t:"Prostata-spezifisches Antigen",i:"Alters- und verlaufsabhängig; auch gutartige Ursachen können den Wert verändern."}
-};
-const initial=[
-["Leukozyten",7.0],["Erythrozyten",4.64],["Hämoglobin",14.6],["Hämatokrit",49],["MCV",106],["RDW",15.9],["MCH",32],["MCHC",30],["Thrombozyten",210],
-["Neutrophile",53.2],["Eosinophile",2.3],["Basophile",0.6],["Monozyten",11.2],["Lymphozyten",32.7],
-["Neutrophile absolut",3.72],["Eosinophile absolut",0.16],["Basophile absolut",0.04],["Monozyten absolut",0.78],["Lymphozyten absolut",2.29],
-["Triglyceride",233],["Cholesterin",176],["HDL-Cholesterin",50],["LDL-Cholesterin",88],["Non-HDL-Cholesterin",126],
-["Kreatinin",0.84],["eGFR",97],["Harnsäure",6.4],["Gamma-GT",30],["Glucose",93],["TSH",1.56],["PSA gesamt",0.93]
-].map(([n,v])=>({id:uid(),name:n,value:v,unit:defs[n].u,min:defs[n].min,max:defs[n].max,date:"2026-07-15",category:defs[n].c,note:n==="Triglyceride"?"nüchtern; Alkoholkonsum angegeben":""}));
-
-let values=JSON.parse(localStorage.getItem("lk_values")||"null")||initial;
-let files=JSON.parse(localStorage.getItem("lk_files")||"[]");
-let documents=JSON.parse(localStorage.getItem("lk_documents")||"[]");
-let diagnoses=JSON.parse(localStorage.getItem("lk_diag")||"[]");
-let meds=JSON.parse(localStorage.getItem("lk_meds")||"[]");
-let symptoms=JSON.parse(localStorage.getItem("lk_sym")||"[]");
-let vitals=JSON.parse(localStorage.getItem("lk_vitals")||"[]");
-let vaccinations=JSON.parse(localStorage.getItem("lk_vaccinations")||"[]");
-let allergies=JSON.parse(localStorage.getItem("lk_allergies")||"[]");
-let operations=JSON.parse(localStorage.getItem("lk_operations")||"[]");
-function uid(){return (crypto.randomUUID?crypto.randomUUID():Date.now()+"-"+Math.random())}
-function save(){localStorage.setItem("lk_values",JSON.stringify(values));localStorage.setItem("lk_files",JSON.stringify(files));localStorage.setItem("lk_documents",JSON.stringify(documents));localStorage.setItem("lk_diag",JSON.stringify(diagnoses));localStorage.setItem("lk_meds",JSON.stringify(meds));localStorage.setItem("lk_sym",JSON.stringify(symptoms));localStorage.setItem("lk_vitals",JSON.stringify(vitals));localStorage.setItem("lk_vaccinations",JSON.stringify(vaccinations));localStorage.setItem("lk_allergies",JSON.stringify(allergies));localStorage.setItem("lk_operations",JSON.stringify(operations))
-try{if(localStorage.getItem("lk_auto_backup")!=="off")createAutoBackup("Automatisch");}catch(e){console.warn(e)}}
-function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
-function showToast(message,type="ok",ms=2600){
- const box=document.getElementById("toastBox");if(!box)return;const el=document.createElement("div");el.className=`toast ${type}`;el.textContent=message;box.appendChild(el);setTimeout(()=>el.remove(),ms);logAction(message,type);
-}
-function logAction(message,type="info"){
- const box=document.getElementById("actionLog");if(!box)return;if(box.querySelector(".small"))box.innerHTML="";const d=document.createElement("div");d.innerHTML=`<b>${new Date().toLocaleTimeString("de-DE")}</b> – ${esc(message)}`;box.prepend(d);while(box.children.length>12)box.lastChild.remove();
-}
-function setButtonBusy(btn,busy,label){if(!btn)return;if(busy){btn.dataset.oldText=btn.textContent;btn.classList.add("busy");btn.disabled=true;if(label)btn.textContent=label}else{btn.classList.remove("busy");btn.disabled=false;if(btn.dataset.oldText){btn.textContent=btn.dataset.oldText;delete btn.dataset.oldText}}}
-window.addEventListener("error",e=>showToast("Aktion fehlgeschlagen: "+(e.message||"Unbekannter Fehler"),"error",4500));
-window.addEventListener("unhandledrejection",e=>{if(e.reason?.name!=="AbortError")showToast("Aktion fehlgeschlagen: "+(e.reason?.message||e.reason||"Unbekannter Fehler"),"error",4500)});
-
-function fd(d){return d?new Date(d+"T00:00:00").toLocaleDateString("de-DE"):"–"}
-function st(v){if(v.min!==""&&v.min!=null&&+v.value<+v.min)return Math.abs(+v.value-+v.min)>(Math.abs(+v.max-+v.min)||1)*.5?"danger":"high";if(v.max!==""&&v.max!=null&&+v.value>+v.max)return (+v.value-+v.max)>(Math.abs(+v.max-(+v.min||0))||1)*.5?"danger":"high";return"ok"}
-function pin(v){let a=+v.min,b=+v.max,x=+v.value;if(!isFinite(a))a=0;if(!isFinite(b)||b<=a)b=a+1;let p=(b-a)*.25,lo=a-p,hi=b+p;return Math.max(2,Math.min(98,(x-lo)/(hi-lo)*100))}
-function latest(){let m={};[...values].sort((a,b)=>a.date.localeCompare(b.date)).forEach(v=>m[v.name]=v);return Object.values(m)}
-function card(v){let s=st(v),d=defs[v.name]||{};return `<div class="item ${s}b"><div class="head"><div><div class="name">${esc(v.name)}</div><div class="small">${esc(v.category)} · ${fd(v.date)}</div></div><div class="num">${v.value} ${esc(v.unit)}<br><span class="badge ${s}">${s==="ok"?"im Bereich":s==="high"?"auffällig":"deutlich auffällig"}</span></div></div><div class="scale"><span class="pin" style="left:${pin(v)}%"></span></div><div class="small">Referenz: ${v.min===""?"–":v.min} bis ${v.max===""?"–":v.max} ${esc(v.unit)}</div>${d.i?`<details><summary>Erklärung</summary><p>${d.i}</p></details>`:""}${v.note?`<div class="small"><b>Notiz:</b> ${esc(v.note)}</div>`:""}<button class="secondary mini" onclick="delValue('${v.id}')">Löschen</button></div>`}
-function delValue(id){if(confirm("Eintrag löschen?")){values=values.filter(v=>v.id!==id);save();render()}}
-function showPage(id){document.querySelectorAll(".page").forEach(p=>p.classList.toggle("active",p.id===id));document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active",t.dataset.page===id));if(id==="trend")draw();window.scrollTo(0,0)}
-document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>showPage(t.dataset.page));
-
-function getLatestMap(){return Object.fromEntries(latest().map(v=>[v.name,v]))}
-function deviationPercent(v){
-  if(v.min!==""&&v.min!=null&&+v.value<+v.min) return ((+v.value-+v.min)/(Math.abs(+v.min)||1))*100;
-  if(v.max!==""&&v.max!=null&&+v.value>+v.max) return ((+v.value-+v.max)/(Math.abs(+v.max)||1))*100;
-  return 0;
-}
-function trendFor(name){
-  const a=values.filter(v=>v.name===name).sort((x,y)=>x.date.localeCompare(y.date));
-  if(a.length<2)return {label:"noch kein Verlauf",pct:0,count:a.length};
-  const first=+a[0].value,last=+a[a.length-1].value,pct=first?((last-first)/Math.abs(first))*100:0;
-  let label=Math.abs(pct)<3?"stabil":pct>0?"steigend":"fallend";
-  return {label,pct,count:a.length,first,last};
-}
-function localEngine(){
- const m=getLatestMap(), out=[], actions=[], questions=[], urgent=[], systems={};
- const bad=Object.values(m).filter(v=>st(v)!=="ok");
- out.push("GESAMTÜBERBLICK");
- out.push(bad.length
-   ? `${bad.length} aktuelle Werte liegen außerhalb des jeweils eingetragenen Referenzbereichs.`
-   : "Alle aktuellen Werte liegen innerhalb der jeweils eingetragenen Referenzbereiche.");
- out.push("");
-
- Object.values(m).sort((a,b)=>a.category.localeCompare(b.category)).forEach(v=>{
-   if(!systems[v.category])systems[v.category]={ok:0,bad:0,items:[]};
-   systems[v.category][st(v)==="ok"?"ok":"bad"]++;
-   systems[v.category].items.push(v);
- });
-
- out.push("AUFFÄLLIGE EINZELWERTE");
- if(!bad.length) out.push("• Keine.");
- bad.forEach(v=>{
-   const d=deviationPercent(v),t=trendFor(v.name);
-   out.push(`• ${v.name}: ${v.value} ${v.unit} (${st(v)==="danger"?"deutlich auffällig":"auffällig"}, ${d>0?"+":""}${d.toFixed(1)} % zur maßgeblichen Grenze; Verlauf: ${t.label}${t.count>1?` ${t.pct>0?"+":""}${t.pct.toFixed(1)} %`:""}).`);
- });
-
- out.push("");
- out.push("ERKANNTE ZUSAMMENHÄNGE");
-
- const mcv=m["MCV"],rdw=m["RDW"],hb=m["Hämoglobin"],mch=m["MCH"],mchc=m["MCHC"];
- const b12Pattern=mcv&&+mcv.value>+mcv.max;
- if(b12Pattern){
-   let s="• Erhöhtes MCV: Die roten Blutkörperchen sind im Durchschnitt vergrößert.";
-   if(rdw&&+rdw.value>+rdw.max)s+=" Die ebenfalls erhöhte RDW zeigt zusätzlich eine größere Streuung der Zellgrößen.";
-   if(hb&&st(hb)==="ok")s+=" Hämoglobin ist normal, daher zeigt dieser Befund aktuell keine Blutarmut.";
-   s+=" Häufige mögliche Ursachen sind Vitamin-B12- oder Folsäuremangel, regelmäßiger Alkoholkonsum, bestimmte Medikamente, Lebererkrankungen oder seltener Störungen der Blutbildung.";
-   out.push(s);
-   actions.push("Vitamin B12 beziehungsweise Holotranscobalamin und Folsäure bestimmen lassen.");
-   actions.push("Alkoholkonsum, Medikamente und vollständige Leberwerte beim Arzt ansprechen.");
-   actions.push("Großes Blutbild im Verlauf kontrollieren.");
-   questions.push("Kann mein erhöhtes MCV durch Alkohol, Medikamente oder einen Vitaminmangel erklärt werden?");
- }
- const tg=m["Triglyceride"],hdl=m["HDL-Cholesterin"],ldl=m["LDL-Cholesterin"],gl=m["Glucose"];
- if(tg&&+tg.value>+tg.max){
-   let s="• Erhöhte Triglyceride: Der Wert ist oberhalb des Zielbereichs.";
-   if(tg.note&&tg.note.toLowerCase().includes("nüchtern"))s+=" Da die Blutabnahme nüchtern war, ist die Abweichung aussagekräftiger.";
-   s+=" Alkohol, Zucker, Übergewicht, Bewegungsmangel, Diabetes, genetische Faktoren und manche Medikamente können beitragen.";
-   if(hdl&&st(hdl)==="ok")s+=" HDL liegt im eingetragenen Bereich.";
-   if(ldl&&st(ldl)==="ok")s+=" LDL liegt im eingetragenen Bereich, wobei der persönliche Zielwert vom Herz-Kreislauf-Risiko abhängt.";
-   if(gl&&st(gl)==="ok")s+=" Glukose ist unauffällig.";
-   out.push(s);
-   actions.push("Triglyceride nach Alkoholreduktion und angepasster Ernährung nüchtern kontrollieren.");
-   actions.push("Bei Übergewicht, Bluthochdruck oder familiärer Vorbelastung das gesamte Herz-Kreislauf-Risiko berechnen lassen.");
-   questions.push("Welcher LDL- und Non-HDL-Zielwert gilt für mein persönliches Risiko?");
- }
- const kreat=m["Kreatinin"],egfr=m["eGFR"];
- if(kreat&&egfr&&st(kreat)==="ok"&&st(egfr)==="ok")out.push("• Nierenfunktion: Kreatinin und eGFR sind nach den hinterlegten Grenzen unauffällig.");
- const tsh=m["TSH"]; if(tsh&&st(tsh)==="ok")out.push("• Schilddrüse: TSH liegt im Referenzbereich.");
- const ggt=m["Gamma-GT"]; if(ggt&&st(ggt)==="ok")out.push("• Leber/Galle: Gamma-GT ist unauffällig. Ein normaler Einzelwert schließt jedoch nicht jede Leberveränderung aus.");
- const psa=m["PSA gesamt"]; if(psa&&st(psa)==="ok")out.push("• Prostata: PSA liegt im altersbezogenen Laborbereich. Für die Vorsorge ist zusätzlich der Verlauf wichtig.");
- if(!b12Pattern && !(tg&&+tg.value>+tg.max)) out.push("• Keine auffällige Regelkombination erkannt.");
-
- out.push("");
- out.push("BEREICHE");
- Object.entries(systems).forEach(([name,s])=>{
-   const total=s.ok+s.bad,score=Math.round((s.ok/Math.max(1,total))*100);
-   out.push(`• ${name}: ${score} % der aktuell zugeordneten Werte im Referenzbereich (${s.ok}/${total}).`);
- });
-
- out.push("");
- out.push("SINNVOLLE NÄCHSTE SCHRITTE");
- if(actions.length) [...new Set(actions)].forEach(x=>out.push("• "+x));
- else out.push("• Regelmäßige Verlaufskontrolle entsprechend der ärztlichen Empfehlung.");
- out.push("• Referenzbereiche immer aus dem jeweiligen Originalbefund übernehmen.");
- out.push("• Bei neuen Beschwerden nicht auf die App-Bewertung warten, sondern ärztlich abklären.");
-
- out.push("");
- out.push("FRAGEN FÜR DAS ARZTGESPRÄCH");
- if(questions.length)[...new Set(questions)].forEach(x=>out.push("• "+x));
- else out.push("• Welche Werte sollten wann erneut kontrolliert werden?");
-
- const criticalNames=["Kalium","Natrium","Troponin","D-Dimer","CRP","Hämoglobin","Thrombozyten","Glucose"];
- Object.values(m).forEach(v=>{
-   if(st(v)==="danger" && criticalNames.includes(v.name)) urgent.push(`${v.name} ${v.value} ${v.unit}`);
- });
- if(urgent.length){
-   out.push("");
-   out.push("WICHTIG");
-   out.push("Deutlich auffällige oder potenziell kritische Werte erkannt: "+urgent.join(", ")+". Diese Werte sollten zeitnah ärztlich überprüft werden; bei Beschwerden akut medizinische Hilfe suchen.");
- }
-
- return out.join("\n");
-}
-function autoText(){return localEngine()}
-
-
-const SPECIALTY_ASSIGNMENTS={
- eye:{type:"Augenärztlicher Befund",rubric:"Augenheilkunde",specialty:"Augenheilkunde"},
- optician:{type:"Optiker- / Brillenpass",rubric:"Optik / Brille",specialty:"Augenoptik"},
- dental:{type:"Zahnärztlicher Befund",rubric:"Zahnmedizin",specialty:"Zahnmedizin"},
- orthopedic:{type:"Orthopädischer Befund",rubric:"Orthopädie",specialty:"Orthopädie / Unfallchirurgie"},
- neurology:{type:"Neurologischer Befund",rubric:"Neurologie",specialty:"Neurologie"},
- urology:{type:"Urologischer Befund",rubric:"Urologie",specialty:"Urologie"},
- cardiology:{type:"Kardiologischer Befund",rubric:"Kardiologie",specialty:"Kardiologie"},
- radiology:{type:"Bildgebender Befund",rubric:"Radiologie",specialty:"Radiologie"},
- ent:{type:"HNO-Befund",rubric:"HNO",specialty:"Hals-Nasen-Ohrenheilkunde"},
- dermatology:{type:"Hautärztlicher Befund",rubric:"Dermatologie",specialty:"Dermatologie"},
- general:{type:"Arztbrief",rubric:"Arztbrief",specialty:"Allgemeinmedizin"}
-};
-function isSpecialistDocument(d){
- const generic=/^(Allgemeinmedizin|Innere Medizin \/ Labormedizin|Krankenhaus \/ Fachabteilung)$/i.test(d.specialty||"");
- const specialistRubrics=["Augenheilkunde","Optik / Brille","Zahnmedizin","HNO","Dermatologie","Radiologie","Kardiologie","Neurologie","Orthopädie","Urologie","Gastroenterologie","Endokrinologie","Pneumologie","Rheumatologie","Psychische Gesundheit"];
- return specialistRubrics.includes(d.rubric)||(!generic&&d.specialty&&d.rubric!=="Labor"&&d.rubric!=="Sonstige");
-}
-function reanalyseOneDocument(d,forceClassify=false){
- const text=d.text||"",guess=classifyDocument(text,d.name||"");
- if(forceClassify||!d.specialty||d.rubric==="Sonstige"||d.specialty==="Allgemeinmedizin"){
-  d.type=guess.type;d.rubric=guess.rubric;d.specialty=guess.specialty;
- }
- d.specialtyData=extractSpecialtyData(text,{type:d.type,rubric:d.rubric,specialty:d.specialty});
- d.specialtyReanalysedAt=new Date().toISOString();
- return hasSpecialtyData(d.specialtyData)||isSpecialistDocument(d);
-}
-function backfillSpecialtyData(showMessage=false){
- let updated=0,visible=0;
- documents.forEach(d=>{
-  const before=JSON.stringify(d.specialtyData||null);
-  const appears=reanalyseOneDocument(d,false);
-  if(before!==JSON.stringify(d.specialtyData||null))updated++;
-  if(appears)visible++;
- });
- save();
- if(showMessage)showToast(`${documents.length} Befunde geprüft. ${visible} Fachbefunde werden angezeigt; ${updated} Datensätze wurden ergänzt.`,"success",7000);
- const status=document.getElementById("specialtyMigrationStatus");
- if(status)status.textContent=`Zuletzt geprüft: ${new Date().toLocaleString("de-DE")} · ${visible} Fachbefunde gefunden.`;
- return {updated,visible};
-}
-function assignDocumentSpecialty(id,key){
- const d=documents.find(x=>x.id===id),cfg=SPECIALTY_ASSIGNMENTS[key];if(!d||!cfg)return;
- Object.assign(d,cfg);d.specialtyData=extractSpecialtyData(d.text||"",cfg);d.manualSpecialty=true;
- save();renderSpecialtyOverview();renderDocuments();showToast(`Befund wurde ${cfg.specialty} zugeordnet.`,"success");
-}
-function specialtyAssignSelect(id){
- return `<div class="row"><select id="assign-${id}">
- <option value="">Fachgebiet auswählen …</option>
- <option value="eye">Augenärztin / Augenarzt</option><option value="optician">Optiker / Brille</option>
- <option value="dental">Zahnarzt</option><option value="orthopedic">Orthopädie</option>
- <option value="neurology">Neurologie</option><option value="urology">Urologie</option>
- <option value="cardiology">Kardiologie</option><option value="radiology">Radiologie</option>
- <option value="ent">HNO</option><option value="dermatology">Dermatologie</option><option value="general">Allgemeiner Arztbrief</option>
- </select><button class="secondary" onclick="assignDocumentSpecialty('${id}',document.getElementById('assign-${id}').value)">Zuordnen</button></div>`;
-}
-function renderSpecialtyOverview(){
- const box=document.getElementById("specialtyOverview"),filter=document.getElementById("specialtyFilter"),search=document.getElementById("specialtySearch");
- if(!box||!filter)return;
- const q=(search?.value||"").toLowerCase();
- const docs=documents.filter(d=>hasSpecialtyData(d.specialtyData)||isSpecialistDocument(d));
- const specs=[...new Set(docs.map(d=>d.specialty).filter(Boolean))].sort(),cur=filter.value||"all";
- filter.innerHTML='<option value="all">Alle Fachgebiete</option>'+specs.map(x=>`<option>${esc(x)}</option>`).join("");
- if(specs.includes(cur))filter.value=cur;
- const arr=docs.filter(d=>(filter.value==="all"||d.specialty===filter.value)&&(`${d.name} ${d.specialty} ${d.rubric} ${d.text} ${JSON.stringify(d.specialtyData)}`).toLowerCase().includes(q)).sort((a,b)=>(b.date||"").localeCompare(a.date||""));
- box.innerHTML=arr.map(d=>`<div class="card"><div class="head"><div><div class="name">${esc(d.name)}</div><div class="small">${fd(d.date)} · ${esc(d.specialty||"Noch nicht zugeordnet")}</div></div><span class="badge info">${esc(d.rubric||"Befund")}</span></div>${specialistHtml(d.specialtyData)}${!hasSpecialtyData(d.specialtyData)?`<div class="notice">Der Befund ist dem Fachgebiet zugeordnet, aber einzelne Werte konnten noch nicht sicher ausgelesen werden. Das Original und die Textauswertung bleiben vorhanden.</div>`:""}${specialtyAssignSelect(d.id)}<div class="sharebar"><button class="secondary mini" onclick="shareDocument('${d.id}','analysis')">Auswertung teilen</button><button class="secondary mini" onclick="printDocument('${d.id}')">Drucken</button><button class="secondary mini" onclick="showPage('import')">Original öffnen</button></div></div>`).join("")||"<div class='card'><p class='small'>Noch keine Fachbefunde erkannt. Tippe auf „Alle Befunde neu auswerten“ oder ordne einen Befund manuell zu.</p></div>";
-}
-function renderUnassignedDocuments(show=true){
- const box=document.getElementById("unassignedOverview");if(!box)return;
- if(!show){box.innerHTML="";return}
- const arr=documents.filter(d=>!isSpecialistDocument(d)&&!hasSpecialtyData(d.specialtyData)).sort((a,b)=>(b.date||"").localeCompare(a.date||""));
- box.innerHTML=`<div class="card"><h2>Nicht zugeordnete Befunde</h2><p class="small">Hier kannst du einen importierten Bericht nachträglich einem Fachgebiet zuordnen.</p>${arr.map(d=>`<div class="item"><b>${esc(d.name)}</b><div class="small">${fd(d.date)} · bisher: ${esc(d.rubric||"Sonstige")} / ${esc(d.specialty||"ohne Fachgebiet")}</div>${specialtyAssignSelect(d.id)}</div>`).join("")||"<p>Alle Befunde sind bereits zugeordnet.</p>"}</div>`;
-}
-
-function render(){
- const l=latest(),bad=l.filter(v=>st(v)!=="ok");
- mCount.textContent=values.length;mOk.textContent=l.filter(v=>st(v)==="ok").length;mBad.textContent=bad.length;mFiles.textContent=documents.length;
- alerts.innerHTML=bad.length?bad.map(card).join(""):"<div class='success'>Keine aktuelle Überschreitung der eingetragenen Referenzbereiche.</div>";
- autoSummary.textContent=autoText();renderValues();renderFiles();renderDocuments();renderTrendOptions();renderDocCompareOptions();renderAkte();renderSpecialtyOverview();renderJournal();
-}
-function renderValues(){let q=search.value.toLowerCase(),f=filter.value;let arr=[...values].sort((a,b)=>b.date.localeCompare(a.date));arr=arr.filter(v=>(v.name+" "+v.category).toLowerCase().includes(q));arr=arr.filter(v=>f==="all"||(f==="bad"&&st(v)!=="ok")||(f==="ok"&&st(v)==="ok"));valueList.innerHTML=arr.map(card).join("")||"<div class='card'>Keine Werte gefunden.</div>"}
-search.oninput=renderValues;filter.onchange=renderValues;
-vDate.value=new Date().toISOString().slice(0,10);vCat.innerHTML=cats.map(x=>`<option>${x}</option>`).join("");names.innerHTML=Object.keys(defs).map(x=>`<option>${x}</option>`).join("");
-vName.onchange=()=>{let d=defs[vName.value];if(d){vUnit.value=d.u;vMin.value=d.min;vMax.value=d.max;vCat.value=d.c}}
-valueForm.onsubmit=e=>{e.preventDefault();values.push({id:uid(),name:vName.value.trim(),value:+vValue.value,unit:vUnit.value.trim(),min:vMin.value===""?"":+vMin.value,max:vMax.value===""?"":+vMax.value,date:vDate.value,category:vCat.value,note:vNote.value.trim()});save();e.target.reset();vDate.value=new Date().toISOString().slice(0,10);render();showToast("Laborwert wurde gespeichert.","ok")};
-const APP_VERSION="2.1.1";let deferredInstallPrompt=null;
-function completePayload(){return{app:"Gesundheitsakte Pro",version:APP_VERSION,exportedAt:new Date().toISOString(),values,files,documents,diagnoses,meds,symptoms,vitals,vaccinations,allergies,operations}}
-function getBackups(){try{return JSON.parse(localStorage.getItem("lk_backup_versions")||"[]")}catch(e){showToast("Sicherungsliste konnte nicht gelesen werden.","error");return[]}}
-function storageEstimate(){let n=0;for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);n+=(k.length+(localStorage.getItem(k)||"").length)*2}return n}
-function createAutoBackup(reason="Manuell"){
- const data=completePayload(),signature=JSON.stringify(data),arr=getBackups();if(arr[0]&&arr[0].signature===signature){renderBackupVersions();return arr[0]}
- const item={id:Date.now().toString(36),created:new Date().toISOString(),reason,version:APP_VERSION,signature,data};arr.unshift(item);
- let limit=Math.max(3,parseInt(localStorage.getItem("lk_backup_limit")||"10",10));let saved=false;
- while(limit>=1){try{localStorage.setItem("lk_backup_versions",JSON.stringify(arr.slice(0,limit)));saved=true;break}catch(e){limit=Math.floor(limit/2)}}
- if(!saved){try{localStorage.removeItem("lk_backup_versions");localStorage.setItem("lk_backup_versions",JSON.stringify([item]));saved=true}catch(e){throw new Error("Der Gerätespeicher ist voll. Bitte eine Sicherung herunterladen und alte lokale Sicherungen löschen.")}}
- renderBackupVersions();return item
-}
-function backupFilename(x){return `Gesundheitsakte_Backup_${new Date(x.created).toISOString().replace(/[:.]/g,"-")}_v${x.version}.json`}
-function downloadObject(o,name){
- const json=JSON.stringify(o,null,2),b=new Blob([json],{type:"application/json;charset=utf-8"}),url=URL.createObjectURL(b),a=document.createElement("a");
- a.href=url;a.download=name;a.style.display="none";document.body.appendChild(a);a.click();
- setTimeout(()=>{a.remove();URL.revokeObjectURL(url)},2000);
- if(window.preUpdateStatus){preUpdateStatus.style.display="block";preUpdateStatus.textContent=`Lokale Sicherung erstellt: ${name}`}
- showToast("Lokale Sicherungsdatei wurde erstellt. Bitte im Download-Ordner prüfen.","ok",5000);return name
-}
-async function shareBackup(x){
- const name=backupFilename(x),f=new File([JSON.stringify(x.data,null,2)],name,{type:"application/json"});
- if(navigator.share&&(!navigator.canShare||navigator.canShare({files:[f]}))){
-   await navigator.share({title:"Gesundheitsakte Sicherung",text:"Bitte OneDrive oder eine andere Cloud-App als Ziel auswählen.",files:[f]});
-   if(window.preUpdateStatus){preUpdateStatus.style.display="block";preUpdateStatus.textContent=`Cloud-Teilen geöffnet: ${name}`}
-   showToast("Teilen wurde geöffnet. Bitte OneDrive als Ziel auswählen und dort speichern.","ok",6000);return
- }
- downloadObject(x.data,name);showToast("Direktes Teilen wird von diesem Browser nicht unterstützt. Die Datei wurde stattdessen lokal heruntergeladen.","info",6000)
-}
-function restoreBackup(id){const x=getBackups().find(v=>v.id===id);if(!x||!confirm("Diese Sicherung wiederherstellen? Aktuelle Daten werden ersetzt.")){showToast("Wiederherstellung abgebrochen.","info");return}const d=x.data;values=d.values||[];files=d.files||[];documents=d.documents||[];diagnoses=d.diagnoses||[];meds=d.meds||[];symptoms=d.symptoms||[];vitals=d.vitals||[];vaccinations=d.vaccinations||[];allergies=d.allergies||[];operations=d.operations||[];localStorage.setItem("lk_values",JSON.stringify(values));localStorage.setItem("lk_files",JSON.stringify(files));localStorage.setItem("lk_documents",JSON.stringify(documents));localStorage.setItem("lk_diag",JSON.stringify(diagnoses));localStorage.setItem("lk_meds",JSON.stringify(meds));localStorage.setItem("lk_sym",JSON.stringify(symptoms));localStorage.setItem("lk_vitals",JSON.stringify(vitals));localStorage.setItem("lk_vaccinations",JSON.stringify(vaccinations));localStorage.setItem("lk_allergies",JSON.stringify(allergies));localStorage.setItem("lk_operations",JSON.stringify(operations));render();showToast("Sicherung wurde wiederhergestellt.","ok")}
-function deleteBackup(id){if(confirm("Sicherung löschen?")){localStorage.setItem("lk_backup_versions",JSON.stringify(getBackups().filter(x=>x.id!==id)));renderBackupVersions();showToast("Lokale Sicherung wurde gelöscht.","ok")}else showToast("Löschen abgebrochen.","info")}
-function renderBackupVersions(){if(!window.backupVersions)return;const a=getBackups();backupVersions.innerHTML=a.length?a.map(x=>`<div class="backupRow"><div><b>${new Date(x.created).toLocaleString("de-DE")}</b><div class="small">${x.reason} · Version ${x.version}</div></div><div><button class="secondary mini" onclick="restoreBackup('${x.id}')">Wiederherstellen</button><button class="dangerBtn mini" onclick="deleteBackup('${x.id}')">Löschen</button></div></div>`).join(""):"<p class='small'>Noch keine Sicherungen vorhanden.</p>";if(window.backupStatus)backupStatus.textContent=`${a.length} lokale Sicherung(en) · ungefähr ${(storageEstimate()/1024/1024).toFixed(1)} MB lokaler Speicher belegt.`}
-window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferredInstallPrompt=e;if(window.installHint)installHint.textContent="Die App kann jetzt installiert werden."});
-window.addEventListener("appinstalled",()=>{if(window.installHint)installHint.textContent="Gesundheitsakte Pro wurde installiert.";deferredInstallPrompt=null});
-document.addEventListener("DOMContentLoaded",()=>{if("serviceWorker" in navigator){
- navigator.serviceWorker.register("./service-worker.js?v=2.1.1",{updateViaCache:"none"})
-  .then(async reg=>{await reg.update();console.log("Gesundheitsakte Service Worker 2.1.1 aktiv")})
-  .catch(console.warn);
-}if(window.autoBackupSelect){autoBackupSelect.value=localStorage.getItem("lk_auto_backup")||"on";autoBackupSelect.onchange=()=>localStorage.setItem("lk_auto_backup",autoBackupSelect.value)}if(window.backupLimit){backupLimit.value=localStorage.getItem("lk_backup_limit")||"30";backupLimit.onchange=()=>localStorage.setItem("lk_backup_limit",backupLimit.value)}if(window.installBtn)installBtn.onclick=async()=>{if(deferredInstallPrompt){deferredInstallPrompt.prompt();await deferredInstallPrompt.userChoice;deferredInstallPrompt=null}else alert("Chrome-Menü öffnen und ‘App installieren’ wählen.")};if(window.backupNowBtn)backupNowBtn.onclick=()=>{try{const x=createAutoBackup("Manuell");showToast(`Sicherung angelegt: ${new Date(x.created).toLocaleTimeString("de-DE")}.`,"ok")}catch(e){showToast(e.message,"error",5000)}};if(window.downloadLatestBtn)downloadLatestBtn.onclick=()=>{setButtonBusy(downloadLatestBtn,true,"Sicherung wird erstellt");try{const x=createAutoBackup("Vor Update – lokal");downloadObject(x.data,backupFilename(x))}catch(e){showToast("Lokale Sicherung fehlgeschlagen: "+e.message,"error",7000)}finally{setButtonBusy(downloadLatestBtn,false)}};if(window.shareBackupBtn)shareBackupBtn.onclick=async()=>{setButtonBusy(shareBackupBtn,true,"OneDrive wird vorbereitet");try{const x=createAutoBackup("Vor Update – OneDrive");await shareBackup(x)}catch(e){if(e.name!=="AbortError")showToast("Cloud-Sicherung fehlgeschlagen: "+e.message,"error",7000);else showToast("Teilen wurde abgebrochen. Es wurde nichts in OneDrive gespeichert.","info",5000)}finally{setButtonBusy(shareBackupBtn,false)}};
-if(window.importBackup)importBackup.onchange=async e=>{const f=e.target.files?.[0];if(!f)return;try{const d=JSON.parse(await f.text());if(!d||!Array.isArray(d.values)||!confirm(`Sicherung aus Version ${d.version||"unbekannt"} vom ${d.exportedAt?new Date(d.exportedAt).toLocaleString("de-DE"):"unbekannten Datum"} wiederherstellen?`)){showToast("Wiederherstellung abgebrochen.","info");return}values=d.values||[];files=d.files||[];documents=d.documents||[];diagnoses=d.diagnoses||[];meds=d.meds||[];symptoms=d.symptoms||[];vitals=d.vitals||[];vaccinations=d.vaccinations||[];allergies=d.allergies||[];operations=d.operations||[];localStorage.setItem("lk_values",JSON.stringify(values));localStorage.setItem("lk_files",JSON.stringify(files));localStorage.setItem("lk_documents",JSON.stringify(documents));localStorage.setItem("lk_diag",JSON.stringify(diagnoses));localStorage.setItem("lk_meds",JSON.stringify(meds));localStorage.setItem("lk_sym",JSON.stringify(symptoms));localStorage.setItem("lk_vitals",JSON.stringify(vitals));localStorage.setItem("lk_vaccinations",JSON.stringify(vaccinations));localStorage.setItem("lk_allergies",JSON.stringify(allergies));localStorage.setItem("lk_operations",JSON.stringify(operations));createAutoBackup("Nach Wiederherstellung");render();showToast("Sicherung vollständig wiederhergestellt.","ok",7000)}catch(err){showToast("Sicherungsdatei konnte nicht eingelesen werden: "+err.message,"error",8000)}finally{e.target.value=""}};
-renderBackupVersions();if(!getBackups().length)createAutoBackup("Erstsicherung")});
-
-render();showPage("werte");
-
-
-const docRubrics=["Labor","Augenheilkunde","Optik / Brille","Zahnmedizin","HNO","Dermatologie","Radiologie","Kardiologie","Neurologie","Orthopädie","Urologie","Gastroenterologie","Endokrinologie","Pneumologie","Rheumatologie","Psychische Gesundheit","Allgemeinmedizin","Medikamentenplan","Arztbrief","Krankenhaus","Sonstige"];
-function classifyDocument(text,name=""){
- const s=(name+" "+text).toLowerCase();
- let type="Befund",rubric="Sonstige",specialty="Allgemeinmedizin";
- const rules=[
-  [["labor","blutbild","serum","plasma","hämoglobin","leukozyten"],["Laborbefund","Labor","Innere Medizin / Labormedizin"]],
-  [["fielmann","optiker","gläserstärken","glasstärken","glasspezifikation","fassung","sphäre","zylinder","addition","pupillendist"],["Optiker- / Brillenpass","Optik / Brille","Augenoptik"]],
-  [["augenarzt","ophthalm","visus","fundus","makula","glaukom","netzhaut","linse","intraokular","augeninnendruck"],["Augenärztlicher Befund","Augenheilkunde","Augenheilkunde"]],
-  [["hno","audiogramm","hörtest","tinnitus","innenohr"],["HNO-Befund","HNO","Hals-Nasen-Ohrenheilkunde"]],
-  [["haut","dermatolog","melanom","ekzem"],["Hautärztlicher Befund","Dermatologie","Dermatologie"]],
-  [["zahnarzt","zahn","kiefer","parodont"],["Zahnärztlicher Befund","Zahnmedizin","Zahnmedizin / Kieferheilkunde"]],
-  [["mrt","magnetresonanz","kernspin","ct ","computertomographie","röntgen","roentgen","sonographie","ultraschall"],["Bildgebender Befund","Radiologie","Radiologie"]],
-  [["ekg","echokardi","kardiolog","herzkatheter"],["Kardiologischer Befund","Kardiologie","Kardiologie"]],
-  [["neurolog","hirn","schwindel","vestib","polyneuropath","epilep"],["Neurologischer Befund","Neurologie","Neurologie"]],
-  [["orthop","schulter","knie","wirbelsäule","gelenk","meniskus","bandscheibe"],["Orthopädischer Befund","Orthopädie","Orthopädie / Unfallchirurgie"]],
-  [["prostata","psa","urolog","blase","niere","hoden"],["Urologischer Befund","Urologie","Urologie"]],
-  [["magen","darm","koloskop","gastroskop","leber","galle"],["Gastroenterologischer Befund","Gastroenterologie","Gastroenterologie"]],
-  [["schilddrüse","tsh","hormon","diabetes","endokrin"],["Endokrinologischer Befund","Endokrinologie","Endokrinologie / Diabetologie"]],
-  [["lunge","pneumolog","spirometr","asthma","copd"],["Lungenfachärztlicher Befund","Pneumologie","Pneumologie"]],
-  [["rheuma","rheumatolog"],["Rheumatologischer Befund","Rheumatologie","Rheumatologie"]],
-  [["psych","psychiatr","depression","angststörung"],["Psychiatrischer / psychologischer Befund","Psychische Gesundheit","Psychiatrie / Psychotherapie"]],
-  [["medikamentenplan","medikationsplan"],["Medikamentenplan","Medikamentenplan","Allgemeinmedizin"]],
-  [["entlass","arztbrief","epikrise"],["Arztbrief","Arztbrief","Allgemeinmedizin"]],
-  [["krankenhaus","stationär","aufnahme"],["Krankenhausbericht","Krankenhaus","Krankenhaus / Fachabteilung"]]
- ];
- for(const [keys,res] of rules){if(keys.some(k=>s.includes(k))){[type,rubric,specialty]=res;break}}
- return {type,rubric,specialty};
-}
-function detectDate(text,name=""){
- const s=name+" "+text;
- const pats=[/(\d{2})[.\-/](\d{2})[.\-/](20\d{2})/,/(20\d{2})[.\-/](\d{2})[.\-/](\d{2})/];
- let m=s.match(pats[0]);if(m)return `${m[3]}-${m[2]}-${m[1]}`;
- m=s.match(pats[1]);if(m)return `${m[1]}-${m[2]}-${m[3]}`;
- return new Date().toISOString().slice(0,10);
-}
-function extractLabValues(text,date){
- const found=[], normalized=text.replace(/,/g,".");
- for(const [name,d] of Object.entries(defs)){
-   const safe=name.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");
-   const variants=[safe,safe.replace("Gamma\\-GT","(?:Gamma\\-GT|GGT|γ\\-GT)"),safe.replace("eGFR","(?:eGFR|GFR)")];
-   let m;
-   for(const v of variants){
-     const re=new RegExp(v+"[^0-9]{0,22}([0-9]+(?:\\.[0-9]+)?)","i");
-     m=normalized.match(re);if(m)break;
-   }
-   if(m)found.push({id:uid(),name,value:+m[1],unit:d.u,min:d.min,max:d.max,date,category:d.c,note:"Automatisch aus Befund erkannt – bitte Original prüfen"});
- }
- return found;
-}
-
-function nnum(x){if(x==null)return null;const s=String(x).replace(",",".").replace(/[^\d+\-.]/g,"");const n=parseFloat(s);return Number.isFinite(n)?n:null}
-function uniq(a){return [...new Set((a||[]).filter(Boolean))]}
-function extractEyeData(text){
- const raw=text.replace(/\r/g,"\n"),flat=raw.replace(/[|;]/g," ").replace(/\s+/g," ");
- const out={kind:"eye",right:{},left:{},general:{},aid:{},costs:{},notes:[]};
- const labels={sphere:["sphäre","sphaere","sph"],cylinder:["zylinder","cyl"],axis:["achse","axis","a"],addition:["addition","add"],pd:["pupillendist","pd"],visus:["visus","sehschärfe","sehstaerke"],iop:["augeninnendruck","tensio","iop"]};
- function lineFor(side){const rx=new RegExp(side+"[^\\n]{0,180}","i");return raw.match(rx)?.[0]||""}
- function parseSide(line,target){
-   const nums=(line.match(/[+\-]?\d+(?:[.,]\d+)?/g)||[]).map(nnum);
-   // Häufige Optiker-Reihenfolge: Sphäre, Zylinder, Achse, Addition, PD, Visus
-   if(nums.length>=6){target.sphere=nums[0];target.cylinder=nums[1];target.axis=nums[2];target.addition=nums[3];target.pd=nums[4];target.visus=nums[5]}
-   for(const [key,words] of Object.entries(labels)){
-     for(const w of words){const m=line.match(new RegExp(w+"[^+\\-0-9]{0,15}([+\\-]?\\d+(?:[.,]\\d+)?)","i"));if(m){target[key]=nnum(m[1]);break}}
-   }
- }
- parseSide(lineFor("rechts"),out.right);parseSide(lineFor("links"),out.left);
- // Tabellen-OCR ohne saubere Zeilen: nach Rechts/Links suchen
- for(const [word,target] of [["rechts",out.right],["links",out.left]]){
-   const m=flat.match(new RegExp(word+"\\s+(?:G\\s+)?([+\\-]?\\d+(?:[.,]\\d+)?)\\s+([+\\-]?\\d+(?:[.,]\\d+)?)\\s+(\\d{1,3})\\s+(?:\\S+\\s+){0,3}?([+\\-]?\\d+(?:[.,]\\d+)?)\\s+([+\\-]?\\d+(?:[.,]\\d+)?)\\s+([+\\-]?\\d+(?:[.,]\\d+)?)","i"));
-   if(m){target.sphere=nnum(m[1]);target.cylinder=nnum(m[2]);target.axis=nnum(m[3]);target.addition=nnum(m[4]);target.pd=nnum(m[5]);target.visus=nnum(m[6])}
- }
- const iopMatches=[...flat.matchAll(/(?:iop|tensio|augeninnendruck)[^0-9]{0,15}(\d{1,2}(?:[.,]\d+)?)/gi)].map(m=>nnum(m[1]));
- if(iopMatches.length){out.general.iopRight=iopMatches[0];if(iopMatches[1]!=null)out.general.iopLeft=iopMatches[1]}
- 
- const frame=flat.match(/fassungsdaten\s+([^\n]{3,100})/i)||flat.match(/(?:fassung|modell)\s*[:\-]?\s*([^.;]{3,100})/i);if(frame)out.aid.frame=frame[1].trim();
- const total=flat.match(/(?:endbetrag\s*total|zwischensumme|gesamtbetrag)[^0-9]{0,20}(\d{1,5}[.,]\d{2})/i);if(total)out.costs.total=nnum(total[1]);
- const rglass=flat.match(/r-glas[^0-9]{0,15}(\d{1,5}[.,]\d{2})/i);if(rglass)out.costs.rightLens=nnum(rglass[1]);
- const lglass=flat.match(/l-glas[^0-9]{0,15}(\d{1,5}[.,]\d{2})/i);if(lglass)out.costs.leftLens=nnum(lglass[1]);
- const fcost=flat.match(/fassung[^0-9]{0,30}(\d{1,5}[.,]\d{2})/i);if(fcost)out.costs.frame=nnum(fcost[1]);
- const diagnoses=uniq((flat.match(/glaukom|katarakt|makuladegeneration|netzhaut(?:ablösung|veränderung)?|amblyopie|myopie|hyperopie|astigmatismus|presbyopie/gi)||[]));
- if(diagnoses.length)out.general.detectedTerms=diagnoses;
- return out;
-}
-function extractDentalData(text){
- const flat=text.replace(/\s+/g," ");
- const teeth=uniq((flat.match(/\b(?:1[1-8]|2[1-8]|3[1-8]|4[1-8])\b/g)||[])).sort();
- const findings=uniq((flat.match(/karies|parodontitis|gingivitis|wurzelentzündung|apikale aufhellung|zahnstein|lockerungsgrad|taschentiefe|implantat|krone|brücke|prothese|füllung|extraktion|wurzelbehandlung/gi)||[]));
- const codes=uniq((flat.match(/\b(?:BEMA|GOZ)\s*[-:]?\s*\d+[a-z]?\b/gi)||[]));
- const costs=[...flat.matchAll(/(?:gesamt|endbetrag|kosten|eigenanteil|zuzahlung)[^0-9]{0,20}(\d{1,5}[.,]\d{2})\s*(?:€|eur)?/gi)].map(m=>nnum(m[1]));
- return {kind:"dental",teeth,findings,codes,costs};
-}
-function extractGenericMedicalData(text){
- const flat=text.replace(/\s+/g," ");
- const icd=uniq((flat.match(/\b[A-TV-Z]\d{2}(?:\.\d{1,2})?[GVARLBS]?\b/g)||[]));
- const meds=uniq([...flat.matchAll(/(?:medikation|medikamente?|verordnung)\s*[:\-]?\s*([^.;\n]{3,120})/gi)].map(m=>m[1].trim()));
- const procedures=uniq((flat.match(/mrt|ct|röntgen|sonographie|ultraschall|ekg|eeg|endoskopie|koloskopie|gastroskopie|biopsie|operation|infiltration/gi)||[]));
- return {kind:"medical",icd,medications:meds,procedures};
-}
-function extractSpecialtyData(text,cls){
- if(cls.rubric==="Augenheilkunde"||cls.rubric==="Optik / Brille"||cls.specialty==="Augenoptik")return extractEyeData(text);
- if(cls.rubric==="Zahnmedizin")return extractDentalData(text);
- return extractGenericMedicalData(text);
-}
-function hasSpecialtyData(s){
- if(!s)return false;
- if(s.kind==="eye")return Object.keys(s.right||{}).length+Object.keys(s.left||{}).length+Object.keys(s.general||{}).length+Object.keys(s.aid||{}).length+Object.keys(s.costs||{}).length>0;
- if(s.kind==="dental")return (s.teeth?.length||0)+(s.findings?.length||0)+(s.codes?.length||0)+(s.costs?.length||0)>0;
- return (s.icd?.length||0)+(s.medications?.length||0)+(s.procedures?.length||0)>0;
-}
-function valLabel(k){return({sphere:"Sphäre",cylinder:"Zylinder",axis:"Achse",addition:"Addition",pd:"Pupillendistanz",visus:"Visus",iopRight:"Augeninnendruck rechts",iopLeft:"Augeninnendruck links"}[k]||k)}
-function specialistHtml(s){
- if(!hasSpecialtyData(s))return "<p class='small'>Keine sicher strukturierten Fachwerte erkannt. Der Originaltext bleibt gespeichert.</p>";
- if(s.kind==="eye"){
-   const eye=(title,o)=>`<div class="specialistCard eyeSide"><h3>${title}</h3>${Object.entries(o||{}).map(([k,v])=>`<div class="kv"><span>${valLabel(k)}</span><b>${v}${k==="axis"?"°":""}</b></div>`).join("")||"<span class='small'>Keine Werte sicher erkannt</span>"}</div>`;
-   return `<div class="specialistGrid">${eye("Rechtes Auge",s.right)}${eye("Linkes Auge",s.left)}${Object.keys(s.general||{}).length?`<div class="specialistCard"><h3>Weitere Augenbefunde</h3>${Object.entries(s.general).map(([k,v])=>`<div class="kv"><span>${valLabel(k)}</span><b>${Array.isArray(v)?v.join(", "):v}</b></div>`).join("")}</div>`:""}${Object.keys(s.aid||{}).length?`<div class="specialistCard"><h3>Hilfsmittel / Brille</h3>${Object.entries(s.aid).map(([k,v])=>`<div class="kv"><span>${k==="frame"?"Fassung":k}</span><b>${v}</b></div>`).join("")}</div>`:""}${Object.keys(s.costs||{}).length?`<div class="specialistCard"><h3>Gesundheitskosten</h3>${Object.entries(s.costs).map(([k,v])=>`<div class="kv"><span>${({total:"Gesamt",rightLens:"Rechtes Glas",leftLens:"Linkes Glas",frame:"Fassung"}[k]||k)}</span><b>${Number(v).toFixed(2)} €</b></div>`).join("")}</div>`:""}</div>`;
- }
- if(s.kind==="dental")return `<div class="specialistGrid"><div class="specialistCard"><h3>Betroffene Zähne</h3><p>${s.teeth?.join(", ")||"Keine Zahnnummer sicher erkannt"}</p></div><div class="specialistCard"><h3>Erkannte Begriffe</h3><p>${s.findings?.join(", ")||"Keine eindeutigen Begriffe"}</p></div>${s.codes?.length?`<div class="specialistCard"><h3>Abrechnungscodes</h3><p>${s.codes.join(", ")}</p></div>`:""}${s.costs?.length?`<div class="specialistCard"><h3>Kostenangaben</h3><p>${s.costs.map(x=>x.toFixed(2)+" €").join(", ")}</p></div>`:""}</div>`;
- return `<div class="specialistGrid">${s.icd?.length?`<div class="specialistCard"><h3>ICD-Codes</h3><p>${s.icd.join(", ")}</p></div>`:""}${s.medications?.length?`<div class="specialistCard"><h3>Medikationen</h3><p>${s.medications.join("<br>")}</p></div>`:""}${s.procedures?.length?`<div class="specialistCard"><h3>Untersuchungen / Verfahren</h3><p>${s.procedures.join(", ")}</p></div>`:""}</div>`;
-}
-
-function extractKeyStatements(text){
- const lines=text.split(/\n+/).map(x=>x.trim()).filter(x=>x.length>18);
- const keys=["beurteilung","zusammenfassung","diagnose","befund","empfehlung","therapie","kein hinweis","unauffällig","auffällig","kontrolle"];
- let picked=lines.filter(l=>keys.some(k=>l.toLowerCase().includes(k))).slice(0,8);
- if(!picked.length)picked=lines.slice(0,5);
- return picked;
-}
-function documentAnalysis(doc,level="simple"){
- const original=doc.text||"",text=original.toLowerCase();
- const s={summary:[],diagnoses:[],findings:[],symptoms:[],causes:[],variants:[],recommendations:[],alternatives:[],advantages:[],disadvantages:[],risks:[],countermeasures:[],warnings:[],questions:[],addresses:[]};
- s.summary.push(`${doc.type} vom ${fd(doc.date)} · Fachgebiet: ${doc.specialty}.`);
- if(doc.labValues?.length)s.summary.push(`${doc.labValues.length} Laborwerte wurden erkannt.`);
- if(hasSpecialtyData(doc.specialtyData))s.summary.push("Strukturierte Fachwerte wurden erkannt und mit dem Originaldokument verknüpft.");
- (doc.keyStatements||[]).slice(0,8).forEach(x=>s.findings.push(x));
- const diagRx=[/diagnose[n]?\s*[:\-]\s*([^\n.;]{4,120})/gi,/(arthrose|bandscheibenvorfall|stenose|entzündung|glaukom|katarakt|tinnitus|diabetes|hypertonie|prostatahyperplasie|polyneuropathie|astigmatismus|hyperopie|myopie|presbyopie|parodontitis|karies)/gi];
- diagRx.forEach(rx=>{let m;while((m=rx.exec(original))&&s.diagnoses.length<10)s.diagnoses.push(m[1]||m[0])});
- s.recommendations.push(...original.split(/\n+/).filter(x=>/(empfehl|kontrolle|wiedervorstellung|therapie|sollte|weiterführ|verordnung)/i.test(x)).slice(0,8));
- if(!s.recommendations.length)s.recommendations.push("Befund, Beschwerden und bisherigen Verlauf mit der behandelnden Praxis besprechen.");
- const specialty=(doc.specialty||"").toLowerCase();
- if(/auge|optik/.test(specialty)){
-   s.symptoms.push("Mögliche Beschwerden können unscharfes Sehen, Kopfschmerzen, rasche Ermüdung der Augen, Blendempfindlichkeit oder Schwierigkeiten beim Lesen sein.");
-   s.causes.push("Sehwerte können sich durch Fehlsichtigkeit, Alterung der Linse, Hornhautveränderungen, Netzhaut- oder Sehnervenerkrankungen verändern.");
-   s.variants.push("Mögliche Korrekturen sind Brille, Kontaktlinsen oder – je nach Befund – augenärztliche Behandlung.");
-   s.questions.push("Warum ist der Visus zwischen rechtem und linkem Auge unterschiedlich?","Sollten Augeninnendruck, Linse, Netzhaut und Sehnerv kontrolliert werden?","Wann ist die nächste Verlaufskontrolle sinnvoll?");
- }else if(/zahn/.test(specialty)){
-   s.symptoms.push("Mögliche Beschwerden sind Schmerzen, Temperaturempfindlichkeit, Zahnfleischbluten, Schwellung oder Probleme beim Kauen.");
-   s.causes.push("Je nach Befund kommen Karies, Entzündungen, Parodontitis, mechanische Belastung oder Veränderungen an Zahnersatz infrage.");
-   s.questions.push("Welche Behandlung ist medizinisch notwendig und welche ist optional?","Welche Alternativen gibt es und wie unterscheiden sich Haltbarkeit und Kosten?","Welche Folgen hätte Abwarten?");
- }else{
-   s.symptoms.push("Passende Beschwerden hängen vom betroffenen Organ und vom konkreten Befund ab. Entscheidend sind Beginn, Dauer, Stärke und Begleitsymptome.");
-   s.causes.push("Ein einzelner Befund kann verschiedene Ursachen haben. Vorgeschichte, Untersuchung und Verlauf sind für die Einordnung wichtig.");
-   s.questions.push("Welche Bedeutung haben die wichtigsten Befunde für meine Beschwerden?","Welche Kontrolle ist wann sinnvoll?","Welche Warnzeichen erfordern eine frühere Vorstellung?");
- }
- s.alternatives.push("Je nach Situation kommen Beobachtung, konservative Behandlung, weitere Diagnostik, Medikamentenanpassung, Hilfsmittel oder fachärztliche Mitbeurteilung infrage.");
- s.advantages.push("Vorteile einer gezielten Abklärung können frühzeitige Behandlung, Verlaufskontrolle und Vermeidung unnötiger Maßnahmen sein.");
- s.disadvantages.push("Nachteile können Aufwand, Kosten, mögliche Nebenwirkungen, Fehlalarme oder zusätzliche Untersuchungen sein.");
- s.risks.push("Gefahren entstehen vor allem, wenn akute Warnzeichen übersehen, Befunde ohne Kontext interpretiert oder Therapien eigenständig verändert werden.");
- s.countermeasures.push("Originalbefund prüfen, Symptome dokumentieren, Medikamente nicht selbstständig ändern und empfohlene Kontrollen wahrnehmen.");
- if(/dringend|sofort|notfall|malign|tumorverdacht|hochgradig|akut|thrombose|infarkt|blutung/i.test(text))s.warnings.push("Der Bericht enthält möglicherweise dringliche Begriffe. Bitte zeitnah ärztlich klären; bei akuten starken Beschwerden medizinische Hilfe suchen.");
- const addressLines=original.split(/\n+/).filter(x=>/\b\d{5}\b/.test(x)&&/(straße|str\.|weg|platz|allee|gasse)/i.test(x)).slice(0,3);
- s.addresses.push(...addressLines);
- if(level==="simple")s.summary.push("Die folgenden Punkte sind bewusst einfach formuliert.");
- if(level==="medical")s.summary.push("Die Darstellung trennt dokumentierte Angaben, automatische Extraktion und allgemeine medizinische Einordnung.");
- return s;
-}
-function explainDocument(doc,level=(window.explainLevel?.value||"simple")){
- const s=documentAnalysis(doc,level),out=[],add=(title,a)=>{if(a?.length)out.push(title+"\n• "+[...new Set(a)].join("\n• "))};
- if(level==="compact"){
-   out.push(`ARZTGESPRÄCH – KURZTEXT\nIch möchte den ${doc.type.toLowerCase()} vom ${fd(doc.date)} besprechen. Besonders wichtig sind: ${(s.findings.slice(0,3).join(" | ")||s.summary.join(" "))}. Bitte erläutern Sie mir die Bedeutung, den Verlauf, notwendige Kontrollen und mögliche Behandlungsalternativen.`);
-   add("MEINE WICHTIGSTEN FRAGEN",s.questions.slice(0,6));
-   add("WARNZEICHEN",s.warnings);
- }else if(level==="doctor"){
-   add("DOKUMENT / ANLASS",s.summary);add("DOKUMENTIERTE BEFUNDE",s.findings);add("ERKANNTE DIAGNOSEN / BEGRIFFE",s.diagnoses);
-   add("VERLAUF / VERGLEICH",comparisonLines(doc));add("BISHERIGE EMPFEHLUNGEN",s.recommendations);add("KONKRETE FRAGESTELLUNGEN",s.questions);add("DRINGLICHKEIT / WARNZEICHEN",s.warnings);
- }else{
-   add("ZUSAMMENFASSUNG",s.summary);add("ERKANNTE DIAGNOSEN / BEGRIFFE",s.diagnoses);add("WICHTIGE BEFUNDAUSSAGEN",s.findings);
-   if(level!=="simple"){add("MÖGLICHE SYMPTOME",s.symptoms);add("MÖGLICHE URSACHEN UND ZUSAMMENHÄNGE",s.causes)}
-   if(level==="expanded"||level==="medical"){add("VARIANTEN",s.variants);add("MÖGLICHE NÄCHSTE SCHRITTE",s.recommendations);add("ALTERNATIVEN",s.alternatives);add("VORTEILE",s.advantages);add("NACHTEILE",s.disadvantages);add("GEFAHREN / RISIKEN",s.risks);add("GEGENMASSNAHMEN",s.countermeasures)}
-   else add("MÖGLICHE NÄCHSTE SCHRITTE",s.recommendations);
-   add("FRAGEN FÜR DEN ARZTTERMIN",s.questions);add("WARNZEICHEN",s.warnings);add("IM DOKUMENT ERKANNTE ADRESSEN",s.addresses);add("VERGLEICH",comparisonLines(doc));
- }
- out.push("Hinweis: Automatische Orientierung, keine Diagnose. Aussagen stets mit Originaldokument und behandelnder Praxis abgleichen.");
- return out.join("\n\n");
-}
-function comparisonLines(doc){
- const same=documents.filter(d=>d.id!==doc.id&&d.rubric===doc.rubric).sort((a,b)=>a.date.localeCompare(b.date)),r=[];
- const older=same.filter(d=>d.date<doc.date).pop(),newer=same.find(d=>d.date>doc.date);
- if(older)r.push(`Älterer vergleichbarer Befund: ${fd(older.date)} – ${older.name}`);
- if(newer)r.push(`Neuerer vergleichbarer Befund: ${fd(newer.date)} – ${newer.name}`);
- return r;
-}
-
-const DB_NAME="GesundheitsakteFiles",DB_STORE="originals";
-function openFileDB(){return new Promise((res,rej)=>{const q=indexedDB.open(DB_NAME,1);q.onupgradeneeded=()=>{if(!q.result.objectStoreNames.contains(DB_STORE))q.result.createObjectStore(DB_STORE)};q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error)})}
-async function storeOriginal(id,file){const db=await openFileDB();return new Promise((res,rej)=>{const tx=db.transaction(DB_STORE,"readwrite");tx.objectStore(DB_STORE).put(file,id);tx.oncomplete=res;tx.onerror=()=>rej(tx.error)})}
-async function getOriginal(id){const db=await openFileDB();return new Promise((res,rej)=>{const q=db.transaction(DB_STORE).objectStore(DB_STORE).get(id);q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error)})}
-async function fileHash(file){const b=await file.arrayBuffer(),h=await crypto.subtle.digest("SHA-256",b);return [...new Uint8Array(h)].map(x=>x.toString(16).padStart(2,"0")).join("")}
-async function textHash(text){const h=await crypto.subtle.digest("SHA-256",new TextEncoder().encode((text||"").replace(/\s+/g," ").trim().toLowerCase()));return [...new Uint8Array(h)].map(x=>x.toString(16).padStart(2,"0")).join("")}
-function findDuplicate(hash,textDigest){return documents.find(d=>(hash&&d.hash===hash)||(textDigest&&d.textDigest===textDigest))}
-async function shareTextFile(name,text,title="Gesundheitsakte Bericht"){const f=new File([text],name,{type:"text/plain;charset=utf-8"});if(navigator.share&&(!navigator.canShare||navigator.canShare({files:[f]})))return navigator.share({title,text:"Erstellt mit Gesundheitsakte Pro",files:[f]});const a=document.createElement("a");a.href=URL.createObjectURL(f);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
-async function shareDocument(id,kind="analysis"){const d=documents.find(x=>x.id===id);if(!d)return;if(kind==="original"){const f=await getOriginal(id);if(!f)return alert("Die Originaldatei wurde nicht lokal gespeichert.");if(navigator.share&&(!navigator.canShare||navigator.canShare({files:[f]})))return navigator.share({title:d.name,files:[f]});const a=document.createElement("a");a.href=URL.createObjectURL(f);a.download=f.name||d.name;a.click();return}const content=kind==="full"?`${d.name}\n${fd(d.date)} · ${d.specialty}\n\nORIGINALTEXT\n${d.text}\n\nAUSWERTUNG\n${explainDocument(d)}`:explainDocument(d);return shareTextFile(`Gesundheitsakte_${kind==="full"?"Gesamtbericht":"Auswertung"}_${d.date}.txt`,content,d.name)}
-function printDocument(id){const d=documents.find(x=>x.id===id);if(!d)return;const w=open("","_blank");w.document.write(`<html><head><title>${esc(d.name)}</title><style>body{font-family:Arial;padding:24px;line-height:1.5;white-space:pre-wrap}h1{color:#0f766e}
-.specialistGrid{display:grid;gap:10px;grid-template-columns:repeat(2,minmax(0,1fr))}
-.specialistCard{border:1px solid var(--line);border-radius:13px;padding:12px;background:#fff}
-.specialistCard h3{margin:0 0 8px;color:var(--brand);font-size:1rem}
-.kv{display:grid;grid-template-columns:1fr auto;gap:6px 12px;padding:4px 0;border-bottom:1px dashed #dbe3ea}
-.kv:last-child{border-bottom:0}.kv b{text-align:right}.eyeSide{border-left:5px solid #0f766e}
-@media(max-width:520px){.specialistGrid{grid-template-columns:1fr}}
-
-.brandLogo{width:54px;height:54px;border-radius:15px;vertical-align:middle;margin-right:10px;box-shadow:0 5px 18px #0004}
-.analysisModes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:10px 0}
-.modeBtn{border:2px solid var(--line);border-radius:13px;padding:12px;background:#fff;text-align:left;font-weight:800}
-.modeBtn.active{border-color:var(--brand);background:#e6fffb;color:var(--brand)}
-.bodyModelWrap{display:grid;grid-template-columns:190px 1fr;gap:16px;align-items:start}
-.bodySvg{width:180px;max-width:100%;margin:auto;display:block}
-.bodyPart{cursor:pointer;transition:.15s}.bodyPart:hover,.bodyPart.active{filter:drop-shadow(0 0 6px #14b8a6);stroke:#14b8a6;stroke-width:4}
-.quickQuestions{display:flex;flex-wrap:wrap;gap:7px}.quickQuestions button{margin:0}
-.doctorSheet{border:2px solid #2563eb;border-radius:14px;padding:14px;background:#eff6ff}
-.warningSheet{border:2px solid #dc2626;border-radius:14px;padding:14px;background:#fef2f2}
-.healthTile{border-radius:14px;padding:13px;background:linear-gradient(135deg,#fff,#f0fdfa);border:1px solid var(--line)}
-@media(max-width:620px){.bodyModelWrap{grid-template-columns:1fr}.analysisModes{grid-template-columns:1fr}}
-</style></head><body><h1>${esc(d.name)}</h1><b>${fd(d.date)} · ${esc(d.specialty)}</b><hr>${esc(explainDocument(d))}</body></html>`);w.document.close();w.print();showToast("Druckansicht wurde geöffnet.","ok")}
-
-async function readPDF(file){
- if(!window.pdfjsLib){
-   await loadScript("https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168/build/pdf.min.mjs").catch(()=>{});
- }
- // pdf.js module cannot always be attached globally from min.mjs; use legacy UMD fallback.
- if(!window.pdfjsLib){
-   await loadScript("https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js");
-   pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
- }
- const buf=await file.arrayBuffer(),pdf=await pdfjsLib.getDocument({data:buf}).promise;
- let text="";
- for(let p=1;p<=pdf.numPages;p++){const page=await pdf.getPage(p),c=await page.getTextContent();text+=c.items.map(x=>x.str).join(" ")+"\n";}
- return text;
-}
-async function readImage(file){
- if(!window.Tesseract)await loadScript("https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js");
- const r=await Tesseract.recognize(file,"deu");return r.data.text;
-}
-async function buildTempDocument(files,text,name){
- const primary=files[0],date=detectDate(text,name),cls=classifyDocument(text,name),labValues=extractLabValues(text,date),keyStatements=extractKeyStatements(text),specialtyData=extractSpecialtyData(text,cls);
- const hashes=[];for(const f of files)hashes.push(await fileHash(f));
- const textDigest=await textHash(text);
- return {id:uid(),name,size:files.reduce((s,f)=>s+f.size,0),mime:files.length>1?"application/x-photo-bundle":primary.type,date,...cls,text,keyStatements,labValues,specialtyData,created:new Date().toISOString(),hash:hashes.join(":"),textDigest,pageCount:files.length,sourceNames:files.map(f=>f.name),confidence:text.length>200?"hoch":"mittel"};
-}
-const pendingImports={};
-function duplicatePreview(temp,dup){return `<div class="duplicate" id="pending-${temp.id}"><b>Dieser Befund ist wahrscheinlich bereits vorhanden.</b><p>${esc(dup.name)} vom ${fd(dup.date)} · ${esc(dup.specialty)}</p><div class="actions"><button class="secondary" onclick="replacePendingImport('${temp.id}','${dup.id}')">Vorhandenen ersetzen</button><button class="secondary" onclick="savePendingImport('${temp.id}',true)">Trotzdem als Kopie speichern</button><button class="dangerBtn" onclick="discardPendingImport('${temp.id}')">Import verwerfen</button></div></div>`}
-async function processImportFiles(list){
- const selected=[...list];importPreview.innerHTML="";importProgress.textContent="";
- const mode=document.querySelector('input[name="importMode"]:checked')?.value||"separate";
- const groups=mode==="bundle"&&selected.length>1?[selected]:selected.map(x=>[x]);
- for(const group of groups){
-   const displayName=group.length>1?`Mehrseitiger Bericht (${group.length} Seiten)`:group[0].name;
-   try{
-     let parts=[];
-     for(let i=0;i<group.length;i++){const file=group[i];importProgress.textContent=`Lese ${displayName}: Seite ${i+1}/${group.length} …`;if(file.type==="application/pdf"||file.name.toLowerCase().endsWith(".pdf"))parts.push(await readPDF(file));else if(file.type.startsWith("image/"))parts.push(await readImage(file));else parts.push(await file.text())}
-     const text=parts.map((x,i)=>group.length>1?`\n--- SEITE ${i+1} ---\n${x}`:x).join("\n");
-     const temp=await buildTempDocument(group,text,displayName),dup=findDuplicate(temp.hash,temp.textDigest);
-     window.pendingImportFiles=window.pendingImportFiles||{};window.pendingImportFiles[temp.id]=group;pendingImports[temp.id]=temp;
-     importPreview.innerHTML+=`<div class="item"><div class="head"><div><div class="name">${esc(temp.name)}</div><div class="small">${temp.type} · ${temp.rubric} · ${fd(temp.date)} · ${temp.pageCount} Seite(n)</div></div><span class="confidence">Erkennung ${temp.confidence}</span></div><p class="small"><b>Fachgebiet:</b> ${esc(temp.specialty)}</p>${hasSpecialtyData(temp.specialtyData)?`<details open><summary>Erkannte Fachwerte</summary>${specialistHtml(temp.specialtyData)}</details>`:""}<div class="aiout">${esc(explainDocument(temp))}</div>${dup?duplicatePreview(temp,dup):`<div id="pending-${temp.id}"><button class="primary full" onclick="savePendingImport('${temp.id}')">Geprüften Befund speichern</button><button class="dangerBtn full" onclick="discardPendingImport('${temp.id}')">Import aus dieser Übersicht entfernen</button></div>`}</div>`;
-     ocrText.value=text;
-   }catch(e){importPreview.innerHTML+=`<div class="notice"><b>${esc(displayName)}</b>: konnte nicht automatisch gelesen werden (${esc(e.message)}).</div>`}
- }
- importProgress.textContent="Importvorbereitung abgeschlossen.";
-}
-function integrateLabValues(doc,replaceId=null){
- if(!window.autoTakeLabs?.checked||!doc.labValues?.length)return 0;
- if(replaceId)values=values.filter(v=>v.sourceDocId!==replaceId);
- let added=0;
- for(const v0 of doc.labValues){const v={...v0,sourceDocId:doc.id};const exists=values.some(x=>x.name===v.name&&x.date===v.date&&String(x.value)===String(v.value)&&String(x.unit||"")===String(v.unit||""));if(!exists){values.push(v);added++}}
- return added
-}
-async function persistOriginalFor(doc,sourceTempId=doc.id){const originalFiles=window.pendingImportFiles?.[sourceTempId]||[];if(window.saveOriginal?.checked&&originalFiles.length){const blob=originalFiles.length===1?originalFiles[0]:new File(originalFiles,doc.name,{type:"application/octet-stream"});await storeOriginal(doc.id,blob);doc.originalStored=true}}
-async function saveImportedDocument(doc,forceCopy=false,sourceTempId=doc.id){
- const dup=findDuplicate(doc.hash,doc.textDigest);if(dup&&!forceCopy){showToast("Befund ist bereits vorhanden. Bitte Ersetzen, Kopie oder Verwerfen wählen.","info",6000);return}
- if(forceCopy){doc={...doc,id:uid(),name:doc.name+" (Kopie)"}}
- documents.push(doc);try{await persistOriginalFor(doc,sourceTempId)}catch(e){showToast("Befund gespeichert, Originaldatei konnte aber nicht separat gespeichert werden.","info",6000)}
- const n=integrateLabValues(doc);save();render();discardPendingImport(sourceTempId,false);showToast(`Befund gespeichert und chronologisch eingeordnet. ${n} neue Laborwerte wurden in Verlauf und Statistik übernommen.`,"ok",7000)
-}
-async function savePendingImport(tempId,copy=false){const doc=pendingImports[tempId];if(!doc){showToast("Der vorbereitete Import wurde nicht mehr gefunden. Bitte Datei erneut auswählen.","error",6000);return}await saveImportedDocument(doc,copy,tempId);delete pendingImports[tempId]}
-async function replacePendingImport(tempId,existingId){
- const doc=pendingImports[tempId],index=documents.findIndex(x=>x.id===existingId);if(!doc||index<0){showToast("Ersetzen nicht möglich: Eintrag wurde nicht gefunden.","error",6000);return}
- const replacement={...doc,id:existingId};documents[index]=replacement;try{const fs=window.pendingImportFiles?.[tempId]||[];if(window.saveOriginal?.checked&&fs.length){await storeOriginal(existingId,fs.length===1?fs[0]:new File(fs,replacement.name,{type:"application/octet-stream"}));replacement.originalStored=true}}catch(e){}
- const n=integrateLabValues(replacement,existingId);save();render();discardPendingImport(tempId,false);delete pendingImports[tempId];showToast(`Vorhandener Befund wurde ersetzt. ${n} Laborwerte wurden neu in Verlauf und Statistik eingeordnet.`,"ok",7000)
-}
-function discardPendingImport(tempId,notify=true){delete pendingImports[tempId];if(window.pendingImportFiles)delete window.pendingImportFiles[tempId];document.getElementById(`pending-${tempId}`)?.remove();if(notify)showToast("Import wurde aus der Übersicht entfernt. Bereits gespeicherte Laborwerte und Akteneinträge bleiben unverändert.","ok",6000)}
-smartImportInput.onchange=e=>processImportFiles(e.target.files);
-cameraInput.onchange=e=>{window.lastImage=e.target.files[0];if(e.target.files.length>1){const r=document.querySelector('input[name="importMode"][value="bundle"]');if(r)r.checked=true}processImportFiles(e.target.files)};
-function renderDocuments(){
- const rubrics=[...new Set(documents.map(d=>d.rubric))].sort(),current=docFilter?.value||"all";
- if(docFilter){docFilter.innerHTML='<option value="all">Alle Rubriken</option>'+rubrics.map(r=>`<option>${esc(r)}</option>`).join("");if(rubrics.includes(current))docFilter.value=current}
- const q=(docSearch?.value||"").toLowerCase(),f=docFilter?.value||"all",sort=docSort?.value||"new";
- let arr=[...documents].filter(d=>(f==="all"||d.rubric===f)&&(`${d.name} ${d.type} ${d.rubric} ${d.specialty} ${d.text}`).toLowerCase().includes(q));
- arr.sort(sort==="old"?(a,b)=>a.date.localeCompare(b.date):sort==="specialty"?(a,b)=>a.specialty.localeCompare(b.specialty):((a,b)=>b.date.localeCompare(a.date)));
- if(documentArchive)documentArchive.innerHTML=arr.map(d=>`<div class="item"><div class="head"><div><div class="name">${esc(d.name)}</div><div class="small">${fd(d.date)} · ${esc(d.rubric)} · ${esc(d.specialty)} · ${d.pageCount||1} Seite(n)</div></div><span class="badge info">${esc(d.type)}</span></div><details open><summary>Verständliche Auswertung</summary><div class="aiout">${esc(explainDocument(d))}</div></details>${hasSpecialtyData(d.specialtyData)?`<details open><summary>Strukturierte Fachwerte</summary>${specialistHtml(d.specialtyData)}</details>`:""}<details><summary>Erkannte Laborwerte</summary>${d.labValues?.length?d.labValues.map(card).join(""):"<p>Keine Laborwerte erkannt.</p>"}</details><div class="sharebar"><button class="secondary mini" onclick="shareDocument('${d.id}','analysis')">Auswertung teilen</button><button class="secondary mini" onclick="shareDocument('${d.id}','full')">Gesamtbericht teilen</button><button class="secondary mini" onclick="shareDocument('${d.id}','original')">Original teilen</button><button class="secondary mini" onclick="printDocument('${d.id}')">Drucken</button></div><button class="dangerBtn mini" onclick="deleteImportedDocumentOnly('${d.id}')">Nur aus Import-Übersicht entfernen</button></div>`).join("")||"<p class='small'>Noch keine importierten Befunde.</p>";
-}
-function deleteImportedDocumentOnly(id){if(confirm("Nur den importierten Bericht aus dieser Übersicht entfernen? Bereits übernommene Laborwerte, Diagnosen und andere Akteneinträge bleiben erhalten.")){documents=documents.filter(d=>d.id!==id);save();render();showToast("Bericht wurde nur aus der Import-Übersicht entfernt. Übernommene Daten bleiben erhalten.","ok",7000)}else showToast("Entfernen abgebrochen.","info")}
-if(docFilter)docFilter.onchange=renderDocuments;if(docSearch)docSearch.oninput=renderDocuments;if(window.explainLevel)explainLevel.onchange=renderDocuments;if(window.docSort)docSort.onchange=renderDocuments;if(window.specialtyFilter)specialtyFilter.onchange=renderSpecialtyOverview;if(window.specialtySearch)specialtySearch.oninput=renderSpecialtyOverview;if(window.rebuildSpecialtyBtn)rebuildSpecialtyBtn.onclick=()=>{backfillSpecialtyData(true);renderSpecialtyOverview();renderUnassignedDocuments(false)};if(window.showUnassignedBtn)showUnassignedBtn.onclick=()=>renderUnassignedDocuments(true);
-function renderDocCompareOptions(){
- if(!docCompareSelect)return;
- const cur=docCompareSelect.value;
- docCompareSelect.innerHTML=documents.sort((a,b)=>b.date.localeCompare(a.date)).map(d=>`<option value="${d.id}">${fd(d.date)} – ${esc(d.rubric)} – ${esc(d.name)}</option>`).join("");
- if(documents.some(d=>d.id===cur))docCompareSelect.value=cur;
- renderDocumentComparison();
-}
-function renderDocumentComparison(){
- if(!docCompareSelect||!documents.length){if(docCompareOut)docCompareOut.textContent="Noch keine importierten Befunde vorhanden.";return}
- const d=documents.find(x=>x.id===docCompareSelect.value)||documents[0];
- const same=documents.filter(x=>x.rubric===d.rubric).sort((a,b)=>a.date.localeCompare(b.date));
- const idx=same.findIndex(x=>x.id===d.id),older=idx>0?same[idx-1]:null,newer=idx>=0&&idx<same.length-1?same[idx+1]:null;
- let txt=[`Ausgewählt: ${d.type} vom ${fd(d.date)} (${d.rubric}).`];
- if(older)txt.push(`Vorheriger vergleichbarer Befund: ${fd(older.date)} – ${older.name}.`);
- else txt.push("Kein älterer Befund derselben Rubrik vorhanden.");
- if(newer)txt.push(`Nachfolgender vergleichbarer Befund: ${fd(newer.date)} – ${newer.name}.`);
- else txt.push("Kein neuerer Befund derselben Rubrik vorhanden.");
- const dm=Object.fromEntries((d.labValues||[]).map(v=>[v.name,v]));
- if(older){
-   const om=Object.fromEntries((older.labValues||[]).map(v=>[v.name,v])),changes=[];
-   for(const n of Object.keys(dm)){if(om[n]){let diff=+dm[n].value-+om[n].value,p=om[n].value?diff/+om[n].value*100:0;changes.push(`${n}: ${om[n].value} → ${dm[n].value} ${dm[n].unit} (${diff>=0?"+":""}${p.toFixed(1)} %)`) }}
-   if(changes.length)txt.push("Laborveränderungen gegenüber dem vorherigen Dokument:\n• "+changes.join("\n• "));
- }
- txt.push("\n"+explainDocument(d));
- docCompareOut.textContent=txt.join("\n\n");
-}
-if(docCompareSelect)docCompareSelect.onchange=renderDocumentComparison;
-
-cameraInput.onchange=e=>{window.lastImage=e.target.files[0];if(e.target.files.length>1){const r=document.querySelector('input[name="importMode"][value="bundle"]');if(r)r.checked=true}processImportFiles(e.target.files)};
-function addFiles(list){for(const f of list)files.push({id:uid(),name:f.name,size:f.size,type:f.type,date:new Date().toISOString()});save();renderFiles()}
-function renderFiles(){if(!window.fileList)return;fileList.innerHTML=files.length?files.map((f,i)=>`<div class="file-row"><div><b>${esc(f.name)}</b><div class="small">${(f.size/1024).toFixed(1)} KB · ${new Date(f.date).toLocaleString("de-DE")}</div></div><button class="secondary mini" onclick="files.splice(${i},1);save();renderFiles()">Entfernen</button></div>`).join(""):"<p class='small'>Noch keine Dateien gespeichert.</p>"}
-ocrBtn.onclick=async()=>{const f=window.lastImage||fileInput.files[0];if(!f){alert("Zuerst ein Bild auswählen oder scannen.");return}ocrText.value="OCR wird geladen …";try{if(!window.Tesseract){await loadScript("https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js")}const r=await Tesseract.recognize(f,"deu");ocrText.value=r.data.text}catch(e){ocrText.value="OCR konnte nicht ausgeführt werden. Internetverbindung prüfen oder Text manuell einfügen."}}
-function loadScript(src){return new Promise((res,rej)=>{let s=document.createElement("script");s.src=src;s.onload=res;s.onerror=rej;document.head.appendChild(s)})}
-parseBtn.onclick=()=>{
- const text=ocrText.value,date=detectDate(text),cls=classifyDocument(text),found=extractLabValues(text,date),keyStatements=extractKeyStatements(text);
- const temp={id:uid(),name:"Manuell analysierter Befund",size:0,mime:"text/plain",date,...cls,text,keyStatements,labValues:found,specialtyData:extractSpecialtyData(text,cls),created:new Date().toISOString(),pageCount:1,confidence:"mittel"};
- parsed.innerHTML=`<div class="item"><b>${esc(cls.type)}</b><div class="small">${esc(cls.rubric)} · ${esc(cls.specialty)} · ${fd(date)}</div><div class="aiout">${esc(explainDocument(temp))}</div>${found.length?found.map(v=>`<div>${esc(v.name)}: <b>${v.value} ${esc(v.unit)}</b></div>`).join(""):"<div class='notice'>Keine sicheren Laborwerte erkannt.</div>"}<button class="primary full" onclick='saveImportedDocument(${JSON.stringify(temp).replace(/'/g,"&#39;")})'>Befund speichern</button></div>`;
-}
-function addParsed(a){document.querySelectorAll("[data-p]:checked").forEach(x=>{let v=a[+x.dataset.p];values.push({...v,id:uid(),date:new Date().toISOString().slice(0,10),note:"Aus OCR übernommen – bitte kontrollieren"})});save();render();showPage("werte")}
-bulkBtn.onclick=()=>{let n=0;for(const line of bulk.value.split(/\n+/)){if(!line.trim())continue;let [name,val,u,mi,ma,dt]=line.split(";").map(x=>x?.trim()),d=defs[name]||{};if(!name||isNaN(+val))continue;values.push({id:uid(),name,value:+val,unit:u||d.u||"",min:mi!==""&&mi!=null?+mi:(d.min??""),max:ma!==""&&ma!=null?+ma:(d.max??""),date:dt||new Date().toISOString().slice(0,10),category:d.c||"Sonstige",note:"Schnellimport"});n++}save();bulk.value="";render();showToast(n+" Werte wurden importiert.","ok")}
-
-function renderTrendOptions(){let u=[...new Set(values.map(v=>v.name))].sort();let cur=trendSelect.value;trendSelect.innerHTML=u.map(x=>`<option>${esc(x)}</option>`).join("");if(u.includes(cur))trendSelect.value=cur;let dates=[...new Set(values.map(v=>v.date))].sort();dateA.innerHTML=dates.map(x=>`<option>${x}</option>`).join("");dateB.innerHTML=dates.map(x=>`<option>${x}</option>`).join("");if(dates.length){dateA.value=dates[0];dateB.value=dates[dates.length-1]}draw()}
-trendSelect.onchange=draw;
-function draw(){let c=chart,ctx=c.getContext("2d"),n=trendSelect.value,a=values.filter(v=>v.name===n).sort((x,y)=>x.date.localeCompare(y.date));ctx.clearRect(0,0,c.width,c.height);ctx.fillStyle="#fff";ctx.fillRect(0,0,c.width,c.height);if(!a.length)return;let nums=a.map(v=>+v.value),refs=a.flatMap(v=>[+v.min,+v.max]).filter(isFinite),lo=Math.min(...nums,...refs),hi=Math.max(...nums,...refs);if(lo===hi){lo--;hi++}let p=(hi-lo)*.15;lo-=p;hi+=p;let X=i=>70+(c.width-110)*(a.length===1?.5:i/(a.length-1)),Y=v=>25+(c.height-75)*(1-(v-lo)/(hi-lo));ctx.strokeStyle="#dbe4e8";ctx.fillStyle="#52636d";ctx.font="14px sans-serif";for(let i=0;i<5;i++){let y=25+i*(c.height-75)/4;ctx.beginPath();ctx.moveTo(60,y);ctx.lineTo(c.width-25,y);ctx.stroke();ctx.fillText((hi-i*(hi-lo)/4).toFixed(1),8,y+4)}let r=a[a.length-1];if(isFinite(+r.min)&&isFinite(+r.max)){ctx.fillStyle="rgba(21,128,61,.1)";ctx.fillRect(60,Y(+r.max),c.width-85,Y(+r.min)-Y(+r.max))}ctx.strokeStyle="#155e75";ctx.lineWidth=4;ctx.beginPath();a.forEach((v,i)=>i?ctx.lineTo(X(i),Y(+v.value)):ctx.moveTo(X(i),Y(+v.value)));ctx.stroke();a.forEach((v,i)=>{ctx.fillStyle="#155e75";ctx.beginPath();ctx.arc(X(i),Y(+v.value),7,0,7);ctx.fill();ctx.fillStyle="#17232b";ctx.fillText(v.value,X(i)-10,Y(+v.value)-12);ctx.fillText(fd(v.date),Math.max(55,X(i)-35),c.height-12)});let first=a[0],last=a[a.length-1],dif=+last.value-+first.value,pct=first.value?dif/+first.value*100:0;let tendency=a.length<2?"Noch kein Verlauf möglich.":Math.abs(pct)<3?"weitgehend stabil":dif>0?"steigende Tendenz":"fallende Tendenz";trendInfo.textContent=`${n}: ${a.length} Messung(en). ${tendency}${a.length>1?`. Veränderung ${dif>=0?"+":""}${dif.toFixed(2)} ${last.unit} (${pct>=0?"+":""}${pct.toFixed(1)} %).`:""}`}
-compareBtn.onclick=()=>{let A=values.filter(v=>v.date===dateA.value),B=values.filter(v=>v.date===dateB.value),ma=Object.fromEntries(A.map(v=>[v.name,v])),mb=Object.fromEntries(B.map(v=>[v.name,v])),names=[...new Set([...Object.keys(ma),...Object.keys(mb)])].sort();compareOut.innerHTML=names.map(n=>{let a=ma[n],b=mb[n];if(!a||!b)return"";let d=+b.value-+a.value,p=a.value?d/+a.value*100:0;return `<div class="item"><b>${esc(n)}</b><div>${a.value} → ${b.value} ${esc(b.unit)} <span class="badge info">${d>=0?"+":""}${d.toFixed(2)} / ${p>=0?"+":""}${p.toFixed(1)} %</span></div></div>`}).join("")||"<p>Keine gemeinsamen Werte für diese Daten.</p>"}
-
-localAnalysisBtn.onclick=()=>{localAnalysis.textContent=localEngine();};
-reportBtn.onclick=()=>{
- const text=localAnalysis.textContent||localEngine();
- const blob=new Blob([text],{type:"text/plain;charset=utf-8"});
- const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="Gesundheitsakte_Lokale_Analyse_"+new Date().toISOString().slice(0,10)+".txt";a.click();URL.revokeObjectURL(a.href);
-};
-saveAi.onclick=()=>{localStorage.setItem("lk_ai_endpoint",aiEndpoint.value);localStorage.setItem("lk_ai_key",aiKey.value);localStorage.setItem("lk_ai_model",aiModel.value);showToast("KI-Einstellungen wurden lokal gespeichert.","ok")};
-aiEndpoint.value=localStorage.getItem("lk_ai_endpoint")||"https://api.openai.com/v1/responses";aiKey.value=localStorage.getItem("lk_ai_key")||"";aiModel.value=localStorage.getItem("lk_ai_model")||"gpt-5-mini";
-aiBtn.onclick=async()=>{if(!aiKey.value){alert("API-Schlüssel oder eigener Proxy erforderlich.");return}aiResult.textContent="Analyse läuft …";let payload={model:aiModel.value,input:`Du bist ein medizinischer Informationsassistent. Antworte auf Deutsch, verständlich, vorsichtig, ohne Diagnose. ${aiQuestion.value}\n\nLaborwerte:\n${JSON.stringify(values)}\nDiagnosen:${JSON.stringify(diagnoses)}\nMedikamente:${JSON.stringify(meds)}\nBeschwerden:${JSON.stringify(symptoms)}`};try{let r=await fetch(aiEndpoint.value,{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+aiKey.value},body:JSON.stringify(payload)});let j=await r.json();if(!r.ok)throw new Error(j.error?.message||"Fehler");aiResult.textContent=j.output_text||j.output?.map(x=>x.content?.map(y=>y.text).join("")).join("\n")||JSON.stringify(j,null,2)}catch(e){aiResult.textContent="KI-Aufruf fehlgeschlagen: "+e.message+"\n\nMögliche Gründe: Browser-Sicherheitsregeln, falscher Schlüssel, falscher Endpunkt oder fehlendes Guthaben."}}
-
-const systemData=[
-["🧠","Kopf, Augen & Sinne",["Sonstige"],"Neurologie / Augenheilkunde / HNO",["auge","optik","neurolog","hno","schwindel","tinnitus"]],
-["🫀","Brustkorb",["Blutbild"],"Kardiologie",["kardiolog","herz","ekg"]],
-["❤️","Herz & Kreislauf",["Fettstoffwechsel"],"Kardiologie / Angiologie",["kardiolog","herz","blutdruck","gefäß"]],
-["🫁","Lunge & Atmung",["Entzündung"],"Pneumologie",["lunge","pneumolog","asthma","copd"]],
-["🫃","Bauchorgane",["Leber","Niere","Glukose"],"Gastroenterologie / Urologie",["magen","darm","leber","galle","niere","urolog"]],
-["🦴","Arme, Schulter & Wirbelsäule",["Entzündung"],"Orthopädie / Neurologie",["schulter","arm","wirbelsäule","orthop","bandscheibe"]],
-["🦵","Hüfte, Knie & Beine",["Entzündung"],"Orthopädie / Gefäßmedizin",["hüfte","knie","bein","meniskus","orthop"]],
-["🦷","Zähne & Mund",["Entzündung"],"Zahnmedizin",["zahn","kiefer","parodont","implantat"]]
-];
-const systemsBox=document.getElementById("systems");
-if(systemsBox)systemsBox.innerHTML=systemData.map((s,i)=>`<div class="system" onclick="systemShow(${i})"><strong>${s[0]} ${s[1]}</strong><span>${s[3]}</span></div>`).join("");
-function systemShow(i){
- let s=systemData[i],v=latest().filter(x=>s[2].includes(x.category)),docs=documents.filter(d=>s[4].some(k=>`${d.name} ${d.specialty} ${d.rubric} ${d.text}`.toLowerCase().includes(k))),di=diagnoses.filter(x=>s[4].some(k=>`${x.name} ${x.area||""} ${x.note||""}`.toLowerCase().includes(k)));
- systemDetail.innerHTML=`<h3>${s[0]} ${s[1]}</h3><p><b>Zuständige Fachgebiete:</b> ${s[3]}</p><p><b>Zugeordnete Dokumente:</b> ${docs.length}</p>${docs.slice(0,8).map(d=>`<div class="item"><b>${fd(d.date)} · ${esc(d.name)}</b><div class="small">${esc(d.specialty)}</div><button class="secondary mini" onclick="showPage('import')">Dokumente öffnen</button></div>`).join("")||"<p>Keine Dokumente zugeordnet.</p>"}<p><b>Aktuelle Laborwerte:</b></p>${v.length?v.map(card).join(""):"<p>Keine Werte zugeordnet.</p>"}<p><b>Diagnosen:</b> ${di.length?di.map(x=>esc(x.name)).join(", "):"Keine hinterlegt."}</p>`;
-}
-const specs=[...new Set(systemData.map(x=>x[3]))];
-const specialtiesBox=document.getElementById("specialties");
-if(specialtiesBox)specialtiesBox.innerHTML=specs.map(x=>`<details><summary>${x}</summary><p>Hier werden passende Befunde, Diagnosen, Beschwerden und Laborwerte gesammelt.</p></details>`).join("");
-
-diagAdd.onclick=()=>{if(!diagName.value.trim())return;diagnoses.push({id:uid(),name:diagName.value.trim(),date:diagDate.value,note:diagNote.value.trim(),area:""});diagName.value=diagNote.value="";save();renderAkte()}
-medAdd.onclick=()=>{if(!medName.value.trim())return;meds.push({id:uid(),name:medName.value.trim(),dose:medDose.value.trim(),reason:medReason.value.trim()});medName.value=medDose.value=medReason.value="";save();renderAkte()}
-symAdd.onclick=()=>{if(!symName.value.trim())return;symptoms.push({id:uid(),name:symName.value.trim(),date:symDate.value,note:symNote.value.trim()});symName.value=symNote.value="";save();renderAkte()}
-function renderAkte(){diagList.innerHTML=diagnoses.map((x,i)=>`<div class="item"><b>${esc(x.name)}</b><div class="small">${fd(x.date)} · ${esc(x.note)}</div><button class="secondary mini" onclick="diagnoses.splice(${i},1);save();renderAkte()">Löschen</button></div>`).join("");medList.innerHTML=meds.map((x,i)=>`<div class="item"><b>${esc(x.name)} ${esc(x.dose)}</b><div class="small">${esc(x.reason)}</div><button class="secondary mini" onclick="meds.splice(${i},1);save();renderAkte()">Löschen</button></div>`).join("");symList.innerHTML=symptoms.map((x,i)=>`<div class="item"><b>${esc(x.name)}</b><div class="small">${fd(x.date)} · ${esc(x.note)}</div><button class="secondary mini" onclick="symptoms.splice(${i},1);save();renderAkte()">Löschen</button></div>`).join("")}
-
-
-function renderJournal(){
- const vitalCount=document.getElementById("jVitalCount"),vaxCount=document.getElementById("jVaxCount"),allergyCount=document.getElementById("jAllergyCount"),opCount=document.getElementById("jOpCount");
- if(vitalCount)vitalCount.textContent=vitals.length;
- if(vaxCount)vaxCount.textContent=vaccinations.length;
- if(allergyCount)allergyCount.textContent=allergies.length;
- if(opCount)opCount.textContent=operations.length;
- const vitalBox=document.getElementById("vitalList"),vaxBox=document.getElementById("vaxList"),allergyBox=document.getElementById("allergyList"),opBox=document.getElementById("opList");
- if(vitalBox)vitalBox.innerHTML=[...vitals].sort((a,b)=>(b.date||"").localeCompare(a.date||"")).map(x=>`<div class="item"><b>${esc(x.type)}: ${esc(x.value)} ${esc(x.unit||"")}</b><div class="small">${fd(x.date)} · ${esc(x.note||"")}</div><button class="secondary mini" onclick="removeJournalItem('vital','${x.id}')">Löschen</button></div>`).join("")||"<p class='small'>Noch keine Vitalwerte.</p>";
- if(vaxBox)vaxBox.innerHTML=[...vaccinations].sort((a,b)=>(b.date||"").localeCompare(a.date||"")).map(x=>`<div class="item"><b>${esc(x.name)}</b><div class="small">${fd(x.date)} · ${esc(x.batch||"")}${x.next?` · nächste Kontrolle ${fd(x.next)}`:""}</div><button class="secondary mini" onclick="removeJournalItem('vax','${x.id}')">Löschen</button></div>`).join("")||"<p class='small'>Noch keine Impfungen.</p>";
- if(allergyBox)allergyBox.innerHTML=allergies.map(x=>`<div class="item"><b>${esc(x.name)}</b><div class="small">${esc(x.reaction||"")} · ${esc(x.severity||"")}</div><button class="secondary mini" onclick="removeJournalItem('allergy','${x.id}')">Löschen</button></div>`).join("")||"<p class='small'>Noch keine Allergien oder Unverträglichkeiten.</p>";
- if(opBox)opBox.innerHTML=[...operations].sort((a,b)=>(b.date||"").localeCompare(a.date||"")).map(x=>`<div class="item"><b>${esc(x.name)}</b><div class="small">${fd(x.date)} · ${esc(x.place||"")} · ${esc(x.note||"")}</div><button class="secondary mini" onclick="removeJournalItem('op','${x.id}')">Löschen</button></div>`).join("")||"<p class='small'>Noch keine Operationen oder Eingriffe.</p>";
-}
-function removeJournalItem(kind,id){
- if(!confirm("Diesen Eintrag wirklich löschen?"))return;
- if(kind==="vital")vitals=vitals.filter(x=>x.id!==id);
- if(kind==="vax")vaccinations=vaccinations.filter(x=>x.id!==id);
- if(kind==="allergy")allergies=allergies.filter(x=>x.id!==id);
- if(kind==="op")operations=operations.filter(x=>x.id!==id);
- save();renderJournal();showToast("Eintrag gelöscht","success");
-}
-function setupJournalActions(){
- const vitalButton=document.getElementById("vitalAdd");
- if(vitalButton)vitalButton.onclick=()=>{
-  const type=document.getElementById("vitalType"),value=document.getElementById("vitalValue"),unit=document.getElementById("vitalUnit"),date=document.getElementById("vitalDate"),note=document.getElementById("vitalNote");
-  if(!type.value.trim()||!value.value.trim())return showToast("Bitte Art und Wert eintragen.","error");
-  vitals.push({id:uid(),type:type.value.trim(),value:value.value.trim(),unit:unit.value.trim(),date:date.value||new Date().toISOString().slice(0,10),note:note.value.trim()});
-  type.value=value.value=unit.value=note.value="";save();renderJournal();showToast("Vitalwert gespeichert","success");
- };
- const vaxButton=document.getElementById("vaxAdd");
- if(vaxButton)vaxButton.onclick=()=>{
-  const name=document.getElementById("vaxName"),date=document.getElementById("vaxDate"),batch=document.getElementById("vaxBatch"),next=document.getElementById("vaxNext");
-  if(!name.value.trim())return showToast("Bitte Impfung eintragen.","error");
-  vaccinations.push({id:uid(),name:name.value.trim(),date:date.value||new Date().toISOString().slice(0,10),batch:batch.value.trim(),next:next.value});
-  name.value=batch.value="";date.value=next.value="";save();renderJournal();showToast("Impfung gespeichert","success");
- };
- const allergyButton=document.getElementById("allergyAdd");
- if(allergyButton)allergyButton.onclick=()=>{
-  const name=document.getElementById("allergyName"),reaction=document.getElementById("allergyReaction"),severity=document.getElementById("allergySeverity");
-  if(!name.value.trim())return showToast("Bitte Allergie oder Unverträglichkeit eintragen.","error");
-  allergies.push({id:uid(),name:name.value.trim(),reaction:reaction.value.trim(),severity:severity.value});
-  name.value=reaction.value="";save();renderJournal();showToast("Allergie gespeichert","success");
- };
- const opButton=document.getElementById("opAdd");
- if(opButton)opButton.onclick=()=>{
-  const name=document.getElementById("opName"),date=document.getElementById("opDate"),place=document.getElementById("opPlace"),note=document.getElementById("opNote");
-  if(!name.value.trim())return showToast("Bitte Operation oder Eingriff eintragen.","error");
-  operations.push({id:uid(),name:name.value.trim(),date:date.value||new Date().toISOString().slice(0,10),place:place.value.trim(),note:note.value.trim()});
-  name.value=place.value=note.value="";date.value="";save();renderJournal();showToast("Operation gespeichert","success");
- };
-}
-setupJournalActions();
-
-const knowledgeBox=document.getElementById("knowledge");
-if(knowledgeBox)knowledgeBox.innerHTML=Object.entries(defs).map(([n,d])=>`<details><summary>${esc(n)} – ${esc(d.t)}</summary><p>${esc(d.i)}</p><p><b>Hinterlegter Bereich:</b> ${d.min} bis ${d.max} ${esc(d.u)}</p><p class="small">Maßgeblich bleibt der Referenzbereich des jeweiligen Labors.</p></details>`).join("");
-const exportButton=document.getElementById("exportBtn");
-if(exportButton)exportButton.onclick=()=>{setButtonBusy(exportButton,true,"Export wird erstellt");try{const x=createAutoBackup("Komplettexport");downloadObject(x.data,backupFilename(x))}catch(e){showToast("Export fehlgeschlagen: "+e.message,"error",7000)}finally{setButtonBusy(exportButton,false)}};
-</script>
-<script>
-document.addEventListener("click",e=>{const b=e.target.closest("button");if(!b||b.disabled)return;b.classList.add("actionPulse");setTimeout(()=>b.classList.remove("actionPulse"),180);const label=(b.textContent||"Aktion").trim().replace(/\s+/g," ");if(!["Wiederherstellen","Löschen"].includes(label))logAction(`Taste „${label}“ gedrückt`,"info")},true);
-document.addEventListener("change",e=>{if(e.target.matches("input[type=file]")){const n=e.target.files?.length||0;if(n)showToast(`${n} Datei${n===1?"":"en"} ausgewählt. Verarbeitung startet.`,"info")}});
-
-function appSelfCheck(){
- const required=["render","renderValues","renderFiles","renderDocuments","renderTrendOptions","renderDocCompareOptions","renderAkte","renderJournal","save","downloadObject"];
- const missing=required.filter(n=>typeof window[n]!=="function");
- const requiredIds=["mCount","valueList","documentArchive","trendSelect","diagList","vitalList","specialties","systemDetail"];
- const missingIds=requiredIds.filter(id=>!document.getElementById(id));
- if(missing.length||missingIds.length){
-  console.error("Selbsttest fehlgeschlagen",{missing,missingIds});
-  showToast?.("Technischer Selbsttest: "+[...missing,...missingIds.map(x=>"#"+x)].join(", "),"error",9000);
-  return false;
- }
- console.log("Gesundheitsakte 2.1 Selbsttest erfolgreich");
- return true;
-}
-
-function setAnalysisMode(mode){
- if(window.explainLevel)explainLevel.value=mode;
- document.querySelectorAll(".modeBtn").forEach(b=>b.classList.toggle("active",b.dataset.mode===mode));
- renderDocuments();showToast("Analyseform geändert: "+document.querySelector(`.modeBtn[data-mode="${mode}"]`)?.textContent.trim(),"success");
-}
-document.querySelectorAll(".modeBtn").forEach(b=>b.onclick=()=>setAnalysisMode(b.dataset.mode));
-document.querySelectorAll("[data-q]").forEach(b=>b.onclick=()=>{assistantQuestion.value=b.dataset.q;assistantBtn.click()});
-function localAssistant(q){
- const query=(q||"").toLowerCase(),hits=documents.filter(d=>`${d.name} ${d.specialty} ${d.rubric} ${d.text}`.toLowerCase().includes(query.split(/\s+/).filter(x=>x.length>3)[0]||query));
- if(/auge|optik|visus|brille/.test(query))return documents.filter(d=>/auge|optik/i.test(`${d.specialty} ${d.rubric}`)).sort((a,b)=>a.date.localeCompare(b.date)).map(d=>`${fd(d.date)} – ${d.name}\n${specialistPlain(d.specialtyData)}`).join("\n\n")||"Keine Augen- oder Optikerbefunde gefunden.";
- if(/auffällig|auffaellig/.test(query))return latest().filter(v=>st(v)!=="ok").map(v=>`${v.name}: ${v.value} ${v.unit} am ${fd(v.date)}`).join("\n")||"Keine aktuellen Überschreitungen der hinterlegten Referenzbereiche.";
- if(/arztgespräch|arztgespraech|fragen/.test(query)){const d=[...documents].sort((a,b)=>b.date.localeCompare(a.date))[0];return d?explainDocument(d,"compact"):"Noch kein Befund vorhanden."}
- return hits.slice(0,12).map(d=>`${fd(d.date)} · ${d.specialty}\n${d.name}\n${(d.keyStatements||[]).slice(0,3).join(" | ")}`).join("\n\n")||"Keine eindeutigen Treffer. Verwende Begriffe wie Augen, Schulter, PSA, MCV, Zahnarzt oder Arztgespräch.";
-}
-function specialistPlain(s){if(!s)return"";if(s.kind==="eye")return`Rechts: ${JSON.stringify(s.right)} | Links: ${JSON.stringify(s.left)}`;return JSON.stringify(s)}
-if(window.assistantBtn)assistantBtn.onclick=()=>{setButtonBusy(assistantBtn,true,"Akte wird durchsucht");try{assistantResult.textContent=localAssistant(assistantQuestion.value);showToast("Gesundheitsakte durchsucht","success")}finally{setButtonBusy(assistantBtn,false)}};
-document.querySelectorAll(".bodyPart").forEach(el=>el.addEventListener("click",()=>{document.querySelectorAll(".bodyPart").forEach(x=>x.classList.remove("active"));el.classList.add("active");systemShow(Number(el.dataset.system))}));
-
-window.addEventListener("load",()=>{
- try{
-  appSelfCheck();
-  backfillSpecialtyData(false);
-  render();
-  showToast("Gesundheitsakte 2.1.1 wurde vollständig geladen.","success",3500);
- }catch(error){
-  console.error("Startfehler",error);
-  showToast("Startfehler: "+error.message,"error",10000);
- }
-});
-</script></body></html>
+<div id="toast" role="status" aria-live="polite"></div>
+<script src="storage.js"></script>
+<script src="extractors.js"></script>
+<script src="importer.js"></script>
+<script src="ui.js"></script>
+<script src="app.js"></script>
+</body></html>

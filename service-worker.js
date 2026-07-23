@@ -1,36 +1,4 @@
-const CACHE="gesundheitsakte-v2.1.1";
-const STATIC=["./manifest.webmanifest","./icon-192.png","./icon-512.png","./logo-64.png"];
-self.addEventListener("install",event=>{
- self.skipWaiting();
- event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(STATIC)));
-});
-self.addEventListener("activate",event=>{
- event.waitUntil(
-  caches.keys()
-   .then(keys=>Promise.all(keys.filter(key=>key!==CACHE).map(key=>caches.delete(key))))
-   .then(()=>self.clients.claim())
- );
-});
-self.addEventListener("fetch",event=>{
- if(event.request.method!=="GET")return;
- const request=event.request;
- if(request.mode==="navigate"){
-  event.respondWith(
-   fetch(request,{cache:"no-store"})
-    .then(response=>response)
-    .catch(async()=>await caches.match("./index.html")||Response.error())
-  );
-  return;
- }
- event.respondWith(
-  fetch(request,{cache:"no-store"})
-   .then(response=>{
-    if(response.ok){
-     const copy=response.clone();
-     caches.open(CACHE).then(cache=>cache.put(request,copy));
-    }
-    return response;
-   })
-   .catch(()=>caches.match(request))
- );
-});
+const CACHE="gesundheitsakte-3.0.0";const ASSETS=["./","./index.html","./styles.css","./storage.js","./extractors.js","./importer.js","./ui.js","./app.js","./manifest.webmanifest","./icon-192.png","./icon-512.png","./logo-64.png"];
+self.addEventListener("install",e=>{self.skipWaiting();e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)))});
+self.addEventListener("activate",e=>e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
+self.addEventListener("fetch",e=>{if(e.request.method!=="GET")return;if(e.request.mode==="navigate"){e.respondWith(fetch(e.request,{cache:"no-store"}).catch(()=>caches.match("./index.html")));return}e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request)))})
