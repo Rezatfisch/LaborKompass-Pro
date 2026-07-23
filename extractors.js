@@ -34,30 +34,12 @@ window.GAExtract=(()=>{
   {keys:["arztbrief","befundbericht","ärztlicher bericht"],type:"Arztbrief",rubric:"Arztbrief",specialty:"Allgemeinmedizin",regions:[]}
  ];
  function classify(text,name=""){
-  const s=(name+" "+text).toLowerCase(),scored=rules.map(r=>({...r,score:r.keys.reduce((n,k)=>n+(s.includes(k)?1:0),0)})).filter(r=>r.score).sort((a,b)=>b.score-a.score);
-  const r=scored[0];return r?{type:r.type,rubric:r.rubric,specialty:r.specialty,bodyRegions:[...r.regions],classificationScore:Math.min(1,.45+r.score*.14)}:{type:"Medizinisches Dokument",rubric:"Sonstige",specialty:"Noch nicht zugeordnet",bodyRegions:[],classificationScore:.25}
+  const c=GAMedKnowledge.classify(text,name);
+  return {type:c.type,rubric:c.mainRubric,mainRubric:c.mainRubric,specialty:c.specialty,creatorSpecialty:c.creatorSpecialty,topicSpecialty:c.topicSpecialty,bodyRegions:c.bodyRegions,laterality:c.laterality,alternatives:c.alternatives,classificationEvidence:c.classificationEvidence,classificationScore:c.confidence,learned:c.learned||false}
  }
  function bodyRegions(text,base=[]){
-  const s=text.toLowerCase(),map=[
-   ["Augen",["auge","visus","netzhaut","makula","glaukom","brille"]],
-   ["Ohren und Gleichgewicht",["ohr","hören","audiogramm","tinnitus","vestib"]],
-   ["Zähne und Mund",["zahn","kiefer","parodont","implantat"]],
-   ["Kopf und Gehirn",["gehirn","schädel","kopf","neurolog","hirn"]],
-   ["Hals",["hals","kehlkopf","schilddrüse","hws"]],
-   ["Herz und Kreislauf",["herz","ekg","blutdruck","gefäß","kardiolog"]],
-   ["Lunge",["lunge","bronch","asthma","copd","spirometr"]],
-   ["Bauchorgane",["magen","darm","leber","galle","bauchspeichel"]],
-   ["Nieren und Harnwege",["niere","blase","prostata","harn","urolog"]],
-   ["Wirbelsäule",["wirbelsäule","bandscheibe","hws","bws","lws"]],
-   ["Schulter und Arme",["schulter","oberarm","ellenbogen","arm"]],
-   ["Hände",["hand","finger","karpaltunnel"]],
-   ["Hüfte und Becken",["hüfte","becken"]],
-   ["Knie und Beine",["knie","meniskus","bein"]],
-   ["Füße",["fuß","zehe","sprunggelenk"]],
-   ["Haut",["haut","dermatolog","ekzem"]],
-   ["Psyche",["psych","depression","angst","burnout"]]
-  ];
-  return unique([...base,...map.filter(([,keys])=>keys.some(k=>s.includes(k))).map(([r])=>r)]);
+  const c=GAMedKnowledge.classify(text,"");
+  return unique([...(base||[]),...(c.bodyRegions||[])])
  }
  const labDefs=[
   ["MCV","fl"],["RDW","%"],["Hämoglobin","g/dl"],["Leukozyten","/nl"],["Thrombozyten","/nl"],["Kreatinin","mg/dl"],["eGFR","ml/min"],["Triglyceride","mg/dl"],["Cholesterin","mg/dl"],["LDL","mg/dl"],["HDL","mg/dl"],["PSA","ng/ml"],["TSH","mU/l"],["Glukose","mg/dl"],["HbA1c","%"],["Ferritin","ng/ml"],["Vitamin B12","pg/ml"],["Folsäure","ng/ml"],["GOT","U/l"],["GPT","U/l"],["Gamma-GT","U/l"],["CRP","mg/l"]
@@ -110,7 +92,7 @@ window.GAExtract=(()=>{
   const lines=text.split(/\n+/).map(clean).filter(x=>x.length<180);
   for(const line of lines){
    const m=line.match(new RegExp("^([^:]{2,45})\\s*[:=]\\s*([+\\-]?\\d+(?:[.,]\\d+)?)\\s*("+unitRx+")?","i"));
-   if(m&&!labsSet.has(clean(m[1]).toLowerCase()))out.push({label:clean(m[1]),value:num(m[2]),unit:m[3]||""});
+   if(m&&!labsSet.has(clean(m[1]).toLowerCase())){const label=clean(m[1]),unit=m[3]||"";out.push({label,value:num(m[2]),unit,valueType:GAMedKnowledge.valueType(label,unit,line)})}
   }
   return out.slice(0,20)
  }
@@ -137,16 +119,16 @@ window.GAExtract=(()=>{
  function document(text,name,mime,size=0){
   const cls=classify(text,name),date=detectDate(text,name),labValues=labs(text,date);
   const doc={id:uid(),name:name||"Manuell eingefügtes Dokument",mime,size,date,allDates:detectDates(text,name),...cls,text,
-   issuer:issuer(text),doctor:doctor(text),addresses:addresses(text),bodyRegions:bodyRegions(text,cls.bodyRegions),
+   issuer:issuer(text),doctor:doctor(text),addresses:addresses(text),bodyRegions:bodyRegions(text,cls.bodyRegions),laterality:cls.laterality||"ohne Seitenangabe",
    diagnoses:diagnoses(text),medications:medications(text),recommendations:recommendations(text),costs:costs(text),
    appointments:appointments(text),labValues,measurements:measurements(text,labValues),specialtyData:specialty(text,cls),
    keyStatements:statements(text),created:new Date().toISOString()};
   doc.confidence=confidence(doc);return doc
  }
  function reanalyse(doc){
-  const fresh=document(doc.text||"",doc.name||"",doc.mime||"",doc.size||0),preserve=["id","created","hash","manualClassification","originalStored"];
+  const fresh=document(doc.text||"",doc.name||"",doc.mime||"",doc.size||0),preserve=["id","created","hash","manualClassification","originalStored","creatorSpecialty","topicSpecialty","mainRubric","laterality","alternatives","classificationEvidence"];
   preserve.forEach(k=>{if(doc[k]!=null)fresh[k]=doc[k]});
-  if(doc.manualClassification){fresh.type=doc.type;fresh.rubric=doc.rubric;fresh.specialty=doc.specialty;fresh.bodyRegions=doc.bodyRegions}
+  if(doc.manualClassification){fresh.type=doc.type;fresh.rubric=doc.rubric;fresh.mainRubric=doc.mainRubric||doc.rubric;fresh.specialty=doc.specialty;fresh.creatorSpecialty=doc.creatorSpecialty||fresh.creatorSpecialty;fresh.topicSpecialty=doc.topicSpecialty||doc.specialty;fresh.bodyRegions=doc.bodyRegions;fresh.laterality=doc.laterality||fresh.laterality}
   Object.assign(doc,fresh);return doc
  }
  return {uid,document,reanalyse,classify,hasSpecial,bodyRegions};

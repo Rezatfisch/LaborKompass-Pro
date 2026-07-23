@@ -1,49 +1,69 @@
-# Gesundheitsakte 3.2.1 – intelligenter Dokumentimport
+# Gesundheitsakte 3.2.2 – präzise medizinische Zuordnung
 
-Diese Version konzentriert sich bewusst auf den ersten stabilen Entwicklungsschritt: den Import medizinischer Dokumente jeglicher Art.
+Diese Version verbessert gezielt die Einordnung importierter Dokumente. Der funktionierende PDF-/Scan-PDF-Import aus Version 3.2.1 bleibt erhalten.
 
-## Importierte Dateitypen
-- PDF mit eingebettetem Text
-- Fotos und Scans mit OCR
-- mehrere Fotos/Dateien als gemeinsames Dokument
-- TXT, CSV und eingefügter Text
-- Dateien aus Android-Dateien, OneDrive oder Google Drive über den System-Dateidialog
+## Neu: getrennte medizinische Zuordnung
 
-## Automatisch erkannte Grunddaten
-- Dokumentname und Dokumentdatum
-- Dokumentart und Rubrik
-- Fachgebiet
-- Körperregionen
-- Aussteller/Praxis und behandelnde Person
-- Adressen
-- Diagnosen und ICD-Begriffe
+Jedes Dokument erhält getrennte Felder für:
+
+- Dokumentart
+- Hauptrubrik
+- erstellendes Fachgebiet
+- medizinisches Themengebiet
+- Körperregion
+- Körperseite
+- alternative Fachgebietsvorschläge
+- Erkennungsbegriffe und Erkennungssicherheit
+
+Beispiel für ein Schulter-MRT:
+
+- Dokumentart: MRT-Befund
+- Hauptrubrik: Bildgebung
+- erstellendes Fachgebiet: Radiologie
+- medizinisches Themengebiet: Orthopädie / Unfallchirurgie
+- Körperregion: Bewegungsapparat › Schulter
+- Körperseite: rechts
+
+## Bessere Hauptrubriken
+
+- Befunde und Arztbriefe
+- Bildgebung
+- Labor
+- Diagnosen
+- Behandlungen und Therapien
+- Operationen
 - Medikamente
-- Empfehlungen und Kontrollen
-- Laborwerte mit erkannten Referenzgrenzen
-- sonstige Messwerte
-- Kostenangaben
-- Termine
-- wichtige Textaussagen
+- Augen und Optik
+- Zahnmedizin
+- Psychische Gesundheit
+- Rechnungen und Kosten
+- Impfungen
+- Vorsorge und Prävention
+- Sonstiges
 
-## Kontrollierte Vorschau
-Jeder Import erscheint als kompakte, aufklappbare Karte. Vor dem Speichern können Name, Datum, Dokumentart, Fachgebiet, Rubrik, Aussteller, Behandler, Körperregionen, Diagnosen, Medikamente und Empfehlungen korrigiert werden.
+## Werte werden nach Art getrennt
 
-## Dubletten
-Ähnliche beziehungsweise identische Dokumente können ersetzt, als Kopie gespeichert oder verworfen werden.
+- Laborwerte
+- Vitalwerte
+- Augenwerte
+- Hörwerte
+- Bewegungswerte
+- Bildgebungsmaße
+- Zahncodes
+- Medikamentendosen
+- Kosten
+- allgemeine Messwerte
 
-## Bestehende Funktionen
-Die Laborverläufe, Referenzbereiche, Ideal-/Orientierungsbereiche, Vergleiche, Fachwerte, Chronik, Analysen und Sicherungen aus Version 3.1 bleiben enthalten.
+Zahlen aus MRT- oder Arztberichten werden dadurch nicht pauschal als Laborwerte behandelt.
 
-## Aktualisierung
-Alle Dateien des Pakets in das Hauptverzeichnis des GitHub-Repositories laden und vorhandene Dateien ersetzen. Danach einmal öffnen:
+## Lokales Lernen
+
+Wenn die automatische Einordnung korrigiert wird, kann die App diese Korrektur lokal auf dem Gerät speichern. Ähnliche Dokumente werden danach bevorzugt entsprechend eingeordnet. Die Dokumentdaten und Lernregeln verlassen das Gerät nicht.
+
+## Installation
+
+Alle Dateien aus der ZIP in das Hauptverzeichnis des GitHub-Repositories hochladen und vorhandene Dateien ersetzen. Die neue Datei `medknowledge.js` muss ebenfalls hochgeladen werden.
+
+Danach öffnen:
 
 https://rezatfisch.github.io/LaborKompass-Pro/update.html
-
-
-## Korrektur in 3.2.1
-- Scan-PDFs ohne eingebetteten Text werden automatisch erkannt.
-- Jede PDF-Seite wird intern als hochauflösendes Bild gerendert.
-- Anschließend läuft OCR automatisch auf jeder Seite.
-- Der Benutzer muss PDF-Seiten nicht mehr vorher in Fotos umwandeln.
-- Der Fortschritt wird seitenweise und prozentual angezeigt.
-- Direkt auslesbare PDFs verwenden weiterhin den schnelleren Textmodus.

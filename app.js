@@ -24,23 +24,41 @@
  function textList(value){return String(value||"").split(/\n|;/).map(x=>x.trim()).filter(Boolean)}
  function updatePendingFromForm(id){
   const d=pending[id];if(!d)return null;
+  const original=d._autoClassification||{specialty:d.specialty,mainRubric:d.mainRubric||d.rubric,region:(d.bodyRegions||[])[0]||"",side:d.laterality||""};
   const val=suffix=>document.getElementById(`${suffix}-${id}`)?.value??"";
   d.name=val("pname").trim()||d.name;d.date=val("pdate")||d.date;d.type=val("ptype").trim()||d.type;
-  d.specialty=val("pspecialty").trim()||"Noch nicht zugeordnet";d.rubric=val("prubric").trim()||"Sonstige";
+  d.creatorSpecialty=val("pcreator").trim()||"Noch nicht erkannt";
+  d.topicSpecialty=val("ptopic").trim()||"Noch nicht zugeordnet";
+  d.specialty=d.topicSpecialty!=="Noch nicht zugeordnet"?d.topicSpecialty:d.creatorSpecialty;
+  d.mainRubric=val("pmainrubric").trim()||"Sonstiges";d.rubric=d.mainRubric;
+  d.laterality=val("pside")||"ohne Seitenangabe";
   d.issuer=val("pissuer").trim();d.doctor=val("pdoctor").trim();d.bodyRegions=textList(val("pregions"));
   d.diagnoses=textList(val("pdiagnoses"));d.medications=textList(val("pmedications"));d.recommendations=textList(val("precommendations"));
   d.manualClassification=true;
+  const changed=original.specialty!==d.topicSpecialty||original.mainRubric!==d.mainRubric||original.region!==(d.bodyRegions[0]||"")||original.side!==d.laterality;
+  if(changed&&document.getElementById(`plearn-${id}`)?.checked){
+   GAMedKnowledge.learn({keywords:d.classificationEvidence||[],specialty:d.topicSpecialty,mainRubric:d.mainRubric,region:d.bodyRegions[0]||"",side:d.laterality});
+   d.learnedCorrection=true
+  }
   return d
  }
  function structuredSummary(doc){
   const chips=(doc.bodyRegions||[]).map(x=>`<span class="chip">${GAUI.esc(x)}</span>`).join("");
   const source=(doc.sourceNames||[doc.name]).map(x=>`<li>${GAUI.esc(x)}</li>`).join("");
   const diag=(doc.diagnoses||[]).map(x=>`<span class="chip">${GAUI.esc(x)}</span>`).join("")||"<span class='small'>Keine eindeutige Diagnose erkannt</span>";
-  const values=[...(doc.labValues||[]).map(v=>`${v.name}: ${v.value} ${v.unit}`),...(doc.measurements||[]).map(v=>`${v.label}: ${v.value} ${v.unit}`)];
+  const groups={};
+  for(const v of doc.labValues||[])(groups["Laborwerte"]??=[]).push(`${v.name}: ${v.value} ${v.unit}${v.min!=null||v.max!=null?` (Referenz ${v.min??"–"} bis ${v.max??"∞"})`:""}`);
+  for(const v of doc.measurements||[])(groups[v.valueType||"Allgemeine Messwerte"]??=[]).push(`${v.label}: ${v.value} ${v.unit}`);
+  const valueHtml=Object.keys(groups).length?Object.entries(groups).map(([type,items])=>`<details><summary>${GAUI.esc(type)} (${items.length})</summary><ul class="source-list">${items.map(x=>`<li>${GAUI.esc(x)}</li>`).join("")}</ul></details>`).join(""):"<p class='small'>Keine Messwerte sicher erkannt.</p>";
   const costs=(doc.costs||[]).map(v=>`${v.label}: ${v.value.toFixed?.(2)??v.value} ${v.unit||"€"}`);
-  return `<div class="field-group"><h4>Erkannte Zuordnung</h4><div class="chip-list">${chips||"<span class='small'>Keine Körperregion sicher erkannt</span>"}</div></div>
+  const alt=(doc.alternatives||[]).map(a=>`<span class="chip">${GAUI.esc(a.name)} · ${a.confidence}%</span>`).join("");
+  return `<div class="field-group"><h4>Medizinische Zuordnung</h4>
+   <div class="reference-grid"><div><b>Erstellendes Fachgebiet</b><br>${GAUI.esc(doc.creatorSpecialty||"Nicht erkannt")}</div><div><b>Medizinisches Themengebiet</b><br>${GAUI.esc(doc.topicSpecialty||doc.specialty||"Nicht erkannt")}</div><div><b>Hauptrubrik</b><br>${GAUI.esc(doc.mainRubric||doc.rubric||"Sonstiges")}</div><div><b>Körperseite</b><br>${GAUI.esc(doc.laterality||"ohne Seitenangabe")}</div></div>
+   <div class="chip-list">${chips||"<span class='small'>Keine Körperregion sicher erkannt</span>"}</div>
+   ${alt?`<p class="small"><b>Alternative Vorschläge:</b></p><div class="chip-list">${alt}</div>`:""}
+  </div>
   <div class="field-group"><h4>Diagnosen und wichtige Begriffe</h4><div class="chip-list">${diag}</div></div>
-  <div class="field-group"><h4>Erkannte Werte</h4>${values.length?`<ul class="source-list">${values.map(x=>`<li>${GAUI.esc(x)}</li>`).join("")}</ul>`:"<p class='small'>Keine Messwerte sicher erkannt.</p>"}</div>
+  <div class="field-group"><h4>Erkannte Werte nach Typ</h4>${valueHtml}</div>
   <div class="field-group"><h4>Kosten</h4>${costs.length?`<ul class="source-list">${costs.map(x=>`<li>${GAUI.esc(x)}</li>`).join("")}</ul>`:"<p class='small'>Keine Kostenangaben erkannt.</p>"}</div>
   <details><summary>Quelldateien und erkannter Originaltext</summary><ul class="source-list">${source}</ul><div class="compact-text">${GAUI.esc(doc.text||"")}</div></details>`
  }
@@ -59,25 +77,32 @@
   doc.id=did;state.documents[i]=doc;integrateLabs(doc);delete doc._files;delete pending[pid];save();render();renderPendingCards();GAUI.toast("Vorhandenes Dokument ersetzt.")
  }
  function preview(doc){
-  pending[doc.id]=doc;const dup=duplicate(doc),pct=Math.round((doc.confidence||.3)*100);
+  pending[doc.id]=doc;
+  if(!doc._autoClassification)doc._autoClassification={specialty:doc.topicSpecialty||doc.specialty,mainRubric:doc.mainRubric||doc.rubric,region:(doc.bodyRegions||[])[0]||"",side:doc.laterality||""};
+  const dup=duplicate(doc),pct=Math.round((doc.confidence||.3)*100);
   const stateTag=dup?`<span class="tag duplicate">bereits ähnlich vorhanden</span>`:`<span class="tag new">neu</span>`;
-  const uncertain=pct<60?`<span class="tag uncertain">Zuordnung kontrollieren</span>`:"";
+  const uncertain=pct<65?`<span class="tag uncertain">Zuordnung kontrollieren</span>`:"";
+  const evidence=(doc.classificationEvidence||[]).map(x=>`<span class="chip">${GAUI.esc(x)}</span>`).join("");
   return `<details class="item import-card" id="preview-${doc.id}">
-   <summary><div><div class="import-title">${GAUI.esc(doc.name)}</div><div class="import-status">${stateTag}${uncertain}<span class="tag">${GAUI.date(doc.date)}</span><span class="tag">${GAUI.esc(doc.specialty)}</span></div></div><span>▼</span></summary>
+   <summary><div><div class="import-title">${GAUI.esc(doc.name)}</div><div class="import-status">${stateTag}${uncertain}<span class="tag">${GAUI.date(doc.date)}</span><span class="tag">${GAUI.esc(doc.type)}</span><span class="tag">${GAUI.esc(doc.topicSpecialty||doc.specialty)}</span></div></div><span>▼</span></summary>
    <div class="import-body">
     <div class="small">Erkennungssicherheit: ${pct}%</div><div class="confidence"><i style="width:${pct}%"></i></div>
-    ${pct<60?`<div class="review-warning">Die automatische Zuordnung ist unsicher. Bitte Fachgebiet, Dokumentart und Körperregion kontrollieren.</div>`:""}
-    <div class="field-group"><h4>Grunddaten kontrollieren</h4>
+    ${pct<65?`<div class="review-warning">Die automatische Zuordnung ist nicht eindeutig. Bitte erstellendes Fachgebiet, Themengebiet, Rubrik, Körperregion und Seite kontrollieren.</div>`:""}
+    <div class="field-group"><h4>Grunddaten und Zuordnung kontrollieren</h4>
      <div class="edit-grid">
       <div class="wide"><label>Dokumentname</label><input id="pname-${doc.id}" value="${GAUI.esc(doc.name)}"></div>
       <div><label>Dokumentdatum</label><input id="pdate-${doc.id}" type="date" value="${doc.date||""}"></div>
       <div><label>Dokumentart</label><input id="ptype-${doc.id}" value="${GAUI.esc(doc.type)}"></div>
-      <div><label>Fachgebiet</label><input id="pspecialty-${doc.id}" list="specialtyOptions" value="${GAUI.esc(doc.specialty)}"></div>
-      <div><label>Rubrik</label><input id="prubric-${doc.id}" value="${GAUI.esc(doc.rubric)}"></div>
+      <div><label>Erstellendes Fachgebiet</label><input id="pcreator-${doc.id}" list="specialtyOptions" value="${GAUI.esc(doc.creatorSpecialty||"")}"></div>
+      <div><label>Medizinisches Themengebiet</label><input id="ptopic-${doc.id}" list="specialtyOptions" value="${GAUI.esc(doc.topicSpecialty||doc.specialty||"")}"></div>
+      <div><label>Hauptrubrik</label><select id="pmainrubric-${doc.id}">${GAMedKnowledge.MAIN_RUBRICS.map(x=>`<option${x===(doc.mainRubric||doc.rubric)?" selected":""}>${GAUI.esc(x)}</option>`).join("")}</select></div>
+      <div><label>Körperseite</label><select id="pside-${doc.id}">${["ohne Seitenangabe","rechts","links","beidseits"].map(x=>`<option${x===(doc.laterality||"ohne Seitenangabe")?" selected":""}>${x}</option>`).join("")}</select></div>
       <div><label>Aussteller / Praxis</label><input id="pissuer-${doc.id}" value="${GAUI.esc(doc.issuer||"")}"></div>
       <div><label>Arzt / Behandler</label><input id="pdoctor-${doc.id}" value="${GAUI.esc(doc.doctor||"")}"></div>
       <div class="wide"><label>Körperregionen – mit Semikolon trennen</label><input id="pregions-${doc.id}" value="${GAUI.esc((doc.bodyRegions||[]).join("; "))}"></div>
      </div>
+     ${evidence?`<p class="small"><b>Erkennungsbegriffe:</b></p><div class="chip-list">${evidence}</div>`:""}
+     <label class="learn-check"><input id="plearn-${doc.id}" type="checkbox" checked> Meine Korrektur für ähnliche Dokumente lokal merken</label>
     </div>
     ${structuredSummary(doc)}
     <div class="field-group"><h4>Erkannte Inhalte korrigieren</h4>
@@ -106,8 +131,8 @@
   $("documentList").innerHTML=arr.map(d=>`<details class="item import-card"><summary><div><div class="import-title">${GAUI.esc(d.name)}</div><div class="import-status"><span class="tag">${GAUI.date(d.date)}</span><span class="tag">${GAUI.esc(d.rubric)}</span><span class="tag">${GAUI.esc(d.specialty)}</span>${d.originalStored?'<span class="tag new">Original gespeichert</span>':""}</div></div><span>▼</span></summary><div class="import-body">${structuredSummary(d)}${GAUI.specialHtml(d.specialtyData)}<details><summary>Verständliche Auswertung</summary><pre class="output">${GAUI.esc(GAUI.analysis(d,mode))}</pre></details><div class="actions"><button onclick="GAApp.analyse('${d.id}')">Analysieren</button><button onclick="GAApp.share('${d.id}')">Teilen</button><button onclick="GAApp.remove('${d.id}')">Nur Dokument entfernen</button></div></div></details>`).join("")||"<article class='card'>Keine Dokumente gefunden.</article>";
  } function renderSpecialties(){
   const q=$("specialtySearch").value.toLowerCase(),f=$("specialtyFilter").value,docs=state.documents.filter(isSpecial),specs=[...new Set(docs.map(d=>d.specialty))].sort(),cur=f;$("specialtyFilter").innerHTML='<option value="all">Alle Fachgebiete</option>'+specs.map(x=>`<option>${GAUI.esc(x)}</option>`).join("");if(specs.includes(cur))$("specialtyFilter").value=cur;
-  const arr=docs.filter(d=>(f==="all"||d.specialty===f)&&`${d.name} ${d.text} ${JSON.stringify(d.specialtyData)}`.toLowerCase().includes(q)).sort((a,b)=>(b.date||"").localeCompare(a.date||""));
-  $("specialtyList").innerHTML=arr.map(d=>`<div class="item"><h3>${GAUI.esc(d.name)}</h3><div class="meta">${GAUI.date(d.date)} · ${GAUI.esc(d.specialty)}</div>${GAUI.specialHtml(d.specialtyData)}${assignBox(d.id)}</div>`).join("")||"<article class='card'>Noch keine Fachbefunde. Neu auswerten oder manuell zuordnen.</article>";
+  const arr=docs.filter(d=>(f==="all"||d.specialty===f)&&`${d.name} ${d.text} ${d.creatorSpecialty||""} ${d.topicSpecialty||d.specialty||""} ${JSON.stringify(d.specialtyData)}`.toLowerCase().includes(q)).sort((a,b)=>(b.date||"").localeCompare(a.date||""));
+  $("specialtyList").innerHTML=arr.map(d=>`<div class="item"><h3>${GAUI.esc(d.name)}</h3><div class="meta">${GAUI.date(d.date)} · erstellt: ${GAUI.esc(d.creatorSpecialty||"–")} · Thema: ${GAUI.esc(d.topicSpecialty||d.specialty||"–")}</div>${GAUI.specialHtml(d.specialtyData)}${assignBox(d.id)}</div>`).join("")||"<article class='card'>Noch keine Fachbefunde. Neu auswerten oder manuell zuordnen.</article>";
  }
  function assignBox(id){return `<div class="actions"><select id="assign-${id}"><option value="">Fachgebiet ändern …</option><option>Augenheilkunde</option><option>Augenoptik</option><option>Zahnmedizin</option><option>Orthopädie / Unfallchirurgie</option><option>Neurologie</option><option>Urologie</option><option>Kardiologie</option><option>Radiologie</option><option>Hals-Nasen-Ohrenheilkunde</option><option>Allgemeinmedizin</option></select><button onclick="GAApp.assign('${id}')">Zuordnen</button></div>`}
  function renderUnassigned(){const arr=state.documents.filter(d=>!isSpecial(d));$("unassignedList").innerHTML=`<article class="card"><h2>Nicht zugeordnet</h2>${arr.map(d=>`<div class="item"><b>${GAUI.esc(d.name)}</b><div class="small">${GAUI.date(d.date)} · ${GAUI.esc(d.rubric)}</div>${assignBox(d.id)}</div>`).join("")||"<p>Alle Dokumente zugeordnet.</p>"}</article>`}
@@ -192,6 +217,6 @@
   $("forceUpdate").onclick=async()=>{if("serviceWorker"in navigator)(await navigator.serviceWorker.getRegistrations()).forEach(r=>r.unregister());if("caches"in window)(await caches.keys()).forEach(k=>caches.delete(k));location.reload()};
  }
  window.GAApp={saveDoc,replace:replaceDoc,discard:id=>{delete pending[id];renderPendingCards();GAUI.toast("Vorbereiteter Import verworfen.")},analyse:id=>{navigate("analysis");$("analysisDocument").value=id;$("runAnalysis").click()},share,remove:id=>{if(confirm("Nur das Dokument entfernen? Bereits übernommene Laborwerte bleiben erhalten.")){state.documents=state.documents.filter(x=>x.id!==id);save();render();GAUI.toast("Dokument aus dem Archiv entfernt.")}},removeLab:id=>{if(confirm("Diesen Laborwert löschen?")){state.values=state.values.filter(x=>x.id!==id);save();render();GAUI.toast("Laborwert gelöscht.")}},useReference:name=>{navigate("labs");const r=GALabRefs.find(name);$("newLabName").value=name;$("newLabUnit").value=r?.unit||"";$("newLabMin").value=r?.min??"";$("newLabMax").value=r?.max??"";$("newLabValue").focus();scrollTo(0,250)},assign:id=>{const d=state.documents.find(x=>x.id===id),v=$(`assign-${id}`).value;if(!d||!v)return;d.specialty=v;d.rubric=v==="Augenoptik"?"Optik / Brille":v==="Zahnmedizin"?"Zahnmedizin":v.split(" / ")[0];d.manualClassification=true;GAExtract.reanalyse(d);save();render();GAUI.toast("Fachgebiet zugeordnet.")}}; window.addEventListener("error",e=>GAUI.toast(`Programmfehler: ${e.message}`,"error"));window.addEventListener("unhandledrejection",e=>GAUI.toast(`Importfehler: ${e.reason?.message||e.reason}`,"error"));
- wire();state.documents.forEach(GAExtract.reanalyse);save();render();selfTest();GAUI.toast("Gesundheitsakte 3.2.1 wurde vollständig geladen.");
- if("serviceWorker"in navigator)navigator.serviceWorker.register("./service-worker.js?v=3.2.1",{updateViaCache:"none"}).catch(console.warn);
+ wire();state.documents.forEach(GAExtract.reanalyse);save();render();selfTest();GAUI.toast("Gesundheitsakte 3.2.2 wurde vollständig geladen.");
+ if("serviceWorker"in navigator)navigator.serviceWorker.register("./service-worker.js?v=3.2.2",{updateViaCache:"none"}).catch(console.warn);
 })();
