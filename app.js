@@ -2,12 +2,8 @@
  const state=GAStorage.load();let mode="simple",pending={};
  const $=id=>document.getElementById(id);
 
- const CHOICE_DEFAULTS={
-  documentTypeOptions:["Arztbrief","Befundbericht","Dermatologischer Befund","Laborbericht","MRT-Befund","CT-Befund","Röntgenbefund","Ultraschallbefund","Operationsbericht","Entlassungsbericht","Rezept","Medikamentenplan","Überweisung","Rechnung","Impfbescheinigung","Pathologiebericht","Sonstiges"],
-  specialtyOptions:["Allgemeinmedizin","Innere Medizin","Dermatologie","Orthopädie / Unfallchirurgie","Radiologie","Neurologie","Kardiologie","Urologie","Hals-Nasen-Ohrenheilkunde","Augenheilkunde","Augenoptik","Zahnmedizin","Gastroenterologie","Pneumologie","Endokrinologie","Psychiatrie / Psychotherapie","Chirurgie","Gynäkologie","Pathologie","Laboratoriumsmedizin","Noch nicht zugeordnet"],
-  rubricOptions:["Allgemeine Befunde","Labor","Bildgebung","Haut / Dermatologie","Orthopädie","Neurologie","Herz / Kreislauf","Urologie","HNO","Augen","Zahnmedizin","Medikamente / Rezepte","Operationen","Krankenhaus / Entlassung","Rechnungen / Kosten","Impfungen","Sonstiges"],
-  bodyRegionOptions:["Kopf","Gehirn","Auge","Ohr","Nase / Nebenhöhlen","Mund / Zähne","Hals","Halswirbelsäule","Schulter","Arm","Ellenbogen","Hand / Finger","Brustkorb","Herz","Lunge","Bauch","Magen / Darm","Leber","Niere","Harnwege","Prostata","Wirbelsäule","Lendenwirbelsäule","Becken","Hüfte","Knie","Unterschenkel","Fuß","Haut","Ganzkörper"]
- };
+ const CHOICE_DEFAULTS=GAChoices.catalogs;
+
  function customChoiceKey(id){return `ga_choice_${id}`}
  function getCustomChoices(id){try{return JSON.parse(localStorage.getItem(customChoiceKey(id))||"[]").filter(Boolean)}catch{return []}}
  function learnChoice(id,value){
@@ -64,11 +60,15 @@
   if(el)el.textContent=`${n} vorbereitet`;
  }
  function textList(value){return String(value||"").split(/\n|;/).map(x=>x.trim()).filter(Boolean)}
+ function flexibleChoice(key,current,inputId,labelId){
+  return `<div class="flex-choice">${GAChoices.select(key,current,`data-flex-target="${inputId}" data-catalog="${key}" aria-label="${labelId||"Auswahl"}"`)}<input id="${inputId}" value="${GAUI.esc(current||"")}" placeholder="Eigenen Eintrag eingeben" hidden></div>`
+ }
+ function normalizePendingName(d){d.name=GAChoices.normalizeName(d.name,d.date,d.mime||d.originalFilesMeta?.[0]?.type||"");return d.name}
  function updatePendingFromForm(id){
   const d=pending[id];if(!d)return null;
   const original=d._autoClassification||{specialty:d.specialty,mainRubric:d.mainRubric||d.rubric,region:(d.bodyRegions||[])[0]||"",side:d.laterality||""};
   const val=suffix=>document.getElementById(`${suffix}-${id}`)?.value??"";
-  d.name=val("pname").trim()||d.name;d.date=val("pdate")||d.date;d.type=val("ptype").trim()||d.type;
+  d.name=val("pname").trim()||d.name;d.date=val("pdate")||d.date;d.type=val("ptype").trim()||d.type;normalizePendingName(d);
   d.creatorSpecialty=val("pcreator").trim()||"Noch nicht erkannt";
   d.topicSpecialty=val("ptopic").trim()||"Noch nicht zugeordnet";
   d.specialty=d.topicSpecialty!=="Noch nicht zugeordnet"?d.topicSpecialty:d.creatorSpecialty;
@@ -136,16 +136,16 @@
     ${pct<65?`<div class="review-warning">Die automatische Zuordnung ist nicht eindeutig. Bitte erstellendes Fachgebiet, Themengebiet, Rubrik, Körperregion und Seite kontrollieren.</div>`:""}
     <div class="field-group"><h4>Grunddaten und Zuordnung kontrollieren</h4>
      <div class="edit-grid">
-      <div class="wide"><label>Dokumentname</label><input id="pname-${doc.id}" value="${GAUI.esc(doc.name)}"></div>
+      <div class="wide"><label>Dokumentname</label><input id="pname-${doc.id}" value="${GAUI.esc(GAChoices.normalizeName(doc.name,doc.date,doc.mime||""))}"><div class="small">Vorgabe: JJJJ_MM_TT_Beschreibung. Die Dateiendung .pdf, .jpg oder .png bleibt automatisch erhalten.</div></div>
       <div><label>Dokumentdatum</label><input id="pdate-${doc.id}" type="date" value="${doc.date||""}"></div>
-      <div><label>Dokumentart</label><input id="ptype-${doc.id}" list="documentTypeOptions" value="${GAUI.esc(doc.type)}" placeholder="Auswählen oder selbst eintragen"></div>
-      <div><label>Erstellendes Fachgebiet</label><input id="pcreator-${doc.id}" list="specialtyOptions" value="${GAUI.esc(doc.creatorSpecialty||"")}"></div>
-      <div><label>Medizinisches Themengebiet</label><input id="ptopic-${doc.id}" list="specialtyOptions" value="${GAUI.esc(doc.topicSpecialty||doc.specialty||"")}"></div>
-      <div><label>Hauptrubrik</label><input id="pmainrubric-${doc.id}" list="rubricOptions" value="${GAUI.esc(doc.mainRubric||doc.rubric||"")}" placeholder="Auswählen oder selbst eintragen"></div>
-      <div><label>Körperseite</label><select id="pside-${doc.id}">${["ohne Seitenangabe","rechts","links","beidseits"].map(x=>`<option${x===(doc.laterality||"ohne Seitenangabe")?" selected":""}>${x}</option>`).join("")}</select></div>
+      <div><label>Dokumentart</label>${flexibleChoice("documentTypeOptions",doc.type,`ptype-${doc.id}`,"Dokumentart")}</div>
+      <div><label>Erstellendes Fachgebiet</label>${flexibleChoice("specialtyOptions",doc.creatorSpecialty||"",`pcreator-${doc.id}`,"Erstellendes Fachgebiet")}</div>
+      <div><label>Medizinisches Themengebiet</label>${flexibleChoice("specialtyOptions",doc.topicSpecialty||doc.specialty||"",`ptopic-${doc.id}`,"Medizinisches Themengebiet")}</div>
+      <div><label>Hauptrubrik</label>${flexibleChoice("rubricOptions",doc.mainRubric||doc.rubric||"",`pmainrubric-${doc.id}`,"Hauptrubrik")}</div>
+      <div><label>Körperseite</label><select id="pside-${doc.id}">${GAChoices.catalogs.lateralityOptions.map(x=>`<option${x===(doc.laterality||"ohne Seitenangabe")?" selected":""}>${x}</option>`).join("")}</select></div>
       <div><label>Aussteller / Praxis</label><input id="pissuer-${doc.id}" value="${GAUI.esc(doc.issuer||"")}"></div>
       <div><label>Arzt / Behandler</label><input id="pdoctor-${doc.id}" value="${GAUI.esc(doc.doctor||"")}"></div>
-      <div class="wide"><label>Körperregionen – mit Semikolon trennen</label><input id="pregions-${doc.id}" list="bodyRegionOptions" value="${GAUI.esc((doc.bodyRegions||[]).join("; "))}" placeholder="Auswählen oder mehrere mit Semikolon eintragen"></div>
+      <div class="wide"><label>Körperbereich / Körperregion</label>${GAChoices.select("bodyRegionOptions","",`data-region-target="pregions-${doc.id}" aria-label="Körperbereich hinzufügen"`)}<input id="pregions-${doc.id}" value="${GAUI.esc((doc.bodyRegions||[]).join("; "))}" placeholder="Mehrere Bereiche mit Semikolon trennen oder eigenen Begriff eintragen"><div class="small">Die Liste ist alphabetisch. Mehrere Bereiche können nacheinander hinzugefügt werden.</div></div>
      </div>
      ${evidence?`<p class="small"><b>Erkennungsbegriffe:</b></p><div class="chip-list">${evidence}</div>`:""}
      <label class="learn-check"><input id="plearn-${doc.id}" type="checkbox" checked> Meine Korrektur für ähnliche Dokumente lokal merken</label>
@@ -164,7 +164,7 @@
  }
  function renderPendingCards(){
   const box=$("importResults");if(!box)return;
-  const docs=Object.values(pending);box.innerHTML=docs.length?docs.map(preview).join(""):"<p class='small'>Keine vorbereiteten Dokumente.</p>";updatePendingCount()
+  const docs=Object.values(pending);box.innerHTML=docs.length?docs.map(preview).join(""):"<p class='small'>Keine vorbereiteten Dokumente.</p>";GAChoices.bind(box);box.querySelectorAll("input[id^=pname-]").forEach(el=>el.addEventListener("blur",()=>{const id=el.id.slice(6),d=pending[id];if(d)el.value=GAChoices.normalizeName(el.value,document.getElementById(`pdate-${id}`)?.value,d.mime||"")}));updatePendingCount()
  } function render(){
   $("metricDocuments").textContent=state.documents.length;$("metricLabs").textContent=state.values.length;$("metricSpecialties").textContent=state.documents.filter(isSpecial).length;$("metricAbnormal").textContent=state.values.filter(abnormal).length;
   const unreviewed=state.documents.filter(d=>(d.reviewStatus||"unreviewed")!=="reviewed").length,withoutOriginal=state.documents.filter(d=>!d.originalStored).length;
@@ -283,6 +283,6 @@
   useReference:name=>{navigate("labs");const r=GALabRefs.find(name);$("newLabName").value=name;$("newLabUnit").value=r?.unit||"";$("newLabMin").value=r?.min??"";$("newLabMax").value=r?.max??"";$("newLabValue").focus();scrollTo(0,250)},
   assign:id=>{const d=state.documents.find(x=>x.id===id),v=$(`assign-${id}`).value;if(!d||!v)return;d.specialty=v;d.rubric=v==="Augenoptik"?"Optik / Brille":v==="Zahnmedizin"?"Zahnmedizin":v.split(" / ")[0];d.manualClassification=true;GAExtract.reanalyse(d);save();render();GAUI.toast("Fachgebiet zugeordnet.")}
  }; window.addEventListener("error",e=>{recordProgramError("JavaScript",e.message,`${e.filename||""}:${e.lineno||""}:${e.colno||""}\n${e.error?.stack||""}`);GAUI.toast(`Programmfehler protokolliert: ${e.message}`,"error")});window.addEventListener("unhandledrejection",e=>{recordProgramError("Promise",e.reason?.message||e.reason,e.reason?.stack||"");GAUI.toast(`Importfehler protokolliert: ${e.reason?.message||e.reason}`,"error")});
- wire();state.documents.forEach(GAExtract.reanalyse);save();render();selfTest();GAUI.toast("Gesundheitsakte 3.3.2 Stabilitätsupdate wurde vollständig geladen.");
- if("serviceWorker"in navigator)navigator.serviceWorker.register("./service-worker.js?v=3.3.2",{updateViaCache:"none"}).catch(console.warn);
+ wire();state.documents.forEach(GAExtract.reanalyse);save();render();selfTest();GAUI.toast("Gesundheitsakte 3.3.3 mit echten Auswahllisten wurde vollständig geladen.");
+ if("serviceWorker"in navigator)navigator.serviceWorker.register("./service-worker.js?v=3.3.3",{updateViaCache:"none"}).catch(console.warn);
 })();

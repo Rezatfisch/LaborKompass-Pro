@@ -94,23 +94,24 @@ window.GAReviewer=(()=>{
    <textarea data-field="${key}" rows="${Math.max(2,Math.min(6,arr.length+1))}">${esc(arr.join("\n"))}</textarea>
    <div class="field-source">Quelle: erkannter Dokumenttext${current.pageCount?` · ${current.pageCount} Seite(n)`:""}</div></div>`
  }
- function choiceInput(key,value,listId,placeholder="Auswählen oder selbst eintragen"){return `<input data-field="${key}" list="${listId}" value="${esc(value||"")}" placeholder="${esc(placeholder)}">`}
+ function choiceInput(key,value,catalog){const inputId=`review-${key}`;return `<div class="flex-choice">${GAChoices.select(catalog,value||"",`data-flex-target="${inputId}" data-catalog="${catalog}"`)}<input id="${inputId}" data-field="${key}" value="${esc(value||"")}" placeholder="Eigenen Eintrag eingeben" hidden></div>`}
+ function regionInput(items){return `<div class="review-field"><div class="review-field-head"><b>Körperbereich / Körperregion</b><span class="field-confidence">${Math.round((current.confidence||.3)*100)}%</span></div>${GAChoices.select("bodyRegionOptions","",`data-region-target="review-bodyRegions"`)}<input id="review-bodyRegions" data-field="bodyRegions" value="${esc((items||[]).join("; "))}" placeholder="Mehrere Bereiche mit Semikolon trennen oder eigenen Begriff eintragen"><div class="field-source">Alphabetische Auswahlliste; mehrere Bereiche können nacheinander ergänzt werden.</div></div>`}
  function renderData(){
   const box=document.getElementById("rpanel-data");
   box.innerHTML=`<div class="review-data-grid">
    <div class="review-form">
     <h3>Dokumentdaten prüfen</h3>
     <div class="edit-grid">
-     <div class="wide"><label>Dokumentname</label><input data-field="name" value="${esc(current.name)}"></div>
+     <div class="wide"><label>Dokumentname</label><input id="reviewDocumentName" data-field="name" value="${esc(GAChoices.normalizeName(current.name,current.date,current.mime||""))}"><div class="small">Vorgabe: JJJJ_MM_TT_Beschreibung; Dateiendung bleibt automatisch erhalten.</div></div>
      <div><label>Datum</label><input data-field="date" type="date" value="${esc(current.date||"")}"></div>
      <div><label>Dokumentart</label>${choiceInput("type",current.type,"documentTypeOptions")}</div>
      <div><label>Hauptrubrik</label>${choiceInput("rubric",current.rubric,"rubricOptions")}</div>
      <div><label>Erstellendes Fachgebiet</label>${choiceInput("creatorSpecialty",current.creatorSpecialty,"specialtyOptions")}</div>
      <div><label>Medizinisches Themengebiet</label>${choiceInput("topicSpecialty",current.topicSpecialty||current.specialty,"specialtyOptions")}</div>
-     <div><label>Körperseite</label><select data-field="laterality">${["ohne Seitenangabe","rechts","links","beidseits"].map(x=>`<option${x===(current.laterality||"ohne Seitenangabe")?" selected":""}>${x}</option>`).join("")}</select></div>
+     <div><label>Körperseite</label><select data-field="laterality">${GAChoices.catalogs.lateralityOptions.map(x=>`<option${x===(current.laterality||"ohne Seitenangabe")?" selected":""}>${x}</option>`).join("")}</select></div>
      <div><label>Arzt / Behandler</label><input data-field="doctor" value="${esc(current.doctor||"")}"></div>
     </div>
-    ${listField("Körperregionen","bodyRegions",current.bodyRegions)}
+    ${regionInput(current.bodyRegions)}
     ${listField("Diagnosen / Befunde","diagnoses",current.diagnoses)}
     ${listField("Medikamente","medications",current.medications)}
     ${listField("Empfehlungen / Kontrollen","recommendations",current.recommendations)}
@@ -120,6 +121,7 @@ window.GAReviewer=(()=>{
    </div>
    <aside class="quality-card"><h3>Qualitätsbewertung</h3>${qualityHtml(current)}<p class="small">Die Bewertung ist eine technische Orientierung. Sie ersetzt nicht den Vergleich mit dem Original.</p></aside>
   </div>`;
+  GAChoices.bind(box);box.querySelector("#reviewDocumentName")?.addEventListener("blur",e=>e.target.value=GAChoices.normalizeName(e.target.value,box.querySelector('[data-field="date"]')?.value,current.mime||""));
   box.querySelector("#reviewStatus").value=current.reviewStatus||"unreviewed";
   box.querySelector("#saveReview").onclick=()=>saveData(false);
   box.querySelector("#markReviewed").onclick=()=>{box.querySelector("#reviewStatus").value="reviewed";saveData(true)};
@@ -134,6 +136,7 @@ window.GAReviewer=(()=>{
    if(key==="topicSpecialty")current.specialty=value;
    if(JSON.stringify(value)!==old)changed.push(key)
   });
+  current.name=GAChoices.normalizeName(current.name,current.date,current.mime||current.originalFilesMeta?.[0]?.type||"");
   current.reviewStatus=box.querySelector("#reviewStatus").value;
   current.hasUncertainOCR=box.querySelector("#reviewUncertain").checked;
   current.reviewedAt=new Date().toISOString();current.manualChanges=(current.manualChanges||0)+changed.length;

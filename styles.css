@@ -40,3 +40,7 @@
 input[list]{background-image:linear-gradient(45deg,transparent 50%,#64748b 50%),linear-gradient(135deg,#64748b 50%,transparent 50%);background-position:calc(100% - 16px) 50%,calc(100% - 11px) 50%;background-size:5px 5px,5px 5px;background-repeat:no-repeat;padding-right:30px}
 
 .error-console{margin-top:16px;background:#fff;border:1px solid #fecaca;border-radius:14px;padding:12px}.error-console summary{font-weight:800;color:#991b1b}.error-console pre{white-space:pre-wrap;max-height:320px;overflow:auto;background:#fff7f7;padding:10px;border-radius:10px;font-size:.8rem}.just-saved{outline:4px solid #0b7285;animation:savedPulse 1.7s ease-out}@keyframes savedPulse{0%{transform:scale(.98)}45%{transform:scale(1.01)}100%{transform:scale(1)}}
+/* 3.3.3: echte Auswahllisten */
+.flex-choice{display:grid;gap:7px}.flex-choice select,.flex-choice input{width:100%}
+.flex-choice input[hidden]{display:none!important}
+select[data-region-target]{margin-bottom:8px}
