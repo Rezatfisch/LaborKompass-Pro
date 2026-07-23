@@ -1,4 +1,4 @@
-# Gesundheitsakte 3.2.0 – intelligenter Dokumentimport
+# Gesundheitsakte 3.2.1 – intelligenter Dokumentimport
 
 Diese Version konzentriert sich bewusst auf den ersten stabilen Entwicklungsschritt: den Import medizinischer Dokumente jeglicher Art.
 
@@ -38,3 +38,12 @@ Die Laborverläufe, Referenzbereiche, Ideal-/Orientierungsbereiche, Vergleiche, 
 Alle Dateien des Pakets in das Hauptverzeichnis des GitHub-Repositories laden und vorhandene Dateien ersetzen. Danach einmal öffnen:
 
 https://rezatfisch.github.io/LaborKompass-Pro/update.html
+
+
+## Korrektur in 3.2.1
+- Scan-PDFs ohne eingebetteten Text werden automatisch erkannt.
+- Jede PDF-Seite wird intern als hochauflösendes Bild gerendert.
+- Anschließend läuft OCR automatisch auf jeder Seite.
+- Der Benutzer muss PDF-Seiten nicht mehr vorher in Fotos umwandeln.
+- Der Fortschritt wird seitenweise und prozentual angezeigt.
+- Direkt auslesbare PDFs verwenden weiterhin den schnelleren Textmodus.

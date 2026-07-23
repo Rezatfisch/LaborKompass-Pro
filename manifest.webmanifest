@@ -1,8 +1,8 @@
 {
-  "name": "Gesundheitsakte 3.2",
+  "name": "Gesundheitsakte 3.2.1",
   "short_name": "Gesundheitsakte",
   "description": "Persönliche Gesundheitsakte mit intelligentem Import für medizinische Dokumente aller Art.",
-  "start_url": "./index.html?v=3.2.0",
+  "start_url": "./index.html?v=3.2.1",
   "id": "./index.html",
   "display": "standalone",
   "background_color": "#f1f7f8",
