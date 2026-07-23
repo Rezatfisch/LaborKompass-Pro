@@ -1,15 +1,18 @@
-# Gesundheitsakte 3.3.1 – Sicheres Speichern und flexible Auswahllisten
+# Gesundheitsakte 3.3.2 – Stabilitätsupdate
 
-## Umgesetzte fünf Punkte
+## Behoben
 
-1. Dokumente werden nach dem Speichern sicher in der Dokumentenliste angezeigt. Suche und Rubrikfilter werden zurückgesetzt; das neue Dokument wird hervorgehoben.
-2. Dokumentart, Fachgebiet, Hauptrubrik und Körperregion sind Kombinationsfelder: Auswahlliste plus freie Eingabe.
-3. Eigene Eingaben und Begriffe aus vorhandenen Dokumenten ergänzen die Vorschläge automatisch lokal.
-4. Die Listen wurden um dermatologische, radiologische und Labor-Dokumentarten sowie weitere medizinische Fachgebiete erweitert.
-5. Nach dem endgültigen Speichern wechselt die App automatisch zu „Dokumente“ und markiert den neuen Eintrag.
+- Der Startfehler `ensureChoiceLists is not defined` ist beseitigt.
+- Die App startet auch dann weiter, wenn eine optionale Hilfsfunktion fehlschlägt.
+- Dokumente und vorhandene lokale Daten werden unverändert weiterverwendet.
+- Flexible Auswahllisten werden beim Start sicher erzeugt.
+- Dokumentart, Fachgebiet, Hauptrubrik und Körperregion bieten feste Vorschläge und erlauben weiterhin freie Eingaben.
+- Eigene und bereits verwendete Begriffe fließen in spätere Vorschläge ein.
+- Nach dem Speichern werden Suche und Filter zurückgesetzt und das neue Dokument sichtbar hervorgehoben.
+- Ein lokales technisches Fehlerprotokoll hilft bei künftigen Problemen, ohne Gesundheitsdaten zu versenden.
 
-## Wichtige Bedienung beim Import
+## Installation
 
-„Als geprüft speichern“ im Prüfarbeitsplatz speichert die Prüfung. Bei einem noch nicht endgültig importierten Dokument muss danach weiterhin „Dokument speichern“ in der Importkarte gedrückt werden. Ein Hinweis macht dies nun deutlich.
+Alle Dateien aus der ZIP auf GitHub hochladen und vorhandene Dateien ersetzen. Danach `update.html` öffnen und den Cache aktualisieren. Angezeigt werden muss:
 
-Alle Dateien der ZIP nach GitHub hochladen und vorhandene Dateien ersetzen. Danach `update.html` öffnen.
+**Version 3.3.2 · Stabilitätsupdate**

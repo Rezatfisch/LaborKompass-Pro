@@ -1,6 +1,48 @@
 (()=>{"use strict";
  const state=GAStorage.load();let mode="simple",pending={};
  const $=id=>document.getElementById(id);
+
+ const CHOICE_DEFAULTS={
+  documentTypeOptions:["Arztbrief","Befundbericht","Dermatologischer Befund","Laborbericht","MRT-Befund","CT-Befund","Röntgenbefund","Ultraschallbefund","Operationsbericht","Entlassungsbericht","Rezept","Medikamentenplan","Überweisung","Rechnung","Impfbescheinigung","Pathologiebericht","Sonstiges"],
+  specialtyOptions:["Allgemeinmedizin","Innere Medizin","Dermatologie","Orthopädie / Unfallchirurgie","Radiologie","Neurologie","Kardiologie","Urologie","Hals-Nasen-Ohrenheilkunde","Augenheilkunde","Augenoptik","Zahnmedizin","Gastroenterologie","Pneumologie","Endokrinologie","Psychiatrie / Psychotherapie","Chirurgie","Gynäkologie","Pathologie","Laboratoriumsmedizin","Noch nicht zugeordnet"],
+  rubricOptions:["Allgemeine Befunde","Labor","Bildgebung","Haut / Dermatologie","Orthopädie","Neurologie","Herz / Kreislauf","Urologie","HNO","Augen","Zahnmedizin","Medikamente / Rezepte","Operationen","Krankenhaus / Entlassung","Rechnungen / Kosten","Impfungen","Sonstiges"],
+  bodyRegionOptions:["Kopf","Gehirn","Auge","Ohr","Nase / Nebenhöhlen","Mund / Zähne","Hals","Halswirbelsäule","Schulter","Arm","Ellenbogen","Hand / Finger","Brustkorb","Herz","Lunge","Bauch","Magen / Darm","Leber","Niere","Harnwege","Prostata","Wirbelsäule","Lendenwirbelsäule","Becken","Hüfte","Knie","Unterschenkel","Fuß","Haut","Ganzkörper"]
+ };
+ function customChoiceKey(id){return `ga_choice_${id}`}
+ function getCustomChoices(id){try{return JSON.parse(localStorage.getItem(customChoiceKey(id))||"[]").filter(Boolean)}catch{return []}}
+ function learnChoice(id,value){
+  value=String(value||"").trim();if(!value)return;
+  const all=new Set(getCustomChoices(id));all.add(value);localStorage.setItem(customChoiceKey(id),JSON.stringify([...all].sort((a,b)=>a.localeCompare(b,"de"))));
+ }
+ function ensureChoiceLists(){
+  const host=document.body||document.documentElement;if(!host)return;
+  for(const [id,defaults] of Object.entries(CHOICE_DEFAULTS)){
+   let list=document.getElementById(id);if(!list){list=document.createElement("datalist");list.id=id;host.appendChild(list)}
+   const existing=[];
+   for(const d of state.documents||[]){
+    if(id==="documentTypeOptions")existing.push(d.type);
+    if(id==="specialtyOptions")existing.push(d.creatorSpecialty,d.topicSpecialty,d.specialty);
+    if(id==="rubricOptions")existing.push(d.mainRubric,d.rubric);
+    if(id==="bodyRegionOptions")existing.push(...(d.bodyRegions||[]));
+   }
+   const values=[...new Set([...defaults,...getCustomChoices(id),...existing].map(x=>String(x||"").trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"de"));
+   list.innerHTML=values.map(v=>`<option value="${GAUI.esc(v)}"></option>`).join("");
+  }
+ }
+ function recordProgramError(kind,message,details=""){
+  const item={at:new Date().toISOString(),kind,message:String(message||"Unbekannter Fehler"),details:String(details||"")};
+  let log=[];try{log=JSON.parse(localStorage.getItem("ga_error_log")||"[]")}catch{}
+  log.unshift(item);localStorage.setItem("ga_error_log",JSON.stringify(log.slice(0,30)));
+  renderErrorConsole();return item
+ }
+ function renderErrorConsole(){
+  const el=$("errorConsole");if(!el)return;
+  let log=[];try{log=JSON.parse(localStorage.getItem("ga_error_log")||"[]")}catch{}
+  el.innerHTML=log.length?`<details class="error-console"><summary>Technisches Fehlerprotokoll (${log.length})</summary><div class="actions"><button id="copyErrorLog" class="secondary">Fehlerprotokoll kopieren</button><button id="clearErrorLog">Protokoll leeren</button></div><pre>${GAUI.esc(log.map(x=>`${x.at} · ${x.kind}\n${x.message}${x.details?`\n${x.details}`:""}`).join("\n\n"))}</pre></details>`:"";
+  const copy=$("copyErrorLog"),clear=$("clearErrorLog");
+  if(copy)copy.onclick=async()=>{await navigator.clipboard?.writeText(JSON.stringify(log,null,2));GAUI.toast("Fehlerprotokoll kopiert.")};
+  if(clear)clear.onclick=()=>{localStorage.removeItem("ga_error_log");renderErrorConsole();GAUI.toast("Fehlerprotokoll geleert.")};
+ }
  function save(){GAStorage.save(state)}
  function navigate(id){document.querySelectorAll(".page").forEach(x=>x.classList.toggle("active",x.id===id));document.querySelectorAll("#tabs button").forEach(x=>x.classList.toggle("active",x.dataset.page===id));scrollTo(0,0)}
  function isSpecial(d){return d.rubric!=="Labor"&&d.rubric!=="Sonstige"&&d.specialty!=="Noch nicht zugeordnet"}
@@ -208,7 +250,7 @@
  function download(blob,name=blob.name||"download"){const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
  function selfTest(){const funcs=[GAStorage.load,GAExtract.document,GAImporter.process,GAUI.analysis,render],ids=["tabs","fileInput","documentList","specialtyList","labList","timelineList","analysisOutput"];const missing=ids.filter(id=>!$(id));$("selfTest").innerHTML=missing.length?`<p class="status">Fehlende Bereiche: ${missing.join(", ")}</p>`:`<p class="status">Selbsttest erfolgreich: Speicher, Import, Analyse und Ansichten sind geladen.</p>`}
  function wire(){
-  ensureChoiceLists()
+  try{ensureChoiceLists()}catch(err){recordProgramError("Auswahllisten",err.message,err.stack)}
 
   $("tabs").onclick=e=>{const b=e.target.closest("button[data-page]");if(b)navigate(b.dataset.page)};
   $("fileInput").onchange=async e=>{const files=[...e.target.files];if(!files.length)return;const docs=await GAImporter.process(files,document.querySelector('input[name="bundleMode"]:checked').value==="bundle");for(const d of docs){pending[d.id]=d;if($("saveOriginal").checked&&d._files?.length)try{await GAStorage.putOriginalPackage(d.id,d._files);d.originalStored=true;d.originalStaged=true}catch{}}renderPendingCards();e.target.value=""};
@@ -240,7 +282,7 @@
   removeLab:id=>{if(confirm("Diesen Laborwert löschen?")){state.values=state.values.filter(x=>x.id!==id);save();render();GAUI.toast("Laborwert gelöscht.")}},
   useReference:name=>{navigate("labs");const r=GALabRefs.find(name);$("newLabName").value=name;$("newLabUnit").value=r?.unit||"";$("newLabMin").value=r?.min??"";$("newLabMax").value=r?.max??"";$("newLabValue").focus();scrollTo(0,250)},
   assign:id=>{const d=state.documents.find(x=>x.id===id),v=$(`assign-${id}`).value;if(!d||!v)return;d.specialty=v;d.rubric=v==="Augenoptik"?"Optik / Brille":v==="Zahnmedizin"?"Zahnmedizin":v.split(" / ")[0];d.manualClassification=true;GAExtract.reanalyse(d);save();render();GAUI.toast("Fachgebiet zugeordnet.")}
- }; window.addEventListener("error",e=>GAUI.toast(`Programmfehler: ${e.message}`,"error"));window.addEventListener("unhandledrejection",e=>GAUI.toast(`Importfehler: ${e.reason?.message||e.reason}`,"error"));
- wire();state.documents.forEach(GAExtract.reanalyse);save();render();selfTest();GAUI.toast("Gesundheitsakte 3.3.1 mit sicheren Speicherwegen und Auswahllisten wurde vollständig geladen.");
- if("serviceWorker"in navigator)navigator.serviceWorker.register("./service-worker.js?v=3.3.1",{updateViaCache:"none"}).catch(console.warn);
+ }; window.addEventListener("error",e=>{recordProgramError("JavaScript",e.message,`${e.filename||""}:${e.lineno||""}:${e.colno||""}\n${e.error?.stack||""}`);GAUI.toast(`Programmfehler protokolliert: ${e.message}`,"error")});window.addEventListener("unhandledrejection",e=>{recordProgramError("Promise",e.reason?.message||e.reason,e.reason?.stack||"");GAUI.toast(`Importfehler protokolliert: ${e.reason?.message||e.reason}`,"error")});
+ wire();state.documents.forEach(GAExtract.reanalyse);save();render();selfTest();GAUI.toast("Gesundheitsakte 3.3.2 Stabilitätsupdate wurde vollständig geladen.");
+ if("serviceWorker"in navigator)navigator.serviceWorker.register("./service-worker.js?v=3.3.2",{updateViaCache:"none"}).catch(console.warn);
 })();

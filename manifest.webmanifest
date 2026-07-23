@@ -1,8 +1,8 @@
 {
-  "name": "Gesundheitsakte 3.3.1",
+  "name": "Gesundheitsakte 3.3.2",
   "short_name": "Gesundheitsakte",
-  "description": "Gesundheitsakte mit sicherer Dokumentanzeige, Originalbeleg und frei ergänzbaren Auswahllisten.",
-  "start_url": "./index.html?v=3.3.1",
+  "description": "Stabile persönliche Gesundheitsakte mit Originalbeleg, Prüfarbeitsplatz und flexiblen Auswahllisten.",
+  "start_url": "./index.html?v=3.3.2",
   "id": "./index.html",
   "display": "standalone",
   "background_color": "#f1f7f8",
