@@ -1,26 +1,21 @@
-# Gesundheitsakte 3.3.7 – Repariertes Dokumentenarchiv
+# Gesundheitsakte 3.3.8 – Debug & Stabilität
 
-## Behobener Fehler
+## Behoben
 
-Die Version 3.3.6 griff auf eine nicht vorhandene Eigenschaft `GAChoices.lists.rubrics` zu.
-Der richtige Katalog heißt `GAChoices.catalogs.rubricOptions`.
-
-Dadurch erschien:
-
-`Cannot read properties of undefined (reading 'rubrics')`
-
-## Änderungen
-
-- Startfehler im Dokumentenarchiv behoben
-- Rubrikliste für Sammelbearbeitung wieder verfügbar
-- Rubrikliste beim Umbenennen und Verschieben wieder verfügbar
-- zusätzliche Schutzprüfung eingebaut, damit ein fehlender Katalog die App nicht vollständig stoppt
-- alle vorhandenen Dokumente und Laborwerte bleiben unverändert erhalten
+- Kompatibilität für alte Aufrufe von `GAChoices.lists.rubrics` ergänzt.
+- Der richtige neue Katalog `GAChoices.catalogs.rubricOptions` bleibt erhalten.
+- Selbst wenn Android noch eine ältere `app.js` ausliefert, steht die alte Rubrik-Schnittstelle weiterhin zur Verfügung.
+- Alle JavaScript- und CSS-Dateien tragen nun eine Versionskennung, damit keine gemischten Versionen geladen werden.
+- Der Service Worker verwendet für Programmdateien jetzt „Netzwerk zuerst“ und entfernt sämtliche alten Programm-Caches.
+- `update.html` entfernt Service Worker und Caches vollständig, ohne Gesundheitsdaten oder Originalbelege zu löschen.
+- Startbereiche werden getrennt abgesichert: Ein Fehler in einem Teil soll nicht mehr die komplette App stoppen.
+- Der bereits behobene alte Rubrikfehler wird nach erfolgreichem Start aus dem technischen Fehlerprotokoll entfernt.
+- Interne Diagnoseinformationen zu Version, Service Worker und geladenen Rubriken sind verfügbar.
 
 ## Installation
 
-Alle Dateien auf GitHub ersetzen. Danach `update.html` öffnen und den Cache aktualisieren.
+Alle Dateien auf GitHub ersetzen. Danach unbedingt `update.html` öffnen und die automatische Weiterleitung abwarten.
 
 Erwartete Anzeige:
 
-**Version 3.3.7 · Repariertes Dokumentenarchiv**
+**Version 3.3.8 · Debug & Stabilität**

@@ -55,5 +55,14 @@ window.GAChoices=(()=>{
    })
   });
  }
- return {catalogs,values,select,normalizeName,extension,bind,esc};
+ const lists={
+  rubrics:catalogs.rubricOptions,
+  documentTypes:catalogs.documentTypeOptions,
+  specialties:catalogs.specialtyOptions,
+  bodyRegions:catalogs.bodyRegionOptions,
+  lateralities:catalogs.lateralityOptions
+ };
+ // Kompatibilität mit älteren, eventuell noch im Browser-Cache befindlichen Programmdateien.
+ // Dadurch führt GAChoices.lists.rubrics nicht mehr zu einem Startabbruch.
+ return {catalogs,lists,values,select,normalizeName,extension,bind,esc};
 })();

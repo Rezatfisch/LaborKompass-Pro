@@ -1,8 +1,8 @@
 {
-  "name": "Gesundheitsakte 3.3.7",
+  "name": "Gesundheitsakte 3.3.8",
   "short_name": "Gesundheitsakte",
-  "description": "Stabilitätskorrektur für Dokumentenarchiv, Rubriklisten und Sammelbearbeitung.",
-  "start_url": "./index.html?v=3.3.7",
+  "description": "Debug- und Stabilitätsupdate mit Cache-Schutz und kompatiblen Rubriklisten.",
+  "start_url": "./index.html?v=3.3.8",
   "id": "./index.html",
   "display": "standalone",
   "background_color": "#f1f7f8",

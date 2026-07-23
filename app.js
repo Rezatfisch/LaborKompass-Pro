@@ -2,7 +2,13 @@
  const state=GAStorage.load();let mode="simple",pending={},lastSaveReceipt=null,selectedDocumentIds=new Set();
  const $=id=>document.getElementById(id);
 
- const CHOICE_DEFAULTS=GAChoices.catalogs;
+ const CHOICE_DEFAULTS={
+  documentTypeOptions:Array.isArray(window.GAChoices?.catalogs?.documentTypeOptions)?window.GAChoices.catalogs.documentTypeOptions:[],
+  specialtyOptions:Array.isArray(window.GAChoices?.catalogs?.specialtyOptions)?window.GAChoices.catalogs.specialtyOptions:[],
+  rubricOptions:Array.isArray(window.GAChoices?.catalogs?.rubricOptions)?window.GAChoices.catalogs.rubricOptions:[],
+  bodyRegionOptions:Array.isArray(window.GAChoices?.catalogs?.bodyRegionOptions)?window.GAChoices.catalogs.bodyRegionOptions:[],
+  lateralityOptions:Array.isArray(window.GAChoices?.catalogs?.lateralityOptions)?window.GAChoices.catalogs.lateralityOptions:[]
+ };
 
  function customChoiceKey(id){return `ga_choice_${id}`}
  function getCustomChoices(id){try{return JSON.parse(localStorage.getItem(customChoiceKey(id))||"[]").filter(Boolean)}catch{return []}}
@@ -38,6 +44,24 @@
   const copy=$("copyErrorLog"),clear=$("clearErrorLog");
   if(copy)copy.onclick=async()=>{await navigator.clipboard?.writeText(JSON.stringify(log,null,2));GAUI.toast("Fehlerprotokoll kopiert.")};
   if(clear)clear.onclick=()=>{localStorage.removeItem("ga_error_log");renderErrorConsole();GAUI.toast("Fehlerprotokoll geleert.")};
+ }
+ function clearResolvedRubricsError(){
+  let log=[];try{log=JSON.parse(localStorage.getItem("ga_error_log")||"[]")}catch{}
+  const cleaned=log.filter(x=>!/reading ['"]rubrics['"]|lists\.rubrics/i.test(`${x.message||""} ${x.details||""}`));
+  if(cleaned.length!==log.length)localStorage.setItem("ga_error_log",JSON.stringify(cleaned));
+ }
+ function diagnosticSnapshot(){
+  return {
+   version:"3.3.8",
+   href:location.href,
+   controller:navigator.serviceWorker?.controller?.scriptURL||"kein Service Worker",
+   cacheCompatibility:Boolean(window.GAChoices?.lists?.rubrics),
+   rubricCatalogCount:Array.isArray(window.GAChoices?.catalogs?.rubricOptions)?window.GAChoices.catalogs.rubricOptions.length:0,
+   legacyRubricCount:Array.isArray(window.GAChoices?.lists?.rubrics)?window.GAChoices.lists.rubrics.length:0,
+   documents:(state.documents||[]).length,
+   laboratoryValues:(state.values||[]).length,
+   loadedAt:new Date().toISOString()
+  }
  }
  function save(){GAStorage.save(state)}
  function navigate(id){document.querySelectorAll(".page").forEach(x=>x.classList.toggle("active",x.id===id));document.querySelectorAll("#tabs button").forEach(x=>x.classList.toggle("active",x.dataset.page===id));scrollTo(0,0)}
@@ -401,7 +425,11 @@
   $("downloadBackup").onclick=()=>{const data=GAStorage.backup(state);download(new Blob([JSON.stringify(data,null,2)],{type:"application/json"}),`Gesundheitsakte_Backup_${new Date().toISOString().slice(0,10)}.json`);$("backupInfo").textContent="Sicherung wurde zum Download bereitgestellt."};
   $("shareBackup").onclick=async()=>{const data=GAStorage.backup(state),f=new File([JSON.stringify(data,null,2)],`Gesundheitsakte_Backup_${new Date().toISOString().slice(0,10)}.json`,{type:"application/json"});if(navigator.share&&(!navigator.canShare||navigator.canShare({files:[f]})))await navigator.share({title:"Gesundheitsakte Sicherung",files:[f]});else download(f);$("backupInfo").textContent="Teilen beziehungsweise Download wurde geöffnet."};
   $("restoreBackup").onchange=async e=>{try{const data=JSON.parse(await e.target.files[0].text());if(confirm("Diese Sicherung wiederherstellen?")){Object.assign(state,GAStorage.restore(data));render();GAUI.toast("Sicherung wiederhergestellt.")}}catch(err){GAUI.toast("Sicherung ungültig: "+err.message,"error")}e.target.value=""};
-  $("forceUpdate").onclick=async()=>{if("serviceWorker"in navigator)(await navigator.serviceWorker.getRegistrations()).forEach(r=>r.unregister());if("caches"in window)(await caches.keys()).forEach(k=>caches.delete(k));location.reload()};
+  $("forceUpdate").onclick=async()=>{
+   if("serviceWorker"in navigator)for(const r of await navigator.serviceWorker.getRegistrations())await r.unregister();
+   if("caches"in window)for(const k of await caches.keys())await caches.delete(k);
+   location.replace(`./index.html?v=3.3.8&fresh=${Date.now()}`)
+  };
  }
  window.GAApp={
   saveDoc,replace:replaceDoc,
@@ -436,8 +464,13 @@
   remove:async id=>{if(confirm("Dokument und den lokal gespeicherten Originalbeleg entfernen? Bereits übernommene Laborwerte bleiben erhalten.")){state.documents=state.documents.filter(x=>x.id!==id);selectedDocumentIds.delete(id);await GAStorage.deleteOriginal(id).catch(()=>{});save();render();GAUI.toast("Dokument und Originalbeleg entfernt.")}},
   removeLab:id=>{if(confirm("Diesen Laborwert löschen?")){state.values=state.values.filter(x=>x.id!==id);save();render();GAUI.toast("Laborwert gelöscht.")}},
   useReference:name=>{navigate("labs");const r=GALabRefs.find(name);$("newLabName").value=name;$("newLabUnit").value=r?.unit||"";$("newLabMin").value=r?.min??"";$("newLabMax").value=r?.max??"";$("newLabValue").focus();scrollTo(0,250)},
+  diagnostics:()=>{const data=diagnosticSnapshot();navigator.clipboard?.writeText(JSON.stringify(data,null,2));GAUI.toast(`Diagnose: ${data.rubricCatalogCount} Rubriken geladen; Bericht kopiert.`);return data},
   assign:id=>{const d=state.documents.find(x=>x.id===id),v=$(`assign-${id}`).value;if(!d||!v)return;d.specialty=v;d.rubric=v==="Augenoptik"?"Optik / Brille":v==="Zahnmedizin"?"Zahnmedizin":v.split(" / ")[0];d.manualClassification=true;GAExtract.reanalyse(d);save();render();GAUI.toast("Fachgebiet zugeordnet.")}
  }; window.addEventListener("error",e=>{recordProgramError("JavaScript",e.message,`${e.filename||""}:${e.lineno||""}:${e.colno||""}\n${e.error?.stack||""}`);GAUI.toast(`Programmfehler protokolliert: ${e.message}`,"error")});window.addEventListener("unhandledrejection",e=>{recordProgramError("Promise",e.reason?.message||e.reason,e.reason?.stack||"");GAUI.toast(`Importfehler protokolliert: ${e.reason?.message||e.reason}`,"error")});
- wire();state.documents.forEach(GAExtract.reanalyse);save();render();selfTest();GAUI.toast("Gesundheitsakte 3.3.7 mit repariertem Dokumentenarchiv wurde vollständig geladen.");
- if("serviceWorker"in navigator)navigator.serviceWorker.register("./service-worker.js?v=3.3.7",{updateViaCache:"none"}).catch(console.warn);
+ try{wire()}catch(err){recordProgramError("Start/Wire",err.message,err.stack)}
+ try{state.documents.forEach(GAExtract.reanalyse);save()}catch(err){recordProgramError("Start/Daten",err.message,err.stack)}
+ try{render();clearResolvedRubricsError();renderErrorConsole()}catch(err){recordProgramError("Start/Anzeige",err.message,err.stack)}
+ try{selfTest()}catch(err){recordProgramError("Selbsttest",err.message,err.stack)}
+ GAUI.toast("Gesundheitsakte 3.3.8 – Debug & Stabilität wurde geladen.");
+ if("serviceWorker"in navigator)navigator.serviceWorker.register("./service-worker.js?v=3.3.8",{updateViaCache:"none"}).catch(console.warn);
 })();
