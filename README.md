@@ -1,30 +1,15 @@
-# Gesundheitsakte 3.3.0 – Originalbeleg und Prüfarbeitsplatz
+# Gesundheitsakte 3.3.1 – Sicheres Speichern und flexible Auswahllisten
 
-## Neu in Version 3.3.0
+## Umgesetzte fünf Punkte
 
-- Original-PDFs und Fotos werden vollständig lokal gespeichert.
-- Mehrere Fotos eines Dokuments bleiben gemeinsam erhalten.
-- Originalbeleg und Importergebnis können bereits vor dem endgültigen Speichern verglichen werden.
-- Neuer Prüfarbeitsplatz mit vier Ansichten:
-  1. Original
-  2. Erkannte Daten
-  3. OCR-Rohtext und bereinigter Text
-  4. strukturierte Analyse
-- PDF-Anzeige, Bildanzeige, Seiten-/Dateiauswahl und Zoom.
-- Original kann nachträglich ergänzt oder ersetzt werden, ohne erkannte Daten zu löschen.
-- Erkannte Daten können direkt im Prüfarbeitsplatz korrigiert werden.
-- Prüfstatus: ungeprüft, teilweise geprüft, geprüft oder OCR unsicher.
-- Technische Qualitätsbewertung für OCR, Vollständigkeit und Gesamtqualität.
-- Korrekturhistorie mit Zeitpunkt und geänderten Feldern.
-- Bereinigter OCR-Text kann bearbeitet und danach neu ausgewertet werden.
-- Strukturierte Analyse in klar getrennten Karten statt ungeordnetem Fließtext.
+1. Dokumente werden nach dem Speichern sicher in der Dokumentenliste angezeigt. Suche und Rubrikfilter werden zurückgesetzt; das neue Dokument wird hervorgehoben.
+2. Dokumentart, Fachgebiet, Hauptrubrik und Körperregion sind Kombinationsfelder: Auswahlliste plus freie Eingabe.
+3. Eigene Eingaben und Begriffe aus vorhandenen Dokumenten ergänzen die Vorschläge automatisch lokal.
+4. Die Listen wurden um dermatologische, radiologische und Labor-Dokumentarten sowie weitere medizinische Fachgebiete erweitert.
+5. Nach dem endgültigen Speichern wechselt die App automatisch zu „Dokumente“ und markiert den neuen Eintrag.
 
-## Wichtiger Hinweis zur Sicherung
+## Wichtige Bedienung beim Import
 
-Die JSON-Sicherung enthält die strukturierten Gesundheitsdaten. Originaldateien werden aus Datenschutz- und Größen-Gründen getrennt im lokalen Browser-Speicher (IndexedDB) abgelegt. Beim Löschen der Browserdaten können diese Originale verloren gehen.
+„Als geprüft speichern“ im Prüfarbeitsplatz speichert die Prüfung. Bei einem noch nicht endgültig importierten Dokument muss danach weiterhin „Dokument speichern“ in der Importkarte gedrückt werden. Ein Hinweis macht dies nun deutlich.
 
-## Installation auf GitHub Pages
-
-Alle Dateien aus der ZIP in das Hauptverzeichnis des Repositorys hochladen und vorhandene Dateien ersetzen. Neu hinzugekommen ist `reviewer.js`.
-
-Danach `update.html` öffnen und den Programmcache aktualisieren.
+Alle Dateien der ZIP nach GitHub hochladen und vorhandene Dateien ersetzen. Danach `update.html` öffnen.

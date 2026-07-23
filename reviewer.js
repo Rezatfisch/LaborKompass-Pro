@@ -94,6 +94,7 @@ window.GAReviewer=(()=>{
    <textarea data-field="${key}" rows="${Math.max(2,Math.min(6,arr.length+1))}">${esc(arr.join("\n"))}</textarea>
    <div class="field-source">Quelle: erkannter Dokumenttext${current.pageCount?` · ${current.pageCount} Seite(n)`:""}</div></div>`
  }
+ function choiceInput(key,value,listId,placeholder="Auswählen oder selbst eintragen"){return `<input data-field="${key}" list="${listId}" value="${esc(value||"")}" placeholder="${esc(placeholder)}">`}
  function renderData(){
   const box=document.getElementById("rpanel-data");
   box.innerHTML=`<div class="review-data-grid">
@@ -102,10 +103,10 @@ window.GAReviewer=(()=>{
     <div class="edit-grid">
      <div class="wide"><label>Dokumentname</label><input data-field="name" value="${esc(current.name)}"></div>
      <div><label>Datum</label><input data-field="date" type="date" value="${esc(current.date||"")}"></div>
-     <div><label>Dokumentart</label><input data-field="type" value="${esc(current.type||"")}"></div>
-     <div><label>Hauptrubrik</label><input data-field="rubric" value="${esc(current.rubric||"")}"></div>
-     <div><label>Erstellendes Fachgebiet</label><input data-field="creatorSpecialty" value="${esc(current.creatorSpecialty||"")}"></div>
-     <div><label>Medizinisches Themengebiet</label><input data-field="topicSpecialty" value="${esc(current.topicSpecialty||current.specialty||"")}"></div>
+     <div><label>Dokumentart</label>${choiceInput("type",current.type,"documentTypeOptions")}</div>
+     <div><label>Hauptrubrik</label>${choiceInput("rubric",current.rubric,"rubricOptions")}</div>
+     <div><label>Erstellendes Fachgebiet</label>${choiceInput("creatorSpecialty",current.creatorSpecialty,"specialtyOptions")}</div>
+     <div><label>Medizinisches Themengebiet</label>${choiceInput("topicSpecialty",current.topicSpecialty||current.specialty,"specialtyOptions")}</div>
      <div><label>Körperseite</label><select data-field="laterality">${["ohne Seitenangabe","rechts","links","beidseits"].map(x=>`<option${x===(current.laterality||"ohne Seitenangabe")?" selected":""}>${x}</option>`).join("")}</select></div>
      <div><label>Arzt / Behandler</label><input data-field="doctor" value="${esc(current.doctor||"")}"></div>
     </div>
@@ -115,7 +116,7 @@ window.GAReviewer=(()=>{
     ${listField("Empfehlungen / Kontrollen","recommendations",current.recommendations)}
     <label>Prüfstatus</label><select id="reviewStatus"><option value="unreviewed">🔴 Ungeprüft</option><option value="partial">🟡 Teilweise geprüft</option><option value="reviewed">🟢 Geprüft</option><option value="uncertain">⚠ OCR unsicher</option></select>
     <label class="learn-check"><input id="reviewUncertain" type="checkbox"${current.hasUncertainOCR?" checked":""}> Dieses Dokument enthält unsichere OCR-Stellen</label>
-    <div class="actions"><button id="saveReview" class="primary">Korrekturen speichern</button><button id="markReviewed" class="secondary">Alles als geprüft markieren</button></div>
+    <div class="actions"><button id="saveReview" class="primary">Korrekturen speichern</button><button id="markReviewed" class="secondary">Als geprüft speichern</button></div><p class="small review-save-hint">${callbacks.pending?"Danach muss der Import noch mit „Dokument endgültig speichern“ abgeschlossen werden.":"Die Änderung wird sofort im gespeicherten Dokument übernommen."}</p>
    </div>
    <aside class="quality-card"><h3>Qualitätsbewertung</h3>${qualityHtml(current)}<p class="small">Die Bewertung ist eine technische Orientierung. Sie ersetzt nicht den Vergleich mit dem Original.</p></aside>
   </div>`;
@@ -140,7 +141,7 @@ window.GAReviewer=(()=>{
   current.reviewHistory.push({at:current.reviewedAt,fields:changed,status:current.reviewStatus});
   if(markAll)current.fieldReview={all:"reviewed"};
   callbacks.onSave?.(current);renderHeader();renderAnalysis();renderData();
-  window.GAUI?.toast(changed.length?`${changed.length} Korrektur(en) gespeichert.`:"Prüfstatus gespeichert.")
+  window.GAUI?.toast(callbacks.pending?"Prüfung gespeichert. Bitte anschließend den Import endgültig speichern.":(changed.length?`${changed.length} Korrektur(en) gespeichert.`:"Prüfstatus gespeichert."))
  }
  function qualityHtml(d){const q=quality(d);return `<div class="quality-meter"><span>OCR-Qualität</span><b>${q.ocr}%</b><i><em style="width:${q.ocr}%"></em></i></div><div class="quality-meter"><span>Vollständigkeit</span><b>${q.completeness}%</b><i><em style="width:${q.completeness}%"></em></i></div><div class="quality-meter"><span>Gesamtqualität</span><b>${q.overall}%</b><i><em style="width:${q.overall}%"></em></i></div>`}
  function renderOCR(){

@@ -40,6 +40,7 @@
    GAMedKnowledge.learn({keywords:d.classificationEvidence||[],specialty:d.topicSpecialty,mainRubric:d.mainRubric,region:d.bodyRegions[0]||"",side:d.laterality});
    d.learnedCorrection=true
   }
+  learnChoice("documentTypeOptions",d.type);learnChoice("specialtyOptions",d.creatorSpecialty);learnChoice("specialtyOptions",d.topicSpecialty);learnChoice("rubricOptions",d.mainRubric);for(const r of d.bodyRegions)learnChoice("bodyRegionOptions",r);
   return d
  }
  function structuredSummary(doc){
@@ -70,14 +71,14 @@
   state.documents.push(doc);
   const n=$("takeLabs").checked?integrateLabs(doc):0;
   if($("saveOriginal").checked&&doc._files?.length)try{await GAStorage.putOriginalPackage(doc.id,doc._files);doc.originalStored=true;doc.originalSavedAt=new Date().toISOString()}catch(e){GAUI.toast("Dokument gespeichert, Original konnte nicht separat gespeichert werden.","error")}
-  delete doc._files;delete pending[id];save();render();renderPendingCards();GAUI.toast(`Dokument gespeichert. ${n} neue Laborwerte übernommen.`)
+  delete doc._files;delete pending[id];save();ensureChoiceLists();if($("documentSearch"))$("documentSearch").value="";if($("documentFilter"))$("documentFilter").value="all";render();renderPendingCards();navigate("documents");setTimeout(()=>{const card=document.querySelector(`[data-document-id="${doc.id}"]`);if(card){card.classList.add("just-saved");card.scrollIntoView({behavior:"smooth",block:"center"})}},80);GAUI.toast(`Dokument erfolgreich gespeichert und unter Dokumente angezeigt. ${n} neue Laborwerte übernommen.`)
  }
  async function replaceDoc(pid,did){
   const doc=updatePendingFromForm(pid),i=state.documents.findIndex(x=>x.id===did);if(!doc||i<0)return;
   const files=doc._files||[];doc.id=did;
   if(files.length&&$("saveOriginal").checked){await GAStorage.putOriginalPackage(did,files);doc.originalStored=true;doc.originalSavedAt=new Date().toISOString()}
   state.documents[i]=doc;integrateLabs(doc);delete doc._files;delete pending[pid];if(pid!==did)await GAStorage.deleteOriginal(pid).catch(()=>{});
-  save();render();renderPendingCards();GAUI.toast("Vorhandenes Dokument und Originalbeleg ersetzt.")
+  save();ensureChoiceLists();if($("documentSearch"))$("documentSearch").value="";if($("documentFilter"))$("documentFilter").value="all";render();renderPendingCards();navigate("documents");GAUI.toast("Vorhandenes Dokument gespeichert und unter Dokumente angezeigt.")
  }
  function preview(doc){
   pending[doc.id]=doc;
@@ -95,14 +96,14 @@
      <div class="edit-grid">
       <div class="wide"><label>Dokumentname</label><input id="pname-${doc.id}" value="${GAUI.esc(doc.name)}"></div>
       <div><label>Dokumentdatum</label><input id="pdate-${doc.id}" type="date" value="${doc.date||""}"></div>
-      <div><label>Dokumentart</label><input id="ptype-${doc.id}" value="${GAUI.esc(doc.type)}"></div>
+      <div><label>Dokumentart</label><input id="ptype-${doc.id}" list="documentTypeOptions" value="${GAUI.esc(doc.type)}" placeholder="Auswählen oder selbst eintragen"></div>
       <div><label>Erstellendes Fachgebiet</label><input id="pcreator-${doc.id}" list="specialtyOptions" value="${GAUI.esc(doc.creatorSpecialty||"")}"></div>
       <div><label>Medizinisches Themengebiet</label><input id="ptopic-${doc.id}" list="specialtyOptions" value="${GAUI.esc(doc.topicSpecialty||doc.specialty||"")}"></div>
-      <div><label>Hauptrubrik</label><select id="pmainrubric-${doc.id}">${GAMedKnowledge.MAIN_RUBRICS.map(x=>`<option${x===(doc.mainRubric||doc.rubric)?" selected":""}>${GAUI.esc(x)}</option>`).join("")}</select></div>
+      <div><label>Hauptrubrik</label><input id="pmainrubric-${doc.id}" list="rubricOptions" value="${GAUI.esc(doc.mainRubric||doc.rubric||"")}" placeholder="Auswählen oder selbst eintragen"></div>
       <div><label>Körperseite</label><select id="pside-${doc.id}">${["ohne Seitenangabe","rechts","links","beidseits"].map(x=>`<option${x===(doc.laterality||"ohne Seitenangabe")?" selected":""}>${x}</option>`).join("")}</select></div>
       <div><label>Aussteller / Praxis</label><input id="pissuer-${doc.id}" value="${GAUI.esc(doc.issuer||"")}"></div>
       <div><label>Arzt / Behandler</label><input id="pdoctor-${doc.id}" value="${GAUI.esc(doc.doctor||"")}"></div>
-      <div class="wide"><label>Körperregionen – mit Semikolon trennen</label><input id="pregions-${doc.id}" value="${GAUI.esc((doc.bodyRegions||[]).join("; "))}"></div>
+      <div class="wide"><label>Körperregionen – mit Semikolon trennen</label><input id="pregions-${doc.id}" list="bodyRegionOptions" value="${GAUI.esc((doc.bodyRegions||[]).join("; "))}" placeholder="Auswählen oder mehrere mit Semikolon eintragen"></div>
      </div>
      ${evidence?`<p class="small"><b>Erkennungsbegriffe:</b></p><div class="chip-list">${evidence}</div>`:""}
      <label class="learn-check"><input id="plearn-${doc.id}" type="checkbox" checked> Meine Korrektur für ähnliche Dokumente lokal merken</label>
@@ -137,7 +138,7 @@
   const q=$("documentSearch").value.toLowerCase(),f=$("documentFilter").value,rubs=[...new Set(state.documents.map(d=>d.rubric))].sort(),cur=f;
   $("documentFilter").innerHTML='<option value="all">Alle Rubriken</option>'+rubs.map(x=>`<option>${GAUI.esc(x)}</option>`).join("");if(rubs.includes(cur))$("documentFilter").value=cur;
   const arr=[...state.documents].filter(d=>(f==="all"||d.rubric===f)&&`${d.name} ${d.text} ${d.specialty} ${d.creatorSpecialty||""} ${d.topicSpecialty||""} ${(d.diagnoses||[]).join(" ")}`.toLowerCase().includes(q)).sort((a,b)=>(b.date||"").localeCompare(a.date||""));
-  $("documentList").innerHTML=arr.map(d=>`<article class="item document-card">
+  $("documentList").innerHTML=arr.map(d=>`<article class="item document-card" data-document-id="${d.id}">
    <div class="document-card-head"><div><div class="import-title">${GAUI.esc(d.name)}</div><div class="import-status"><span class="tag">${GAUI.date(d.date)}</span><span class="tag">${GAUI.esc(d.rubric)}</span><span class="tag">${GAUI.esc(d.topicSpecialty||d.specialty)}</span>${reviewBadge(d)}${d.originalStored?'<span class="tag new">Original vorhanden</span>':'<span class="tag uncertain">Original fehlt</span>'}</div></div></div>
    <p class="small">${GAUI.esc((d.keyStatements||[]).slice(0,2).join(" · ")||"Noch keine klare Kurzfassung.")}</p>
    <div class="actions"><button class="primary" onclick="GAApp.review('${d.id}')">Original & Daten prüfen</button><button onclick="GAApp.analyse('${d.id}')">Analyse</button><button onclick="GAApp.share('${d.id}')">Teilen</button><button onclick="GAApp.remove('${d.id}')">Dokument entfernen</button></div>
@@ -207,7 +208,7 @@
  function download(blob,name=blob.name||"download"){const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
  function selfTest(){const funcs=[GAStorage.load,GAExtract.document,GAImporter.process,GAUI.analysis,render],ids=["tabs","fileInput","documentList","specialtyList","labList","timelineList","analysisOutput"];const missing=ids.filter(id=>!$(id));$("selfTest").innerHTML=missing.length?`<p class="status">Fehlende Bereiche: ${missing.join(", ")}</p>`:`<p class="status">Selbsttest erfolgreich: Speicher, Import, Analyse und Ansichten sind geladen.</p>`}
  function wire(){
-  if(!document.getElementById("specialtyOptions")){const dl=document.createElement("datalist");dl.id="specialtyOptions";["Allgemeinmedizin","Augenheilkunde","Augenoptik","Zahnmedizin","Orthopädie / Unfallchirurgie","Neurologie","Urologie","Kardiologie","Radiologie","Hals-Nasen-Ohrenheilkunde","Dermatologie","Pneumologie","Gastroenterologie","Endokrinologie / Diabetologie","Psychologie / Psychiatrie","Chirurgie","Impfmedizin","Medikation","Abrechnung"].forEach(v=>{const o=document.createElement("option");o.value=v;dl.appendChild(o)});document.body.appendChild(dl)}
+  ensureChoiceLists()
 
   $("tabs").onclick=e=>{const b=e.target.closest("button[data-page]");if(b)navigate(b.dataset.page)};
   $("fileInput").onchange=async e=>{const files=[...e.target.files];if(!files.length)return;const docs=await GAImporter.process(files,document.querySelector('input[name="bundleMode"]:checked').value==="bundle");for(const d of docs){pending[d.id]=d;if($("saveOriginal").checked&&d._files?.length)try{await GAStorage.putOriginalPackage(d.id,d._files);d.originalStored=true;d.originalStaged=true}catch{}}renderPendingCards();e.target.value=""};
@@ -233,13 +234,13 @@
   saveDoc,replace:replaceDoc,
   discard:async id=>{const d=pending[id];if(d?.originalStaged)await GAStorage.deleteOriginal(id).catch(()=>{});delete pending[id];renderPendingCards();GAUI.toast("Vorbereiteter Import verworfen.")},
   review:id=>{const d=state.documents.find(x=>x.id===id);if(d)GAReviewer.open(d,{onSave:updated=>{Object.assign(d,updated);save();render()}})},
-  reviewPending:id=>{const d=pending[id];if(d)GAReviewer.open(d,{onSave:updated=>{Object.assign(d,updated);renderPendingCards()}})},
+  reviewPending:id=>{const d=pending[id];if(d)GAReviewer.open(d,{pending:true,onSave:updated=>{Object.assign(d,updated);renderPendingCards()}})},
   analyse:id=>{navigate("analysis");$("analysisDocument").value=id;$("runAnalysis").click()},share,
   remove:async id=>{if(confirm("Dokument und den lokal gespeicherten Originalbeleg entfernen? Bereits übernommene Laborwerte bleiben erhalten.")){state.documents=state.documents.filter(x=>x.id!==id);await GAStorage.deleteOriginal(id).catch(()=>{});save();render();GAUI.toast("Dokument und Originalbeleg entfernt.")}},
   removeLab:id=>{if(confirm("Diesen Laborwert löschen?")){state.values=state.values.filter(x=>x.id!==id);save();render();GAUI.toast("Laborwert gelöscht.")}},
   useReference:name=>{navigate("labs");const r=GALabRefs.find(name);$("newLabName").value=name;$("newLabUnit").value=r?.unit||"";$("newLabMin").value=r?.min??"";$("newLabMax").value=r?.max??"";$("newLabValue").focus();scrollTo(0,250)},
   assign:id=>{const d=state.documents.find(x=>x.id===id),v=$(`assign-${id}`).value;if(!d||!v)return;d.specialty=v;d.rubric=v==="Augenoptik"?"Optik / Brille":v==="Zahnmedizin"?"Zahnmedizin":v.split(" / ")[0];d.manualClassification=true;GAExtract.reanalyse(d);save();render();GAUI.toast("Fachgebiet zugeordnet.")}
  }; window.addEventListener("error",e=>GAUI.toast(`Programmfehler: ${e.message}`,"error"));window.addEventListener("unhandledrejection",e=>GAUI.toast(`Importfehler: ${e.reason?.message||e.reason}`,"error"));
- wire();state.documents.forEach(GAExtract.reanalyse);save();render();selfTest();GAUI.toast("Gesundheitsakte 3.3.0 mit Originalbeleg und Prüfarbeitsplatz wurde vollständig geladen.");
- if("serviceWorker"in navigator)navigator.serviceWorker.register("./service-worker.js?v=3.3.0",{updateViaCache:"none"}).catch(console.warn);
+ wire();state.documents.forEach(GAExtract.reanalyse);save();render();selfTest();GAUI.toast("Gesundheitsakte 3.3.1 mit sicheren Speicherwegen und Auswahllisten wurde vollständig geladen.");
+ if("serviceWorker"in navigator)navigator.serviceWorker.register("./service-worker.js?v=3.3.1",{updateViaCache:"none"}).catch(console.warn);
 })();

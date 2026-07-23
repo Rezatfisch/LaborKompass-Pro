@@ -1,8 +1,8 @@
 {
-  "name": "Gesundheitsakte 3.3.0",
+  "name": "Gesundheitsakte 3.3.1",
   "short_name": "Gesundheitsakte",
-  "description": "Persönliche Gesundheitsakte mit Originalbeleg, OCR-Vergleich und Prüfarbeitsplatz.",
-  "start_url": "./index.html?v=3.3.0",
+  "description": "Gesundheitsakte mit sicherer Dokumentanzeige, Originalbeleg und frei ergänzbaren Auswahllisten.",
+  "start_url": "./index.html?v=3.3.1",
   "id": "./index.html",
   "display": "standalone",
   "background_color": "#f1f7f8",
