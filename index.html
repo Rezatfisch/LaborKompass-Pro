@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#155e75">
-<title>LaborKompass Pro</title>
+<title>Gesundheitsakte 2.0</title>
 <meta name="theme-color" content="#0f766e">
 <meta name="description" content="Private Gesundheitsakte, Laborwerte, Befunde, Verlauf und lokale Analyse">
 <link rel="manifest" href="manifest.webmanifest">
@@ -65,10 +65,23 @@ button.busy{opacity:.7;cursor:wait;position:relative}button.busy:after{content:"
 .kv{display:grid;grid-template-columns:1fr auto;gap:6px 12px;padding:4px 0;border-bottom:1px dashed #dbe3ea}
 .kv:last-child{border-bottom:0}.kv b{text-align:right}.eyeSide{border-left:5px solid #0f766e}
 @media(max-width:520px){.specialistGrid{grid-template-columns:1fr}}
+
+.brandLogo{width:54px;height:54px;border-radius:15px;vertical-align:middle;margin-right:10px;box-shadow:0 5px 18px #0004}
+.analysisModes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:10px 0}
+.modeBtn{border:2px solid var(--line);border-radius:13px;padding:12px;background:#fff;text-align:left;font-weight:800}
+.modeBtn.active{border-color:var(--brand);background:#e6fffb;color:var(--brand)}
+.bodyModelWrap{display:grid;grid-template-columns:190px 1fr;gap:16px;align-items:start}
+.bodySvg{width:180px;max-width:100%;margin:auto;display:block}
+.bodyPart{cursor:pointer;transition:.15s}.bodyPart:hover,.bodyPart.active{filter:drop-shadow(0 0 6px #14b8a6);stroke:#14b8a6;stroke-width:4}
+.quickQuestions{display:flex;flex-wrap:wrap;gap:7px}.quickQuestions button{margin:0}
+.doctorSheet{border:2px solid #2563eb;border-radius:14px;padding:14px;background:#eff6ff}
+.warningSheet{border:2px solid #dc2626;border-radius:14px;padding:14px;background:#fef2f2}
+.healthTile{border-radius:14px;padding:13px;background:linear-gradient(135deg,#fff,#f0fdfa);border:1px solid var(--line)}
+@media(max-width:620px){.bodyModelWrap{grid-template-columns:1fr}.analysisModes{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
-<header><h1>🧭 LaborKompass Pro</h1><p>Laborwerte, Befunde, Verlauf und persönliche medizinische Struktur</p><span class="versionBadge">Version 1.4.0 · Facharzt-, Augen- und Zahndokumente</span></header>
+<header><h1><img src="logo-64.png" alt="" style="width:54px;height:54px;border-radius:14px;vertical-align:middle;margin-right:10px">Gesundheitsakte</h1><p>Ihre persönliche Gesundheitsakte – Dokumente, Werte, Körperbereiche und verständliche Analysen</p><span class="versionBadge">Version 2.0.0 · intelligente persönliche Gesundheitsakte</span></header>
 <main>
 <nav class="tabs">
 <button class="tab active" data-page="home">Übersicht</button>
@@ -142,7 +155,14 @@ button.busy{opacity:.7;cursor:wait;position:relative}button.busy:after{content:"
 
 <div class="card"><h2>Importierte Befunde</h2>
 <div class="row"><div><label>Rubrik</label><select id="docFilter"><option value="all">Alle Rubriken</option></select></div><div><label>Suche</label><input id="docSearch" placeholder="Augenarzt, Schulter, PSA, Diagnose …"></div></div>
-<div class="row"><div><label>Darstellung</label><select id="explainLevel"><option value="simple">Einfache Sprache</option><option value="detailed">Ausführlich</option><option value="doctor">Arztgespräch vorbereiten</option></select></div><div><label>Sortierung</label><select id="docSort"><option value="new">Neueste zuerst</option><option value="old">Älteste zuerst</option><option value="specialty">Fachgebiet</option></select></div></div>
+<div class="row"><div><label>Darstellung</label><select id="explainLevel">
+<option value="simple">Einfache Sprache</option>
+<option value="detailed">Ausführlich mit Hintergrundwissen</option>
+<option value="expanded">Erweitert: Symptome, Ursachen, Varianten, Alternativen</option>
+<option value="medical">Medizinisch strukturiert</option>
+<option value="doctor">Form für Ärztinnen und Ärzte</option>
+<option value="compact">Kompakt für das Arztgespräch</option>
+</select></div><div><label>Sortierung</label><select id="docSort"><option value="new">Neueste zuerst</option><option value="old">Älteste zuerst</option><option value="specialty">Fachgebiet</option></select></div></div>
 <div id="documentArchive"></div>
 </div>
 
@@ -170,21 +190,75 @@ button.busy{opacity:.7;cursor:wait;position:relative}button.busy:after{content:"
 </section>
 
 <section id="analyse" class="page">
-<div class="card"><h2>Regelbasierte Analyse auf dem Gerät</h2><div class="actions"><button class="primary" id="localAnalysisBtn">Aktuelle Werte analysieren</button><button class="secondary" id="reportBtn">Analyse speichern</button></div><div id="localAnalysis" class="aiout" style="margin-top:10px"></div></div>
-<div class="card"><h2>Optionale externe KI-Analyse</h2>
-<div class="notice">Ein API-Schlüssel in einer HTML-Datei ist nicht sicher. Für eine dauerhafte Nutzung sollte später ein geschützter Server dazwischengeschaltet werden. Diese Testfunktion speichert den Schlüssel nur auf Wunsch im Browser.</div>
-<label>API-Endpunkt oder eigener Proxy</label><input id="aiEndpoint" placeholder="https://api.openai.com/v1/responses">
-<label>API-Schlüssel</label><input id="aiKey" type="password" placeholder="sk-…">
+<div class="card">
+<h2>Analyseart auswählen</h2>
+<p class="small">Wähle die gewünschte Darstellung. Die Auswahl gilt für alle Befunde in der Dokumentenübersicht.</p>
+<div class="analysisModes" id="analysisModeButtons">
+<button class="modeBtn active" data-mode="simple">🙂 Einfache Sprache<br><small>Kurz und verständlich</small></button>
+<button class="modeBtn" data-mode="detailed">📚 Ausführlich<br><small>Mit Erklärungen und Hintergrund</small></button>
+<button class="modeBtn" data-mode="expanded">🧭 Erweitert<br><small>Symptome, Ursachen, Varianten, Alternativen, Vorteile, Nachteile, Gefahren und Gegenmaßnahmen</small></button>
+<button class="modeBtn" data-mode="medical">🩺 Medizinisch<br><small>Strukturiert mit Fachbegriffen</small></button>
+<button class="modeBtn" data-mode="doctor">📄 Für den Arzt<br><small>Fachliche Übergabeform</small></button>
+<button class="modeBtn" data-mode="compact">💬 Arztgespräch kompakt<br><small>Kurzer Text und wichtige Fragen</small></button>
+</div>
+<div class="actions"><button class="primary" id="localAnalysisBtn">Gesamte Akte analysieren</button><button class="secondary" id="reportBtn">Analyse speichern</button></div>
+<div id="localAnalysis" class="aiout" style="margin-top:10px"></div>
+</div>
+
+<div class="card">
+<h2>Gesundheitsassistent</h2>
+<p class="small">Durchsucht ausschließlich die lokal gespeicherten Daten deiner Gesundheitsakte.</p>
+<textarea id="assistantQuestion" placeholder="z. B. Zeige alle Befunde zu meinen Augen. Wie haben sich meine MCV-Werte entwickelt? Welche Fragen sollte ich beim Orthopäden stellen?"></textarea>
+<div class="quickQuestions">
+<button class="secondary mini" data-q="Zeige alle auffälligen Werte und zugehörigen Befunde.">Auffälligkeiten</button>
+<button class="secondary mini" data-q="Zeige alle Augen- und Optikerbefunde chronologisch.">Augenverlauf</button>
+<button class="secondary mini" data-q="Erstelle einen kompakten Text für mein nächstes Arztgespräch.">Arztgespräch</button>
+</div>
+<button class="primary full" id="assistantBtn">Meine Gesundheitsakte durchsuchen</button>
+<div id="assistantResult" class="aiout" style="margin-top:10px"></div>
+</div>
+
+<div class="card"><h2>Optionale echte KI-Analyse</h2>
+<div class="notice">Für eine echte KI-Auswertung ist ein geschützter Vermittlungsserver erforderlich. Der API-Schlüssel darf nicht direkt in GitHub oder öffentlich in dieser App stehen. Bis dahin arbeitet die App lokal und regelbasiert.</div>
+<label>Sicherer API-Endpunkt / eigener Proxy</label><input id="aiEndpoint" placeholder="https://dein-geschuetzter-server.example/analyse">
+<label>API-Schlüssel nur für privaten Test</label><input id="aiKey" type="password" placeholder="Nicht in GitHub eintragen">
 <label>Modell</label><input id="aiModel" value="gpt-5-mini">
-<label>Fragestellung</label><textarea id="aiQuestion">Bewerte meine Laborwerte verständlich, nenne Auffälligkeiten, Zusammenhänge, Verlauf, sinnvolle ärztliche Kontrollen und Warnzeichen. Stelle keine Diagnose.</textarea>
+<label>Fragestellung</label><textarea id="aiQuestion">Analysiere den ausgewählten Befund in der gewählten Darstellungsform. Erkläre Befunde, mögliche Zusammenhänge, Symptome, Alternativen, Vorteile, Nachteile, Gefahren, Gegenmaßnahmen, Warnzeichen und Fragen für das Arztgespräch. Trenne gesicherte Befundangaben von allgemeinen Informationen und stelle keine Diagnose.</textarea>
 <div class="actions"><button class="secondary" id="saveAi">Zugang lokal merken</button><button class="primary" id="aiBtn">KI-Analyse starten</button></div>
 <div id="aiResult" class="aiout" style="margin-top:10px"></div>
 </div>
 </section>
 
 <section id="mensch" class="page">
-<div class="card"><h2>Körperbereiche und Organsysteme</h2><div id="systems" class="system-grid"></div></div>
-<div class="card"><h2>Ausgewählter Bereich</h2><div id="systemDetail" class="aiout">Tippe oben auf einen Körperbereich.</div></div>
+<div class="card"><h2>Körpermodell</h2>
+<div class="bodyModelWrap">
+<svg class="bodySvg" viewBox="0 0 180 430" aria-label="Körpermodell">
+<circle class="bodyPart" data-system="0" cx="90" cy="38" r="27" fill="#fde68a" stroke="#92400e"/>
+<path class="bodyPart" data-system="1" d="M62 72 Q90 58 118 72 L128 172 Q118 210 112 252 L68 252 Q62 210 52 172Z" fill="#bfdbfe" stroke="#1d4ed8"/>
+<path class="bodyPart" data-system="2" d="M76 92 Q90 80 104 92 L105 137 Q91 151 75 136Z" fill="#f87171" stroke="#991b1b"/>
+<ellipse class="bodyPart" data-system="3" cx="72" cy="126" rx="18" ry="32" fill="#a7f3d0" stroke="#047857"/>
+<ellipse class="bodyPart" data-system="3" cx="108" cy="126" rx="18" ry="32" fill="#a7f3d0" stroke="#047857"/>
+<path class="bodyPart" data-system="4" d="M65 151 Q90 137 115 151 L112 210 Q90 229 68 207Z" fill="#fdba74" stroke="#c2410c"/>
+<path class="bodyPart" data-system="5" d="M58 77 L26 185 L42 194 L70 111Z" fill="#ddd6fe" stroke="#6d28d9"/>
+<path class="bodyPart" data-system="5" d="M122 77 L154 185 L138 194 L110 111Z" fill="#ddd6fe" stroke="#6d28d9"/>
+<path class="bodyPart" data-system="6" d="M70 245 L58 397 L80 397 L91 251Z" fill="#bae6fd" stroke="#0369a1"/>
+<path class="bodyPart" data-system="6" d="M110 245 L122 397 L100 397 L89 251Z" fill="#bae6fd" stroke="#0369a1"/>
+<circle class="bodyPart" data-system="7" cx="77" cy="404" r="15" fill="#fecdd3" stroke="#be123c"/>
+<circle class="bodyPart" data-system="7" cx="108" cy="404" r="15" fill="#fecdd3" stroke="#be123c"/>
+</svg>
+<div>
+<div class="grid" id="bodyQuick">
+<div class="healthTile" onclick="systemShow(0)">🧠 Kopf, Augen & Sinne</div>
+<div class="healthTile" onclick="systemShow(2)">❤️ Herz & Kreislauf</div>
+<div class="healthTile" onclick="systemShow(3)">🫁 Lunge & Atmung</div>
+<div class="healthTile" onclick="systemShow(4)">🫃 Bauchorgane</div>
+<div class="healthTile" onclick="systemShow(5)">🦴 Arme, Schulter & Wirbelsäule</div>
+<div class="healthTile" onclick="systemShow(6)">🦵 Hüfte, Knie & Beine</div>
+<div class="healthTile" onclick="systemShow(7)">🦷 Zähne & Mund</div>
+</div>
+<div id="systemDetail" class="aiout" style="margin-top:12px">Tippe auf einen Körperbereich.</div>
+</div>
+</div></div>
 <div class="card"><h2>Nach Fachgebiet</h2><div id="specialties"></div></div>
 </section>
 
@@ -216,7 +290,7 @@ button.busy{opacity:.7;cursor:wait;position:relative}button.busy:after{content:"
 <div class="card"><h2>Automatische Datensicherung</h2><p class="small">Bei jeder Änderung wird automatisch eine lokale Sicherungsversion angelegt. Es werden die letzten gewählten Versionen aufbewahrt.</p><div class="row"><div><label>Automatische Sicherung</label><select id="autoBackupSelect"><option value="on">Ein</option><option value="off">Aus</option></select></div><div><label>Versionen behalten</label><select id="backupLimit"><option>10</option><option>20</option><option selected>30</option><option>50</option></select></div></div><button class="secondary full" id="backupNowBtn">Zusätzliche lokale Sicherung anlegen</button><label>Sicherung aus Datei wiederherstellen</label><input id="importBackup" type="file" accept=".json,application/json"><div id="backupStatus" class="small"></div><div id="backupVersions"></div><h3>Letzte Aktionen</h3><div id="actionLog" class="actionLog"><div class="small">Noch keine Aktion.</div></div></div>
 <div class="card"><h2>Datenschutz</h2><div class="privacyBox"><b>Was ist öffentlich?</b><br>Der Programmcode und die leere App auf GitHub Pages sind öffentlich zugänglich.<br><br><b>Was bleibt privat?</b><br>Laborwerte, Diagnosen, Medikamente und importierte Befundtexte werden ausschließlich im lokalen Speicher dieses Browsers abgelegt. Sie werden nicht automatisch zu GitHub hochgeladen.<br><br><b>Wichtig:</b><br>Lade niemals persönliche Befunde, Sicherungsdateien, Passwörter oder API-Schlüssel in dein öffentliches GitHub-Repository.</div></div>
 <div class="card"><h2>Komplette Sicherung und Wiederherstellung</h2><button class="secondary full" id="exportBtn">Komplette Daten als JSON exportieren</button><button class="dangerBtn full" id="resetBtn">Alle lokalen Daten löschen</button></div>
-<div class="card"><h2>App-Information</h2><p><b>LaborKompass Pro 1.4.0</b></p><p class="small">Persönliche Gesundheitsakte mit Labor, Befunden, Vitalwerten, Impfungen, Allergien, Operationen, Zeitstrahl, Backups und lokaler Analyse.</p></div>
+<div class="card"><h2>App-Information</h2><p><b>Gesundheitsakte 2.0.0</b></p><p class="small">Persönliche Gesundheitsakte mit Labor, Befunden, Vitalwerten, Impfungen, Allergien, Operationen, Zeitstrahl, Backups und lokaler Analyse.</p></div>
 </section>
 </main>
 
@@ -422,8 +496,8 @@ search.oninput=renderValues;filter.onchange=renderValues;
 vDate.value=new Date().toISOString().slice(0,10);vCat.innerHTML=cats.map(x=>`<option>${x}</option>`).join("");names.innerHTML=Object.keys(defs).map(x=>`<option>${x}</option>`).join("");
 vName.onchange=()=>{let d=defs[vName.value];if(d){vUnit.value=d.u;vMin.value=d.min;vMax.value=d.max;vCat.value=d.c}}
 valueForm.onsubmit=e=>{e.preventDefault();values.push({id:uid(),name:vName.value.trim(),value:+vValue.value,unit:vUnit.value.trim(),min:vMin.value===""?"":+vMin.value,max:vMax.value===""?"":+vMax.value,date:vDate.value,category:vCat.value,note:vNote.value.trim()});save();e.target.reset();vDate.value=new Date().toISOString().slice(0,10);render();showToast("Laborwert wurde gespeichert.","ok")};
-const APP_VERSION="1.4.0";let deferredInstallPrompt=null;
-function completePayload(){return{app:"LaborKompass Pro",version:APP_VERSION,exportedAt:new Date().toISOString(),values,files,documents,diagnoses,meds,symptoms,vitals,vaccinations,allergies,operations}}
+const APP_VERSION="2.0.0";let deferredInstallPrompt=null;
+function completePayload(){return{app:"Gesundheitsakte Pro",version:APP_VERSION,exportedAt:new Date().toISOString(),values,files,documents,diagnoses,meds,symptoms,vitals,vaccinations,allergies,operations}}
 function getBackups(){try{return JSON.parse(localStorage.getItem("lk_backup_versions")||"[]")}catch(e){showToast("Sicherungsliste konnte nicht gelesen werden.","error");return[]}}
 function storageEstimate(){let n=0;for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);n+=(k.length+(localStorage.getItem(k)||"").length)*2}return n}
 function createAutoBackup(reason="Manuell"){
@@ -434,7 +508,7 @@ function createAutoBackup(reason="Manuell"){
  if(!saved){try{localStorage.removeItem("lk_backup_versions");localStorage.setItem("lk_backup_versions",JSON.stringify([item]));saved=true}catch(e){throw new Error("Der Gerätespeicher ist voll. Bitte eine Sicherung herunterladen und alte lokale Sicherungen löschen.")}}
  renderBackupVersions();return item
 }
-function backupFilename(x){return `LaborKompass_Backup_${new Date(x.created).toISOString().replace(/[:.]/g,"-")}_v${x.version}.json`}
+function backupFilename(x){return `Gesundheitsakte_Backup_${new Date(x.created).toISOString().replace(/[:.]/g,"-")}_v${x.version}.json`}
 function downloadObject(o,name){
  const json=JSON.stringify(o,null,2),b=new Blob([json],{type:"application/json;charset=utf-8"}),url=URL.createObjectURL(b),a=document.createElement("a");
  a.href=url;a.download=name;a.style.display="none";document.body.appendChild(a);a.click();
@@ -445,7 +519,7 @@ function downloadObject(o,name){
 async function shareBackup(x){
  const name=backupFilename(x),f=new File([JSON.stringify(x.data,null,2)],name,{type:"application/json"});
  if(navigator.share&&(!navigator.canShare||navigator.canShare({files:[f]}))){
-   await navigator.share({title:"LaborKompass Sicherung",text:"Bitte OneDrive oder eine andere Cloud-App als Ziel auswählen.",files:[f]});
+   await navigator.share({title:"Gesundheitsakte Sicherung",text:"Bitte OneDrive oder eine andere Cloud-App als Ziel auswählen.",files:[f]});
    if(window.preUpdateStatus){preUpdateStatus.style.display="block";preUpdateStatus.textContent=`Cloud-Teilen geöffnet: ${name}`}
    showToast("Teilen wurde geöffnet. Bitte OneDrive als Ziel auswählen und dort speichern.","ok",6000);return
  }
@@ -455,7 +529,7 @@ function restoreBackup(id){const x=getBackups().find(v=>v.id===id);if(!x||!confi
 function deleteBackup(id){if(confirm("Sicherung löschen?")){localStorage.setItem("lk_backup_versions",JSON.stringify(getBackups().filter(x=>x.id!==id)));renderBackupVersions();showToast("Lokale Sicherung wurde gelöscht.","ok")}else showToast("Löschen abgebrochen.","info")}
 function renderBackupVersions(){if(!window.backupVersions)return;const a=getBackups();backupVersions.innerHTML=a.length?a.map(x=>`<div class="backupRow"><div><b>${new Date(x.created).toLocaleString("de-DE")}</b><div class="small">${x.reason} · Version ${x.version}</div></div><div><button class="secondary mini" onclick="restoreBackup('${x.id}')">Wiederherstellen</button><button class="dangerBtn mini" onclick="deleteBackup('${x.id}')">Löschen</button></div></div>`).join(""):"<p class='small'>Noch keine Sicherungen vorhanden.</p>";if(window.backupStatus)backupStatus.textContent=`${a.length} lokale Sicherung(en) · ungefähr ${(storageEstimate()/1024/1024).toFixed(1)} MB lokaler Speicher belegt.`}
 window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferredInstallPrompt=e;if(window.installHint)installHint.textContent="Die App kann jetzt installiert werden."});
-window.addEventListener("appinstalled",()=>{if(window.installHint)installHint.textContent="LaborKompass Pro wurde installiert.";deferredInstallPrompt=null});
+window.addEventListener("appinstalled",()=>{if(window.installHint)installHint.textContent="Gesundheitsakte Pro wurde installiert.";deferredInstallPrompt=null});
 document.addEventListener("DOMContentLoaded",()=>{if("serviceWorker" in navigator)navigator.serviceWorker.register("./service-worker.js").catch(console.warn);if(window.autoBackupSelect){autoBackupSelect.value=localStorage.getItem("lk_auto_backup")||"on";autoBackupSelect.onchange=()=>localStorage.setItem("lk_auto_backup",autoBackupSelect.value)}if(window.backupLimit){backupLimit.value=localStorage.getItem("lk_backup_limit")||"30";backupLimit.onchange=()=>localStorage.setItem("lk_backup_limit",backupLimit.value)}if(window.installBtn)installBtn.onclick=async()=>{if(deferredInstallPrompt){deferredInstallPrompt.prompt();await deferredInstallPrompt.userChoice;deferredInstallPrompt=null}else alert("Chrome-Menü öffnen und ‘App installieren’ wählen.")};if(window.backupNowBtn)backupNowBtn.onclick=()=>{try{const x=createAutoBackup("Manuell");showToast(`Sicherung angelegt: ${new Date(x.created).toLocaleTimeString("de-DE")}.`,"ok")}catch(e){showToast(e.message,"error",5000)}};if(window.downloadLatestBtn)downloadLatestBtn.onclick=()=>{setButtonBusy(downloadLatestBtn,true,"Sicherung wird erstellt");try{const x=createAutoBackup("Vor Update – lokal");downloadObject(x.data,backupFilename(x))}catch(e){showToast("Lokale Sicherung fehlgeschlagen: "+e.message,"error",7000)}finally{setButtonBusy(downloadLatestBtn,false)}};if(window.shareBackupBtn)shareBackupBtn.onclick=async()=>{setButtonBusy(shareBackupBtn,true,"OneDrive wird vorbereitet");try{const x=createAutoBackup("Vor Update – OneDrive");await shareBackup(x)}catch(e){if(e.name!=="AbortError")showToast("Cloud-Sicherung fehlgeschlagen: "+e.message,"error",7000);else showToast("Teilen wurde abgebrochen. Es wurde nichts in OneDrive gespeichert.","info",5000)}finally{setButtonBusy(shareBackupBtn,false)}};
 if(window.importBackup)importBackup.onchange=async e=>{const f=e.target.files?.[0];if(!f)return;try{const d=JSON.parse(await f.text());if(!d||!Array.isArray(d.values)||!confirm(`Sicherung aus Version ${d.version||"unbekannt"} vom ${d.exportedAt?new Date(d.exportedAt).toLocaleString("de-DE"):"unbekannten Datum"} wiederherstellen?`)){showToast("Wiederherstellung abgebrochen.","info");return}values=d.values||[];files=d.files||[];documents=d.documents||[];diagnoses=d.diagnoses||[];meds=d.meds||[];symptoms=d.symptoms||[];vitals=d.vitals||[];vaccinations=d.vaccinations||[];allergies=d.allergies||[];operations=d.operations||[];localStorage.setItem("lk_values",JSON.stringify(values));localStorage.setItem("lk_files",JSON.stringify(files));localStorage.setItem("lk_documents",JSON.stringify(documents));localStorage.setItem("lk_diag",JSON.stringify(diagnoses));localStorage.setItem("lk_meds",JSON.stringify(meds));localStorage.setItem("lk_sym",JSON.stringify(symptoms));localStorage.setItem("lk_vitals",JSON.stringify(vitals));localStorage.setItem("lk_vaccinations",JSON.stringify(vaccinations));localStorage.setItem("lk_allergies",JSON.stringify(allergies));localStorage.setItem("lk_operations",JSON.stringify(operations));createAutoBackup("Nach Wiederherstellung");render();showToast("Sicherung vollständig wiederhergestellt.","ok",7000)}catch(err){showToast("Sicherungsdatei konnte nicht eingelesen werden: "+err.message,"error",8000)}finally{e.target.value=""}};
 renderBackupVersions();if(!getBackups().length)createAutoBackup("Erstsicherung")});
@@ -517,7 +591,7 @@ function nnum(x){if(x==null)return null;const s=String(x).replace(",",".").repla
 function uniq(a){return [...new Set((a||[]).filter(Boolean))]}
 function extractEyeData(text){
  const raw=text.replace(/\r/g,"\n"),flat=raw.replace(/[|;]/g," ").replace(/\s+/g," ");
- const out={kind:"eye",right:{},left:{},general:{},notes:[]};
+ const out={kind:"eye",right:{},left:{},general:{},aid:{},costs:{},notes:[]};
  const labels={sphere:["sphäre","sphaere","sph"],cylinder:["zylinder","cyl"],axis:["achse","axis","a"],addition:["addition","add"],pd:["pupillendist","pd"],visus:["visus","sehschärfe","sehstaerke"],iop:["augeninnendruck","tensio","iop"]};
  function lineFor(side){const rx=new RegExp(side+"[^\\n]{0,180}","i");return raw.match(rx)?.[0]||""}
  function parseSide(line,target){
@@ -536,6 +610,12 @@ function extractEyeData(text){
  }
  const iopMatches=[...flat.matchAll(/(?:iop|tensio|augeninnendruck)[^0-9]{0,15}(\d{1,2}(?:[.,]\d+)?)/gi)].map(m=>nnum(m[1]));
  if(iopMatches.length){out.general.iopRight=iopMatches[0];if(iopMatches[1]!=null)out.general.iopLeft=iopMatches[1]}
+ 
+ const frame=flat.match(/fassungsdaten\s+([^\n]{3,100})/i)||flat.match(/(?:fassung|modell)\s*[:\-]?\s*([^.;]{3,100})/i);if(frame)out.aid.frame=frame[1].trim();
+ const total=flat.match(/(?:endbetrag\s*total|zwischensumme|gesamtbetrag)[^0-9]{0,20}(\d{1,5}[.,]\d{2})/i);if(total)out.costs.total=nnum(total[1]);
+ const rglass=flat.match(/r-glas[^0-9]{0,15}(\d{1,5}[.,]\d{2})/i);if(rglass)out.costs.rightLens=nnum(rglass[1]);
+ const lglass=flat.match(/l-glas[^0-9]{0,15}(\d{1,5}[.,]\d{2})/i);if(lglass)out.costs.leftLens=nnum(lglass[1]);
+ const fcost=flat.match(/fassung[^0-9]{0,30}(\d{1,5}[.,]\d{2})/i);if(fcost)out.costs.frame=nnum(fcost[1]);
  const diagnoses=uniq((flat.match(/glaukom|katarakt|makuladegeneration|netzhaut(?:ablösung|veränderung)?|amblyopie|myopie|hyperopie|astigmatismus|presbyopie/gi)||[]));
  if(diagnoses.length)out.general.detectedTerms=diagnoses;
  return out;
@@ -562,7 +642,7 @@ function extractSpecialtyData(text,cls){
 }
 function hasSpecialtyData(s){
  if(!s)return false;
- if(s.kind==="eye")return Object.keys(s.right||{}).length+Object.keys(s.left||{}).length+Object.keys(s.general||{}).length>0;
+ if(s.kind==="eye")return Object.keys(s.right||{}).length+Object.keys(s.left||{}).length+Object.keys(s.general||{}).length+Object.keys(s.aid||{}).length+Object.keys(s.costs||{}).length>0;
  if(s.kind==="dental")return (s.teeth?.length||0)+(s.findings?.length||0)+(s.codes?.length||0)+(s.costs?.length||0)>0;
  return (s.icd?.length||0)+(s.medications?.length||0)+(s.procedures?.length||0)>0;
 }
@@ -571,7 +651,7 @@ function specialistHtml(s){
  if(!hasSpecialtyData(s))return "<p class='small'>Keine sicher strukturierten Fachwerte erkannt. Der Originaltext bleibt gespeichert.</p>";
  if(s.kind==="eye"){
    const eye=(title,o)=>`<div class="specialistCard eyeSide"><h3>${title}</h3>${Object.entries(o||{}).map(([k,v])=>`<div class="kv"><span>${valLabel(k)}</span><b>${v}${k==="axis"?"°":""}</b></div>`).join("")||"<span class='small'>Keine Werte sicher erkannt</span>"}</div>`;
-   return `<div class="specialistGrid">${eye("Rechtes Auge",s.right)}${eye("Linkes Auge",s.left)}${Object.keys(s.general||{}).length?`<div class="specialistCard"><h3>Weitere Augenbefunde</h3>${Object.entries(s.general).map(([k,v])=>`<div class="kv"><span>${valLabel(k)}</span><b>${Array.isArray(v)?v.join(", "):v}</b></div>`).join("")}</div>`:""}</div>`;
+   return `<div class="specialistGrid">${eye("Rechtes Auge",s.right)}${eye("Linkes Auge",s.left)}${Object.keys(s.general||{}).length?`<div class="specialistCard"><h3>Weitere Augenbefunde</h3>${Object.entries(s.general).map(([k,v])=>`<div class="kv"><span>${valLabel(k)}</span><b>${Array.isArray(v)?v.join(", "):v}</b></div>`).join("")}</div>`:""}${Object.keys(s.aid||{}).length?`<div class="specialistCard"><h3>Hilfsmittel / Brille</h3>${Object.entries(s.aid).map(([k,v])=>`<div class="kv"><span>${k==="frame"?"Fassung":k}</span><b>${v}</b></div>`).join("")}</div>`:""}${Object.keys(s.costs||{}).length?`<div class="specialistCard"><h3>Gesundheitskosten</h3>${Object.entries(s.costs).map(([k,v])=>`<div class="kv"><span>${({total:"Gesamt",rightLens:"Rechtes Glas",leftLens:"Linkes Glas",frame:"Fassung"}[k]||k)}</span><b>${Number(v).toFixed(2)} €</b></div>`).join("")}</div>`:""}</div>`;
  }
  if(s.kind==="dental")return `<div class="specialistGrid"><div class="specialistCard"><h3>Betroffene Zähne</h3><p>${s.teeth?.join(", ")||"Keine Zahnnummer sicher erkannt"}</p></div><div class="specialistCard"><h3>Erkannte Begriffe</h3><p>${s.findings?.join(", ")||"Keine eindeutigen Begriffe"}</p></div>${s.codes?.length?`<div class="specialistCard"><h3>Abrechnungscodes</h3><p>${s.codes.join(", ")}</p></div>`:""}${s.costs?.length?`<div class="specialistCard"><h3>Kostenangaben</h3><p>${s.costs.map(x=>x.toFixed(2)+" €").join(", ")}</p></div>`:""}</div>`;
  return `<div class="specialistGrid">${s.icd?.length?`<div class="specialistCard"><h3>ICD-Codes</h3><p>${s.icd.join(", ")}</p></div>`:""}${s.medications?.length?`<div class="specialistCard"><h3>Medikationen</h3><p>${s.medications.join("<br>")}</p></div>`:""}${s.procedures?.length?`<div class="specialistCard"><h3>Untersuchungen / Verfahren</h3><p>${s.procedures.join(", ")}</p></div>`:""}</div>`;
@@ -585,48 +665,79 @@ function extractKeyStatements(text){
  return picked;
 }
 function documentAnalysis(doc,level="simple"){
- const text=(doc.text||"").toLowerCase(), sections={summary:[],diagnoses:[],findings:[],recommendations:[],questions:[],alternatives:[],warnings:[]};
- sections.summary.push(`${doc.type} vom ${fd(doc.date)} aus dem Fachgebiet ${doc.specialty}.`);
- if(doc.labValues?.length)sections.summary.push(`${doc.labValues.length} Laborwerte wurden erkannt.`);if(hasSpecialtyData(doc.specialtyData))sections.summary.push("Strukturierte Facharztwerte wurden erkannt und in der Rubrik Fachwerte abgelegt.");
- (doc.keyStatements||[]).slice(0,6).forEach(x=>sections.findings.push(x));
- const diagnosisPatterns=[/diagnose[n]?\s*[:\-]\s*([^\n.;]{4,100})/gi,/(arthrose|bandscheibenvorfall|stenose|entzündung|glaukom|katarakt|tinnitus|diabetes|hypertonie|prostatahyperplasie|polyneuropathie)/gi];
- const original=doc.text||"";
- diagnosisPatterns.forEach(rx=>{let m;while((m=rx.exec(original))&&sections.diagnoses.length<8)sections.diagnoses.push(m[1]||m[0])});
- sections.recommendations.push(...original.split(/\n+/).filter(x=>/(empfehl|kontrolle|wiedervorstellung|therapie|sollte|weiterführ)/i.test(x)).slice(0,8));
- if(!sections.recommendations.length)sections.recommendations.push("Den Befund mit der behandelnden Ärztin oder dem behandelnden Arzt besprechen und die empfohlene Verlaufskontrolle klären.");
- sections.questions.push("Welche Bedeutung haben die wichtigsten Befunde für meine Beschwerden?","Welche Kontrolle ist wann sinnvoll?","Welche Warnzeichen erfordern eine frühere Vorstellung?");
- sections.alternatives.push("Je nach Befund können Beobachtung, konservative Behandlung, weitere Diagnostik oder fachärztliche Mitbeurteilung infrage kommen. Die passende Auswahl hängt von Beschwerden, Untersuchung und Vorgeschichte ab.");
- if(/dringend|sofort|notfall|malign|tumorverdacht|hochgradig|akut/i.test(text))sections.warnings.push("Der Text enthält möglicherweise dringliche Begriffe. Bitte zeitnah ärztlich klären und bei akuten Beschwerden medizinische Hilfe suchen.");
- if(level==="simple")sections.summary.push("In einfacher Sprache: Die wichtigsten Aussagen wurden herausgefiltert und geordnet.");
- else if(level==="doctor")sections.summary.push("Für das Arztgespräch wurden Fragen, Verlaufspunkte und mögliche nächste Schritte zusammengestellt.");
- else sections.summary.push("Die Auswertung berücksichtigt Dokumentart, Fachgebiet, Diagnosen, Kernaussagen, Laborwerte und vergleichbare Befunde.");
- return sections;
+ const original=doc.text||"",text=original.toLowerCase();
+ const s={summary:[],diagnoses:[],findings:[],symptoms:[],causes:[],variants:[],recommendations:[],alternatives:[],advantages:[],disadvantages:[],risks:[],countermeasures:[],warnings:[],questions:[],addresses:[]};
+ s.summary.push(`${doc.type} vom ${fd(doc.date)} · Fachgebiet: ${doc.specialty}.`);
+ if(doc.labValues?.length)s.summary.push(`${doc.labValues.length} Laborwerte wurden erkannt.`);
+ if(hasSpecialtyData(doc.specialtyData))s.summary.push("Strukturierte Fachwerte wurden erkannt und mit dem Originaldokument verknüpft.");
+ (doc.keyStatements||[]).slice(0,8).forEach(x=>s.findings.push(x));
+ const diagRx=[/diagnose[n]?\s*[:\-]\s*([^\n.;]{4,120})/gi,/(arthrose|bandscheibenvorfall|stenose|entzündung|glaukom|katarakt|tinnitus|diabetes|hypertonie|prostatahyperplasie|polyneuropathie|astigmatismus|hyperopie|myopie|presbyopie|parodontitis|karies)/gi];
+ diagRx.forEach(rx=>{let m;while((m=rx.exec(original))&&s.diagnoses.length<10)s.diagnoses.push(m[1]||m[0])});
+ s.recommendations.push(...original.split(/\n+/).filter(x=>/(empfehl|kontrolle|wiedervorstellung|therapie|sollte|weiterführ|verordnung)/i.test(x)).slice(0,8));
+ if(!s.recommendations.length)s.recommendations.push("Befund, Beschwerden und bisherigen Verlauf mit der behandelnden Praxis besprechen.");
+ const specialty=(doc.specialty||"").toLowerCase();
+ if(/auge|optik/.test(specialty)){
+   s.symptoms.push("Mögliche Beschwerden können unscharfes Sehen, Kopfschmerzen, rasche Ermüdung der Augen, Blendempfindlichkeit oder Schwierigkeiten beim Lesen sein.");
+   s.causes.push("Sehwerte können sich durch Fehlsichtigkeit, Alterung der Linse, Hornhautveränderungen, Netzhaut- oder Sehnervenerkrankungen verändern.");
+   s.variants.push("Mögliche Korrekturen sind Brille, Kontaktlinsen oder – je nach Befund – augenärztliche Behandlung.");
+   s.questions.push("Warum ist der Visus zwischen rechtem und linkem Auge unterschiedlich?","Sollten Augeninnendruck, Linse, Netzhaut und Sehnerv kontrolliert werden?","Wann ist die nächste Verlaufskontrolle sinnvoll?");
+ }else if(/zahn/.test(specialty)){
+   s.symptoms.push("Mögliche Beschwerden sind Schmerzen, Temperaturempfindlichkeit, Zahnfleischbluten, Schwellung oder Probleme beim Kauen.");
+   s.causes.push("Je nach Befund kommen Karies, Entzündungen, Parodontitis, mechanische Belastung oder Veränderungen an Zahnersatz infrage.");
+   s.questions.push("Welche Behandlung ist medizinisch notwendig und welche ist optional?","Welche Alternativen gibt es und wie unterscheiden sich Haltbarkeit und Kosten?","Welche Folgen hätte Abwarten?");
+ }else{
+   s.symptoms.push("Passende Beschwerden hängen vom betroffenen Organ und vom konkreten Befund ab. Entscheidend sind Beginn, Dauer, Stärke und Begleitsymptome.");
+   s.causes.push("Ein einzelner Befund kann verschiedene Ursachen haben. Vorgeschichte, Untersuchung und Verlauf sind für die Einordnung wichtig.");
+   s.questions.push("Welche Bedeutung haben die wichtigsten Befunde für meine Beschwerden?","Welche Kontrolle ist wann sinnvoll?","Welche Warnzeichen erfordern eine frühere Vorstellung?");
+ }
+ s.alternatives.push("Je nach Situation kommen Beobachtung, konservative Behandlung, weitere Diagnostik, Medikamentenanpassung, Hilfsmittel oder fachärztliche Mitbeurteilung infrage.");
+ s.advantages.push("Vorteile einer gezielten Abklärung können frühzeitige Behandlung, Verlaufskontrolle und Vermeidung unnötiger Maßnahmen sein.");
+ s.disadvantages.push("Nachteile können Aufwand, Kosten, mögliche Nebenwirkungen, Fehlalarme oder zusätzliche Untersuchungen sein.");
+ s.risks.push("Gefahren entstehen vor allem, wenn akute Warnzeichen übersehen, Befunde ohne Kontext interpretiert oder Therapien eigenständig verändert werden.");
+ s.countermeasures.push("Originalbefund prüfen, Symptome dokumentieren, Medikamente nicht selbstständig ändern und empfohlene Kontrollen wahrnehmen.");
+ if(/dringend|sofort|notfall|malign|tumorverdacht|hochgradig|akut|thrombose|infarkt|blutung/i.test(text))s.warnings.push("Der Bericht enthält möglicherweise dringliche Begriffe. Bitte zeitnah ärztlich klären; bei akuten starken Beschwerden medizinische Hilfe suchen.");
+ const addressLines=original.split(/\n+/).filter(x=>/\b\d{5}\b/.test(x)&&/(straße|str\.|weg|platz|allee|gasse)/i.test(x)).slice(0,3);
+ s.addresses.push(...addressLines);
+ if(level==="simple")s.summary.push("Die folgenden Punkte sind bewusst einfach formuliert.");
+ if(level==="medical")s.summary.push("Die Darstellung trennt dokumentierte Angaben, automatische Extraktion und allgemeine medizinische Einordnung.");
+ return s;
 }
 function explainDocument(doc,level=(window.explainLevel?.value||"simple")){
- const s=documentAnalysis(doc,level),out=[];
- out.push("ZUSAMMENFASSUNG\n• "+s.summary.join("\n• "));
- if(s.diagnoses.length)out.push("ERKANNTE DIAGNOSEN / BEGRIFFE\n• "+[...new Set(s.diagnoses)].join("\n• "));
- if(s.findings.length)out.push("WICHTIGE BEFUNDAUSSAGEN\n• "+s.findings.join("\n• "));
- out.push("MÖGLICHE NÄCHSTE SCHRITTE\n• "+s.recommendations.join("\n• "));
- out.push("ALTERNATIVEN UND EINORDNUNG\n• "+s.alternatives.join("\n• "));
- out.push("FRAGEN FÜR DEN ARZTTERMIN\n• "+s.questions.join("\n• "));
- if(s.warnings.length)out.push("WICHTIG\n• "+s.warnings.join("\n• "));
- const same=documents.filter(d=>d.id!==doc.id&&d.rubric===doc.rubric).sort((a,b)=>a.date.localeCompare(b.date));
- const older=same.filter(d=>d.date<doc.date).pop(),newer=same.find(d=>d.date>doc.date);
- if(older||newer)out.push("VERGLEICH\n"+(older?`• Älterer vergleichbarer Befund: ${fd(older.date)} – ${older.name}\n`:"")+(newer?`• Neuerer vergleichbarer Befund: ${fd(newer.date)} – ${newer.name}`:""));
- out.push("Hinweis: Diese automatische Auswertung ist eine Orientierung und keine Diagnose. Vor Entscheidungen den Originalbefund ärztlich besprechen.");
+ const s=documentAnalysis(doc,level),out=[],add=(title,a)=>{if(a?.length)out.push(title+"\n• "+[...new Set(a)].join("\n• "))};
+ if(level==="compact"){
+   out.push(`ARZTGESPRÄCH – KURZTEXT\nIch möchte den ${doc.type.toLowerCase()} vom ${fd(doc.date)} besprechen. Besonders wichtig sind: ${(s.findings.slice(0,3).join(" | ")||s.summary.join(" "))}. Bitte erläutern Sie mir die Bedeutung, den Verlauf, notwendige Kontrollen und mögliche Behandlungsalternativen.`);
+   add("MEINE WICHTIGSTEN FRAGEN",s.questions.slice(0,6));
+   add("WARNZEICHEN",s.warnings);
+ }else if(level==="doctor"){
+   add("DOKUMENT / ANLASS",s.summary);add("DOKUMENTIERTE BEFUNDE",s.findings);add("ERKANNTE DIAGNOSEN / BEGRIFFE",s.diagnoses);
+   add("VERLAUF / VERGLEICH",comparisonLines(doc));add("BISHERIGE EMPFEHLUNGEN",s.recommendations);add("KONKRETE FRAGESTELLUNGEN",s.questions);add("DRINGLICHKEIT / WARNZEICHEN",s.warnings);
+ }else{
+   add("ZUSAMMENFASSUNG",s.summary);add("ERKANNTE DIAGNOSEN / BEGRIFFE",s.diagnoses);add("WICHTIGE BEFUNDAUSSAGEN",s.findings);
+   if(level!=="simple"){add("MÖGLICHE SYMPTOME",s.symptoms);add("MÖGLICHE URSACHEN UND ZUSAMMENHÄNGE",s.causes)}
+   if(level==="expanded"||level==="medical"){add("VARIANTEN",s.variants);add("MÖGLICHE NÄCHSTE SCHRITTE",s.recommendations);add("ALTERNATIVEN",s.alternatives);add("VORTEILE",s.advantages);add("NACHTEILE",s.disadvantages);add("GEFAHREN / RISIKEN",s.risks);add("GEGENMASSNAHMEN",s.countermeasures)}
+   else add("MÖGLICHE NÄCHSTE SCHRITTE",s.recommendations);
+   add("FRAGEN FÜR DEN ARZTTERMIN",s.questions);add("WARNZEICHEN",s.warnings);add("IM DOKUMENT ERKANNTE ADRESSEN",s.addresses);add("VERGLEICH",comparisonLines(doc));
+ }
+ out.push("Hinweis: Automatische Orientierung, keine Diagnose. Aussagen stets mit Originaldokument und behandelnder Praxis abgleichen.");
  return out.join("\n\n");
 }
+function comparisonLines(doc){
+ const same=documents.filter(d=>d.id!==doc.id&&d.rubric===doc.rubric).sort((a,b)=>a.date.localeCompare(b.date)),r=[];
+ const older=same.filter(d=>d.date<doc.date).pop(),newer=same.find(d=>d.date>doc.date);
+ if(older)r.push(`Älterer vergleichbarer Befund: ${fd(older.date)} – ${older.name}`);
+ if(newer)r.push(`Neuerer vergleichbarer Befund: ${fd(newer.date)} – ${newer.name}`);
+ return r;
+}
 
-const DB_NAME="LaborKompassFiles",DB_STORE="originals";
+const DB_NAME="GesundheitsakteFiles",DB_STORE="originals";
 function openFileDB(){return new Promise((res,rej)=>{const q=indexedDB.open(DB_NAME,1);q.onupgradeneeded=()=>{if(!q.result.objectStoreNames.contains(DB_STORE))q.result.createObjectStore(DB_STORE)};q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error)})}
 async function storeOriginal(id,file){const db=await openFileDB();return new Promise((res,rej)=>{const tx=db.transaction(DB_STORE,"readwrite");tx.objectStore(DB_STORE).put(file,id);tx.oncomplete=res;tx.onerror=()=>rej(tx.error)})}
 async function getOriginal(id){const db=await openFileDB();return new Promise((res,rej)=>{const q=db.transaction(DB_STORE).objectStore(DB_STORE).get(id);q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error)})}
 async function fileHash(file){const b=await file.arrayBuffer(),h=await crypto.subtle.digest("SHA-256",b);return [...new Uint8Array(h)].map(x=>x.toString(16).padStart(2,"0")).join("")}
 async function textHash(text){const h=await crypto.subtle.digest("SHA-256",new TextEncoder().encode((text||"").replace(/\s+/g," ").trim().toLowerCase()));return [...new Uint8Array(h)].map(x=>x.toString(16).padStart(2,"0")).join("")}
 function findDuplicate(hash,textDigest){return documents.find(d=>(hash&&d.hash===hash)||(textDigest&&d.textDigest===textDigest))}
-async function shareTextFile(name,text,title="LaborKompass Bericht"){const f=new File([text],name,{type:"text/plain;charset=utf-8"});if(navigator.share&&(!navigator.canShare||navigator.canShare({files:[f]})))return navigator.share({title,text:"Erstellt mit LaborKompass Pro",files:[f]});const a=document.createElement("a");a.href=URL.createObjectURL(f);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
-async function shareDocument(id,kind="analysis"){const d=documents.find(x=>x.id===id);if(!d)return;if(kind==="original"){const f=await getOriginal(id);if(!f)return alert("Die Originaldatei wurde nicht lokal gespeichert.");if(navigator.share&&(!navigator.canShare||navigator.canShare({files:[f]})))return navigator.share({title:d.name,files:[f]});const a=document.createElement("a");a.href=URL.createObjectURL(f);a.download=f.name||d.name;a.click();return}const content=kind==="full"?`${d.name}\n${fd(d.date)} · ${d.specialty}\n\nORIGINALTEXT\n${d.text}\n\nAUSWERTUNG\n${explainDocument(d)}`:explainDocument(d);return shareTextFile(`LaborKompass_${kind==="full"?"Gesamtbericht":"Auswertung"}_${d.date}.txt`,content,d.name)}
+async function shareTextFile(name,text,title="Gesundheitsakte Bericht"){const f=new File([text],name,{type:"text/plain;charset=utf-8"});if(navigator.share&&(!navigator.canShare||navigator.canShare({files:[f]})))return navigator.share({title,text:"Erstellt mit Gesundheitsakte Pro",files:[f]});const a=document.createElement("a");a.href=URL.createObjectURL(f);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
+async function shareDocument(id,kind="analysis"){const d=documents.find(x=>x.id===id);if(!d)return;if(kind==="original"){const f=await getOriginal(id);if(!f)return alert("Die Originaldatei wurde nicht lokal gespeichert.");if(navigator.share&&(!navigator.canShare||navigator.canShare({files:[f]})))return navigator.share({title:d.name,files:[f]});const a=document.createElement("a");a.href=URL.createObjectURL(f);a.download=f.name||d.name;a.click();return}const content=kind==="full"?`${d.name}\n${fd(d.date)} · ${d.specialty}\n\nORIGINALTEXT\n${d.text}\n\nAUSWERTUNG\n${explainDocument(d)}`:explainDocument(d);return shareTextFile(`Gesundheitsakte_${kind==="full"?"Gesamtbericht":"Auswertung"}_${d.date}.txt`,content,d.name)}
 function printDocument(id){const d=documents.find(x=>x.id===id);if(!d)return;const w=open("","_blank");w.document.write(`<html><head><title>${esc(d.name)}</title><style>body{font-family:Arial;padding:24px;line-height:1.5;white-space:pre-wrap}h1{color:#0f766e}
 .specialistGrid{display:grid;gap:10px;grid-template-columns:repeat(2,minmax(0,1fr))}
 .specialistCard{border:1px solid var(--line);border-radius:13px;padding:12px;background:#fff}
@@ -634,6 +745,19 @@ function printDocument(id){const d=documents.find(x=>x.id===id);if(!d)return;con
 .kv{display:grid;grid-template-columns:1fr auto;gap:6px 12px;padding:4px 0;border-bottom:1px dashed #dbe3ea}
 .kv:last-child{border-bottom:0}.kv b{text-align:right}.eyeSide{border-left:5px solid #0f766e}
 @media(max-width:520px){.specialistGrid{grid-template-columns:1fr}}
+
+.brandLogo{width:54px;height:54px;border-radius:15px;vertical-align:middle;margin-right:10px;box-shadow:0 5px 18px #0004}
+.analysisModes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:10px 0}
+.modeBtn{border:2px solid var(--line);border-radius:13px;padding:12px;background:#fff;text-align:left;font-weight:800}
+.modeBtn.active{border-color:var(--brand);background:#e6fffb;color:var(--brand)}
+.bodyModelWrap{display:grid;grid-template-columns:190px 1fr;gap:16px;align-items:start}
+.bodySvg{width:180px;max-width:100%;margin:auto;display:block}
+.bodyPart{cursor:pointer;transition:.15s}.bodyPart:hover,.bodyPart.active{filter:drop-shadow(0 0 6px #14b8a6);stroke:#14b8a6;stroke-width:4}
+.quickQuestions{display:flex;flex-wrap:wrap;gap:7px}.quickQuestions button{margin:0}
+.doctorSheet{border:2px solid #2563eb;border-radius:14px;padding:14px;background:#eff6ff}
+.warningSheet{border:2px solid #dc2626;border-radius:14px;padding:14px;background:#fef2f2}
+.healthTile{border-radius:14px;padding:13px;background:linear-gradient(135deg,#fff,#f0fdfa);border:1px solid var(--line)}
+@media(max-width:620px){.bodyModelWrap{grid-template-columns:1fr}.analysisModes{grid-template-columns:1fr}}
 </style></head><body><h1>${esc(d.name)}</h1><b>${fd(d.date)} · ${esc(d.specialty)}</b><hr>${esc(explainDocument(d))}</body></html>`);w.document.close();w.print();showToast("Druckansicht wurde geöffnet.","ok")}
 
 async function readPDF(file){
@@ -763,28 +887,27 @@ localAnalysisBtn.onclick=()=>{localAnalysis.textContent=localEngine();};
 reportBtn.onclick=()=>{
  const text=localAnalysis.textContent||localEngine();
  const blob=new Blob([text],{type:"text/plain;charset=utf-8"});
- const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="LaborKompass_Lokale_Analyse_"+new Date().toISOString().slice(0,10)+".txt";a.click();URL.revokeObjectURL(a.href);
+ const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="Gesundheitsakte_Lokale_Analyse_"+new Date().toISOString().slice(0,10)+".txt";a.click();URL.revokeObjectURL(a.href);
 };
 saveAi.onclick=()=>{localStorage.setItem("lk_ai_endpoint",aiEndpoint.value);localStorage.setItem("lk_ai_key",aiKey.value);localStorage.setItem("lk_ai_model",aiModel.value);showToast("KI-Einstellungen wurden lokal gespeichert.","ok")};
 aiEndpoint.value=localStorage.getItem("lk_ai_endpoint")||"https://api.openai.com/v1/responses";aiKey.value=localStorage.getItem("lk_ai_key")||"";aiModel.value=localStorage.getItem("lk_ai_model")||"gpt-5-mini";
 aiBtn.onclick=async()=>{if(!aiKey.value){alert("API-Schlüssel oder eigener Proxy erforderlich.");return}aiResult.textContent="Analyse läuft …";let payload={model:aiModel.value,input:`Du bist ein medizinischer Informationsassistent. Antworte auf Deutsch, verständlich, vorsichtig, ohne Diagnose. ${aiQuestion.value}\n\nLaborwerte:\n${JSON.stringify(values)}\nDiagnosen:${JSON.stringify(diagnoses)}\nMedikamente:${JSON.stringify(meds)}\nBeschwerden:${JSON.stringify(symptoms)}`};try{let r=await fetch(aiEndpoint.value,{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+aiKey.value},body:JSON.stringify(payload)});let j=await r.json();if(!r.ok)throw new Error(j.error?.message||"Fehler");aiResult.textContent=j.output_text||j.output?.map(x=>x.content?.map(y=>y.text).join("")).join("\n")||JSON.stringify(j,null,2)}catch(e){aiResult.textContent="KI-Aufruf fehlgeschlagen: "+e.message+"\n\nMögliche Gründe: Browser-Sicherheitsregeln, falscher Schlüssel, falscher Endpunkt oder fehlendes Guthaben."}}
 
 const systemData=[
-["🩸","Blut & Immunsystem",["Blutbild","Differentialblutbild","Entzündung"],"Hämatologie / Innere Medizin"],
-["❤️","Herz & Gefäße",["Blutfette","Gerinnung"],"Kardiologie / Angiologie"],
-["🫁","Lunge & Atmung",["Sonstige"],"Pneumologie"],
-["🧠","Gehirn & Nerven",["Vitamine & Mineralstoffe"],"Neurologie"],
-["🦋","Schilddrüse & Hormone",["Schilddrüse","Hormone"],"Endokrinologie"],
-["🍽️","Magen, Darm & Stoffwechsel",["Blutzucker","Vitamine & Mineralstoffe"],"Gastroenterologie / Diabetologie"],
-["🧪","Leber & Galle",["Leber"],"Gastroenterologie / Hepatologie"],
-["💧","Nieren & Harnwege",["Niere"],"Nephrologie / Urologie"],
-["♂️","Prostata & Männergesundheit",["Prostata"],"Urologie"],
-["🦴","Knochen, Muskeln & Gelenke",["Vitamine & Mineralstoffe","Entzündung"],"Orthopädie / Rheumatologie"],
-["🧴","Haut & Allergien",["Differentialblutbild"],"Dermatologie / Allergologie"],
-["👁️","Augen, Ohren & Sinne",["Sonstige"],"Augenheilkunde / HNO"]
+["🧠","Kopf, Augen & Sinne",["Sonstige"],"Neurologie / Augenheilkunde / HNO",["auge","optik","neurolog","hno","schwindel","tinnitus"]],
+["🫀","Brustkorb",["Blutbild"],"Kardiologie",["kardiolog","herz","ekg"]],
+["❤️","Herz & Kreislauf",["Fettstoffwechsel"],"Kardiologie / Angiologie",["kardiolog","herz","blutdruck","gefäß"]],
+["🫁","Lunge & Atmung",["Entzündung"],"Pneumologie",["lunge","pneumolog","asthma","copd"]],
+["🫃","Bauchorgane",["Leber","Niere","Glukose"],"Gastroenterologie / Urologie",["magen","darm","leber","galle","niere","urolog"]],
+["🦴","Arme, Schulter & Wirbelsäule",["Entzündung"],"Orthopädie / Neurologie",["schulter","arm","wirbelsäule","orthop","bandscheibe"]],
+["🦵","Hüfte, Knie & Beine",["Entzündung"],"Orthopädie / Gefäßmedizin",["hüfte","knie","bein","meniskus","orthop"]],
+["🦷","Zähne & Mund",["Entzündung"],"Zahnmedizin",["zahn","kiefer","parodont","implantat"]]
 ];
 systems.innerHTML=systemData.map((s,i)=>`<div class="system" onclick="systemShow(${i})"><strong>${s[0]} ${s[1]}</strong><span>${s[3]}</span></div>`).join("");
-function systemShow(i){let s=systemData[i],v=latest().filter(x=>s[2].includes(x.category)),d=diagnoses.filter(x=>(x.area||"").includes(s[1]));systemDetail.innerHTML=`<h3>${s[0]} ${s[1]}</h3><p><b>Fachgebiet:</b> ${s[3]}</p><p><b>Zugeordnete Laborwerte:</b></p>${v.length?v.map(card).join(""):"<p>Keine Werte zugeordnet.</p>"}<p><b>Diagnosen:</b> ${d.length?d.map(x=>esc(x.name)).join(", "):"Keine hinterlegt."}</p>`}
+function systemShow(i){
+ let s=systemData[i],v=latest().filter(x=>s[2].includes(x.category)),docs=documents.filter(d=>s[4].some(k=>`${d.name} ${d.specialty} ${d.rubric} ${d.text}`.toLowerCase().includes(k))),di=diagnoses.filter(x=>s[4].some(k=>`${x.name} ${x.area||""} ${x.note||""}`.toLowerCase().includes(k)));
+ systemDetail.innerHTML=`<h3>${s[0]} ${s[1]}</h3><p><b>Zuständige Fachgebiete:</b> ${s[3]}</p><p><b>Zugeordnete Dokumente:</b> ${docs.length}</p>${docs.slice(0,8).map(d=>`<div class="item"><b>${fd(d.date)} · ${esc(d.name)}</b><div class="small">${esc(d.specialty)}</div><button class="secondary mini" onclick="showPage('import')">Dokumente öffnen</button></div>`).join("")||"<p>Keine Dokumente zugeordnet.</p>"}<p><b>Aktuelle Laborwerte:</b></p>${v.length?v.map(card).join(""):"<p>Keine Werte zugeordnet.</p>"}<p><b>Diagnosen:</b> ${di.length?di.map(x=>esc(x.name)).join(", "):"Keine hinterlegt."}</p>`;
+}
 const specs=[...new Set(systemData.map(x=>x[3]))];specialties.innerHTML=specs.map(x=>`<details><summary>${x}</summary><p>Hier können passende Befunde, Diagnosen, Beschwerden und Laborwerte gesammelt werden.</p></details>`).join("");
 
 diagAdd.onclick=()=>{if(!diagName.value.trim())return;diagnoses.push({id:uid(),name:diagName.value.trim(),date:diagDate.value,note:diagNote.value.trim(),area:""});diagName.value=diagNote.value="";save();renderAkte()}
@@ -805,4 +928,22 @@ function appSelfCheck(){
  if(missing.length){console.error("Fehlende App-Funktionen:",missing);showToast?.("Technischer Fehler: "+missing.join(", "),"error");return false}
  return true;
 }
+
+function setAnalysisMode(mode){
+ if(window.explainLevel)explainLevel.value=mode;
+ document.querySelectorAll(".modeBtn").forEach(b=>b.classList.toggle("active",b.dataset.mode===mode));
+ renderDocuments();showToast("Analyseform geändert: "+document.querySelector(`.modeBtn[data-mode="${mode}"]`)?.textContent.trim(),"success");
+}
+document.querySelectorAll(".modeBtn").forEach(b=>b.onclick=()=>setAnalysisMode(b.dataset.mode));
+document.querySelectorAll("[data-q]").forEach(b=>b.onclick=()=>{assistantQuestion.value=b.dataset.q;assistantBtn.click()});
+function localAssistant(q){
+ const query=(q||"").toLowerCase(),hits=documents.filter(d=>`${d.name} ${d.specialty} ${d.rubric} ${d.text}`.toLowerCase().includes(query.split(/\s+/).filter(x=>x.length>3)[0]||query));
+ if(/auge|optik|visus|brille/.test(query))return documents.filter(d=>/auge|optik/i.test(`${d.specialty} ${d.rubric}`)).sort((a,b)=>a.date.localeCompare(b.date)).map(d=>`${fd(d.date)} – ${d.name}\n${specialistPlain(d.specialtyData)}`).join("\n\n")||"Keine Augen- oder Optikerbefunde gefunden.";
+ if(/auffällig|auffaellig/.test(query))return latest().filter(v=>st(v)!=="ok").map(v=>`${v.name}: ${v.value} ${v.unit} am ${fd(v.date)}`).join("\n")||"Keine aktuellen Überschreitungen der hinterlegten Referenzbereiche.";
+ if(/arztgespräch|arztgespraech|fragen/.test(query)){const d=[...documents].sort((a,b)=>b.date.localeCompare(a.date))[0];return d?explainDocument(d,"compact"):"Noch kein Befund vorhanden."}
+ return hits.slice(0,12).map(d=>`${fd(d.date)} · ${d.specialty}\n${d.name}\n${(d.keyStatements||[]).slice(0,3).join(" | ")}`).join("\n\n")||"Keine eindeutigen Treffer. Verwende Begriffe wie Augen, Schulter, PSA, MCV, Zahnarzt oder Arztgespräch.";
+}
+function specialistPlain(s){if(!s)return"";if(s.kind==="eye")return`Rechts: ${JSON.stringify(s.right)} | Links: ${JSON.stringify(s.left)}`;return JSON.stringify(s)}
+if(window.assistantBtn)assistantBtn.onclick=()=>{setButtonBusy(assistantBtn,true,"Akte wird durchsucht");try{assistantResult.textContent=localAssistant(assistantQuestion.value);showToast("Gesundheitsakte durchsucht","success")}finally{setButtonBusy(assistantBtn,false)}};
+document.querySelectorAll(".bodyPart").forEach(el=>el.addEventListener("click",()=>{document.querySelectorAll(".bodyPart").forEach(x=>x.classList.remove("active"));el.classList.add("active");systemShow(Number(el.dataset.system))}));
 </script></body></html>
