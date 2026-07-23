@@ -1,21 +1,27 @@
-# Gesundheitsakte 3.3.8 – Debug & Stabilität
+# Gesundheitsakte 3.4.0 – Patientenakte Professional
 
-## Behoben
+## Neu
 
-- Kompatibilität für alte Aufrufe von `GAChoices.lists.rubrics` ergänzt.
-- Der richtige neue Katalog `GAChoices.catalogs.rubricOptions` bleibt erhalten.
-- Selbst wenn Android noch eine ältere `app.js` ausliefert, steht die alte Rubrik-Schnittstelle weiterhin zur Verfügung.
-- Alle JavaScript- und CSS-Dateien tragen nun eine Versionskennung, damit keine gemischten Versionen geladen werden.
-- Der Service Worker verwendet für Programmdateien jetzt „Netzwerk zuerst“ und entfernt sämtliche alten Programm-Caches.
-- `update.html` entfernt Service Worker und Caches vollständig, ohne Gesundheitsdaten oder Originalbelege zu löschen.
-- Startbereiche werden getrennt abgesichert: Ein Fehler in einem Teil soll nicht mehr die komplette App stoppen.
-- Der bereits behobene alte Rubrikfehler wird nach erfolgreichem Start aus dem technischen Fehlerprotokoll entfernt.
-- Interne Diagnoseinformationen zu Version, Service Worker und geladenen Rubriken sind verfügbar.
+- neue Seite **Patientenakte**
+- Diagnosen und Befundbegriffe dokumentübergreifend zusammengeführt
+- Medikamentenangaben mit Datum und erkanntem Status
+- Ärzte und Praxen mit Fachgebiet, Anzahl Dokumente und letztem Eintrag
+- Empfehlungen und Kontrollen in einer eigenen Übersicht
+- gemeinsame Gesundheits-Zeitachse aus Dokumenten und Laborwerten
+- intelligente Volltextsuche über die gesamte Akte
+- automatische Gesundheitszusammenfassung
+- erweitertes Dashboard mit Auffälligkeiten, Medikamenten und Empfehlungen
+- direkter Sprung aus Zeitachse und Suche zum Originaldokument
+
+## Hinweis
+
+Die Patientenakte basiert auf den bereits erkannten und geprüften Dokumentdaten. Je besser Diagnosen, Medikamente, Ärzte und Empfehlungen beim Import kontrolliert wurden, desto zuverlässiger ist die Zusammenführung.
 
 ## Installation
 
-Alle Dateien auf GitHub ersetzen. Danach unbedingt `update.html` öffnen und die automatische Weiterleitung abwarten.
+Alle Dateien auf GitHub ersetzen. Neu hinzugekommen ist `healthrecord.js`.
+Danach `update.html` öffnen und den Cache aktualisieren.
 
 Erwartete Anzeige:
 
-**Version 3.3.8 · Debug & Stabilität**
+**Version 3.4.0 · Patientenakte Professional**

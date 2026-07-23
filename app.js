@@ -242,12 +242,38 @@
  function renderPendingCards(){
   const box=$("importResults");if(!box)return;
   const docs=Object.values(pending);box.innerHTML=docs.length?docs.map(preview).join(""):"<p class='small'>Keine vorbereiteten Dokumente.</p>";GAChoices.bind(box);box.querySelectorAll("input[id^=pname-]").forEach(el=>el.addEventListener("blur",()=>{const id=el.id.slice(6),d=pending[id];if(d)el.value=GAChoices.normalizeName(el.value,document.getElementById(`pdate-${id}`)?.value,d.mime||"")}));updatePendingCount()
- } function render(){
+ }
+ function patientRow(title,meta="",action=""){
+  return `<div class="patient-row"><div><b>${GAUI.esc(title)}</b>${meta?`<div class="small">${GAUI.esc(meta)}</div>`:""}</div>${action}</div>`
+ }
+ function renderPatientRecord(){
+  if(!window.GAHealthRecord)return;
+  const r=GAHealthRecord.build(state);
+  const diagnosisBox=$("patientDiagnoses"),medBox=$("patientMedications"),doctorBox=$("patientDoctors"),recBox=$("patientRecommendations"),timelineBox=$("patientTimeline");
+  if(diagnosisBox)diagnosisBox.innerHTML=r.diagnoses.slice(0,60).map(x=>patientRow(x.name,`${x.status} · zuerst ${GAUI.date(x.firstDate)} · zuletzt ${GAUI.date(x.lastDate)}${x.specialties.length?` · ${x.specialties.join(", ")}`:""}`)).join("")||"<p class='small'>Noch keine Diagnosen oder Befundbegriffe erkannt.</p>";
+  if(medBox)medBox.innerHTML=r.medications.slice(0,60).map(x=>patientRow(x.text,`${x.status} · ${GAUI.date(x.date)}${x.doctor?` · ${x.doctor}`:""}`)).join("")||"<p class='small'>Noch keine Medikamente erkannt.</p>";
+  if(doctorBox)doctorBox.innerHTML=r.doctors.slice(0,50).map(x=>patientRow(x.name,`${x.specialties.join(", ")||"Fachgebiet nicht erkannt"} · ${x.count} Dokument(e) · zuletzt ${GAUI.date(x.lastDate)}`)).join("")||"<p class='small'>Noch keine Ärzte oder Praxen erkannt.</p>";
+  if(recBox)recBox.innerHTML=r.recommendations.slice(0,60).map(x=>patientRow(x.text,`${GAUI.date(x.date)} · ${x.documentName}`)).join("")||"<p class='small'>Noch keine Empfehlungen erkannt.</p>";
+  if(timelineBox){
+   let lastYear="";
+   timelineBox.innerHTML=r.timeline.slice(0,150).map(x=>{const year=(x.date||"ohne Datum").slice(0,4)||"ohne Datum";const heading=year!==lastYear?`<h3 class="timeline-year">${GAUI.esc(year)}</h3>`:"";lastYear=year;return heading+`<div class="patient-timeline-item"><span>${GAUI.date(x.date)}</span><div><b>${GAUI.esc(x.title)}</b><div class="small">${GAUI.esc(x.kind)} · ${GAUI.esc(x.subtitle||"")}</div></div>${x.documentId?`<button class="secondary" onclick="GAApp.review('${x.documentId}')">Öffnen</button>`:""}</div>`}).join("")||"<p class='small'>Noch keine Zeitachse vorhanden.</p>"
+  }
+ }
+ function runPatientSearch(){
+  const q=$("patientSearch")?.value||"",results=GAHealthRecord.search(state,q),box=$("patientSearchResults");if(!box)return;
+  box.innerHTML=q.trim()?results.slice(0,40).map(d=>`<div class="patient-search-result"><div><b>${GAUI.esc(d.name)}</b><div class="small">${GAUI.date(d.date)} · ${GAUI.esc(d.topicSpecialty||d.specialty||d.type||"")}</div></div><button class="secondary" onclick="GAApp.review('${d.id}')">Öffnen</button></div>`).join("")||"<p class='small'>Keine passenden Dokumente gefunden.</p>":""
+ }
+ function render(){
   $("metricDocuments").textContent=state.documents.length;$("metricLabs").textContent=state.values.length;$("metricSpecialties").textContent=state.documents.filter(isSpecial).length;$("metricAbnormal").textContent=state.values.filter(abnormal).length;
   const unreviewed=state.documents.filter(d=>(d.reviewStatus||"unreviewed")!=="reviewed").length,withoutOriginal=state.documents.filter(d=>!d.originalStored).length;
-  $("dashboardSummary").innerHTML=`<p><b>${state.documents.length}</b> Dokumente und <b>${state.values.length}</b> Laborwerte sind lokal gespeichert.</p><p><b>${unreviewed}</b> Dokumente benötigen noch eine Prüfung; bei <b>${withoutOriginal}</b> Dokument(en) fehlt der Originalbeleg.</p>`;
+  const record=window.GAHealthRecord?GAHealthRecord.build(state):null;
+  $("dashboardSummary").innerHTML=`<p><b>${state.documents.length}</b> Dokumente und <b>${state.values.length}</b> Laborwerte sind lokal gespeichert.</p><p><b>${unreviewed}</b> Dokumente benötigen noch eine Prüfung; bei <b>${withoutOriginal}</b> Dokument(en) fehlt der Originalbeleg.</p>${record?`<p><b>${record.diagnoses.length}</b> Diagnose-/Befundbegriffe, <b>${record.medications.length}</b> Medikamentenangaben und <b>${record.doctors.length}</b> Ärzte/Praxen wurden zusammengeführt.</p>`:""}`;
+  const abnormalValues=state.values.filter(abnormal).sort((a,b)=>(b.date||"").localeCompare(a.date||"")).slice(0,6);
+  if($("dashboardAlerts"))$("dashboardAlerts").innerHTML=abnormalValues.map(v=>patientRow(`${v.name}: ${v.value} ${v.unit||""}`,`${GAUI.date(v.date)} · außerhalb des hinterlegten Bereichs`)).join("")||"<p class='small'>Keine aktuell markierten Laborabweichungen.</p>";
+  if($("dashboardMedications"))$("dashboardMedications").innerHTML=(record?.medications||[]).slice(0,6).map(x=>patientRow(x.text,GAUI.date(x.date))).join("")||"<p class='small'>Keine Medikamente erkannt.</p>";
+  if($("dashboardRecommendations"))$("dashboardRecommendations").innerHTML=(record?.recommendations||[]).slice(0,6).map(x=>patientRow(x.text,`${GAUI.date(x.date)} · ${x.documentName}`)).join("")||"<p class='small'>Keine offenen Empfehlungen erkannt.</p>";
   const recent=[...state.documents].sort((a,b)=>(b.date||"").localeCompare(a.date||"")).slice(0,5);$("recentItems").innerHTML=recent.map(d=>`<div class="item"><b>${GAUI.date(d.date)} · ${GAUI.esc(d.name)}</b><div class="small">${GAUI.esc(d.specialty)}</div></div>`).join("")||"<p>Noch keine Einträge.</p>";
-  renderDocuments();renderSpecialties();renderLabs();renderTimeline();renderAnalysisSelect();
+  renderDocuments();renderPatientRecord();renderSpecialties();renderLabs();renderTimeline();renderAnalysisSelect();
  }
  function reviewBadge(d){
   const s=d.reviewStatus||"unreviewed",labels={unreviewed:"🔴 ungeprüft",partial:"🟡 teilweise geprüft",reviewed:"🟢 geprüft",uncertain:"⚠ OCR unsicher"};
@@ -407,6 +433,10 @@
   $("manualAnalyse").onclick=()=>{const t=$("manualText").value.trim();if(!t)return GAUI.toast("Bitte Text einfügen.","error");const d=GAExtract.document(t,"Manuell eingefügtes Dokument","text/plain");pending[d.id]=d;renderPendingCards();GAUI.toast("Text analysiert – bitte Vorschau kontrollieren.")};
   $("clearImport").onclick=async()=>{for(const d of Object.values(pending))if(d.originalStaged)await GAStorage.deleteOriginal(d.id).catch(()=>{});pending={};GAImporter.reset();GAImporter.step("Anzeige geleert. Bereit für neuen Import.");renderPendingCards();GAUI.toast("Importanzeige geleert.")};
   ["documentSearch","documentFilter","documentStatusFilter","documentOriginalFilter","documentFavoriteFilter","documentSort"].forEach(id=>$(id).oninput=renderDocuments);
+  if($("openPatientRecord"))$("openPatientRecord").onclick=()=>navigate("patientrecord");
+  if($("patientSearchButton"))$("patientSearchButton").onclick=runPatientSearch;
+  if($("patientSearch"))$("patientSearch").onkeydown=e=>{if(e.key==="Enter")runPatientSearch()};
+  if($("createHealthSummary"))$("createHealthSummary").onclick=()=>{$("healthSummaryOutput").textContent=GAHealthRecord.summary(state)};
   $("selectAllDocuments").onchange=e=>{document.querySelectorAll(".document-select").forEach(cb=>{cb.checked=e.target.checked;cb.checked?selectedDocumentIds.add(cb.dataset.selectId):selectedDocumentIds.delete(cb.dataset.selectId);cb.closest(".document-card")?.classList.toggle("selected-document",cb.checked)});updateSelectedCount()};
   $("bulkApplyRubric").onclick=()=>{const rubric=$("bulkRubric").value;if(!selectedDocumentIds.size)return GAUI.toast("Bitte zuerst Dokumente auswählen.","error");if(!rubric)return GAUI.toast("Bitte eine Zielrubrik auswählen.","error");state.documents.forEach(d=>{if(selectedDocumentIds.has(d.id))d.rubric=rubric});save();renderDocuments();GAUI.toast(`${selectedDocumentIds.size} Dokument(e) der Rubrik „${rubric}“ zugeordnet.`)};
   $("bulkMarkReviewed").onclick=()=>{if(!selectedDocumentIds.size)return GAUI.toast("Bitte zuerst Dokumente auswählen.","error");state.documents.forEach(d=>{if(selectedDocumentIds.has(d.id)){d.reviewStatus="reviewed";d.reviewedAt=new Date().toISOString()}});save();renderDocuments();GAUI.toast(`${selectedDocumentIds.size} Dokument(e) als geprüft markiert.`)};
@@ -428,7 +458,7 @@
   $("forceUpdate").onclick=async()=>{
    if("serviceWorker"in navigator)for(const r of await navigator.serviceWorker.getRegistrations())await r.unregister();
    if("caches"in window)for(const k of await caches.keys())await caches.delete(k);
-   location.replace(`./index.html?v=3.3.8&fresh=${Date.now()}`)
+   location.replace(`./index.html?v=3.4.0&fresh=${Date.now()}`)
   };
  }
  window.GAApp={
@@ -471,6 +501,6 @@
  try{state.documents.forEach(GAExtract.reanalyse);save()}catch(err){recordProgramError("Start/Daten",err.message,err.stack)}
  try{render();clearResolvedRubricsError();renderErrorConsole()}catch(err){recordProgramError("Start/Anzeige",err.message,err.stack)}
  try{selfTest()}catch(err){recordProgramError("Selbsttest",err.message,err.stack)}
- GAUI.toast("Gesundheitsakte 3.3.8 – Debug & Stabilität wurde geladen.");
- if("serviceWorker"in navigator)navigator.serviceWorker.register("./service-worker.js?v=3.3.8",{updateViaCache:"none"}).catch(console.warn);
+ GAUI.toast("Gesundheitsakte 3.4.0 – Debug & Stabilität wurde geladen.");
+ if("serviceWorker"in navigator)navigator.serviceWorker.register("./service-worker.js?v=3.4.0",{updateViaCache:"none"}).catch(console.warn);
 })();

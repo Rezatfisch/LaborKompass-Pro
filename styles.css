@@ -79,3 +79,74 @@ select[data-region-target]{margin-bottom:8px}
 button.danger,.danger{background:#b91c1c;color:white}
 @media(max-width:900px){.archive-filter-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:620px){.archive-filter-grid{grid-template-columns:1fr}.archive-bulkbar>*{width:100%}.archive-bulkbar label{width:auto}.archive-bulkbar select{min-width:0}}
+
+/* Version 3.3.9 – vollständige Schaltflächen auf Smartphones */
+.document-grid .document-card{
+  box-sizing:border-box;
+}
+.document-card-collapsed{
+  height:auto !important;
+  min-height:430px;
+  overflow:visible !important;
+}
+.document-card-expanded{
+  height:auto !important;
+  min-height:430px;
+  overflow:visible !important;
+}
+.document-card-footer{
+  margin-top:auto;
+  position:relative;
+  z-index:1;
+}
+.document-actions{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:10px;
+  width:100%;
+}
+.document-actions button{
+  width:100%;
+  min-width:0;
+  min-height:58px;
+  white-space:normal;
+  overflow-wrap:anywhere;
+  line-height:1.15;
+}
+@media(max-width:760px){
+  .document-grid{
+    grid-template-columns:1fr;
+  }
+  .document-card-collapsed,
+  .document-card-expanded{
+    height:auto !important;
+    min-height:0;
+    overflow:visible !important;
+  }
+  .document-summary{
+    min-height:0;
+  }
+  .document-actions{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+}
+@media(max-width:430px){
+  .document-actions{
+    grid-template-columns:1fr;
+  }
+  .document-actions button{
+    min-height:52px;
+  }
+}
+
+/* Version 3.4.0 – Patientenakte Professional */
+.dashboard-grid,.patient-record-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.patient-record-hero{background:linear-gradient(135deg,#ecfeff,#f8fafc)}
+.patient-search-row{display:grid;grid-template-columns:1fr auto;gap:10px}
+.patient-row,.patient-search-result{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:11px 0;border-bottom:1px solid var(--line)}
+.patient-row:last-child,.patient-search-result:last-child{border-bottom:0}
+.patient-search-result button{flex:0 0 auto}
+.patient-timeline-item{display:grid;grid-template-columns:105px 1fr auto;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)}
+.timeline-year{position:sticky;top:0;background:var(--bg);padding:8px 0;margin:18px 0 0;color:var(--brand2);z-index:1}
+#healthSummaryOutput{white-space:pre-wrap;line-height:1.55}
+@media(max-width:800px){.dashboard-grid,.patient-record-grid{grid-template-columns:1fr}.patient-timeline-item{grid-template-columns:85px 1fr}.patient-timeline-item button{grid-column:2}.patient-search-row{grid-template-columns:1fr}}

@@ -1,4 +1,4 @@
-const CACHE="gesundheitsakte-3.3.8";
+const CACHE="gesundheitsakte-3.4.0";
 const ASSETS=["./","./index.html?v=3.3.8","./styles.css?v=3.3.8","./storage.js?v=3.3.8","./medknowledge.js?v=3.3.8","./extractors.js?v=3.3.8","./importer.js?v=3.3.8","./ui.js?v=3.3.8","./choices.js?v=3.3.8","./compat.js?v=3.3.8","./reviewer.js?v=3.3.8","./labrefs.js?v=3.3.8","./app.js?v=3.3.8","./manifest.webmanifest?v=3.3.8","./icon-192.png","./icon-512.png","./logo-64.png"];
 self.addEventListener("install",e=>{self.skipWaiting();e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)))});
 self.addEventListener("activate",e=>e.waitUntil(caches.keys().then(ks=>Promise.all(ks.map(k=>k===CACHE?Promise.resolve():caches.delete(k)))).then(()=>self.clients.claim())));

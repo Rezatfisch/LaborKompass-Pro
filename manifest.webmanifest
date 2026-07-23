@@ -1,8 +1,8 @@
 {
-  "name": "Gesundheitsakte 3.3.8",
+  "name": "Gesundheitsakte 3.4.0",
   "short_name": "Gesundheitsakte",
-  "description": "Debug- und Stabilitätsupdate mit Cache-Schutz und kompatiblen Rubriklisten.",
-  "start_url": "./index.html?v=3.3.8",
+  "description": "Persönliche Patientenakte mit Diagnosen, Medikamenten, Ärzten, Zeitachse und intelligenter Suche.",
+  "start_url": "./index.html?v=3.4.0",
   "id": "./index.html",
   "display": "standalone",
   "background_color": "#f1f7f8",

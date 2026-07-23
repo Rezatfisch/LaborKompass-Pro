@@ -5,23 +5,24 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0b7285">
 <meta name="description" content="Persönliche Gesundheitsakte für Befunde, Laborwerte, Fachwerte, Verläufe und Arztgespräche.">
-<title>Gesundheitsakte 3.3.8</title>
-<link rel="manifest" href="manifest.webmanifest?v=3.3.8">
+<title>Gesundheitsakte 3.4.0</title>
+<link rel="manifest" href="manifest.webmanifest?v=3.4.0">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
-<link rel="stylesheet" href="styles.css?v=3.3.8">
+<link rel="stylesheet" href="styles.css?v=3.4.0">
 </head>
 <body>
 <header class="top">
   <img src="logo-64.png" class="logo" alt="">
   <div><h1>Gesundheitsakte</h1><p>Dokumente, Werte, Verläufe und verständliche Analysen</p>
-  <span class="version">Version 3.3.8 · Debug & Stabilität</span></div>
+  <span class="version">Version 3.4.0 · Patientenakte Professional</span></div>
 </header>
 
 <nav id="tabs" class="tabs" aria-label="Hauptnavigation">
   <button data-page="dashboard" class="active">Übersicht</button>
   <button data-page="import">Import</button>
   <button data-page="documents">Dokumente</button>
+  <button data-page="patientrecord">Patientenakte</button>
   <button data-page="specialties">Fachwerte</button>
   <button data-page="labs">Labor</button>
   <button data-page="timeline">Chronik</button>
@@ -37,8 +38,13 @@
   <article><span>Fachbefunde</span><b id="metricSpecialties">0</b></article>
   <article><span>Auffällig</span><b id="metricAbnormal">0</b></article>
  </div>
- <article class="card"><h2>Aktuelle Übersicht</h2><div id="dashboardSummary"></div></article>
- <article class="card"><h2>Letzte Einträge</h2><div id="recentItems"></div></article>
+ <div class="dashboard-grid">
+  <article class="card"><h2>Aktuelle Übersicht</h2><div id="dashboardSummary"></div></article>
+  <article class="card"><h2>Neue Auffälligkeiten</h2><div id="dashboardAlerts"></div></article>
+  <article class="card"><h2>Aktuelle Medikamente</h2><div id="dashboardMedications"></div></article>
+  <article class="card"><h2>Offene Empfehlungen</h2><div id="dashboardRecommendations"></div></article>
+ </div>
+ <article class="card"><div class="section-head"><div><h2>Letzte Einträge</h2><p class="small">Die jüngsten Dokumente in deiner Gesundheitsakte.</p></div><button class="secondary" id="openPatientRecord">Patientenakte öffnen</button></div><div id="recentItems"></div></article>
 </section>
 
 <section id="import" class="page">
@@ -115,6 +121,23 @@
   </div>
  </article>
  <div id="documentList"></div>
+</section>
+
+<section id="patientrecord" class="page">
+ <article class="card patient-record-hero">
+  <h2>Persönliche Patientenakte</h2>
+  <p>Diagnosen, Medikamente, Ärzte, Empfehlungen und zeitlicher Verlauf werden aus den gespeicherten Dokumenten zusammengeführt.</p>
+  <div class="patient-search-row"><input id="patientSearch" placeholder="Gesamte Akte durchsuchen, z. B. Schulter, Basaliom, Ibuprofen …"><button id="patientSearchButton" class="primary">Suchen</button></div>
+  <div id="patientSearchResults"></div>
+ </article>
+ <div class="patient-record-grid">
+  <article class="card"><h2>Diagnosen und Befunde</h2><div id="patientDiagnoses"></div></article>
+  <article class="card"><h2>Medikamente</h2><div id="patientMedications"></div></article>
+  <article class="card"><h2>Ärzte und Praxen</h2><div id="patientDoctors"></div></article>
+  <article class="card"><h2>Empfehlungen und Kontrollen</h2><div id="patientRecommendations"></div></article>
+ </div>
+ <article class="card"><div class="section-head"><div><h2>Gesundheits-Zeitachse</h2><p class="small">Dokumente und Laborwerte chronologisch zusammengeführt.</p></div></div><div id="patientTimeline"></div></article>
+ <article class="card"><h2>Meine Gesundheit zusammenfassen</h2><button id="createHealthSummary" class="primary full">Zusammenfassung erstellen</button><pre id="healthSummaryOutput" class="output">Noch keine Zusammenfassung erstellt.</pre></article>
 </section>
 
 <section id="specialties" class="page">
@@ -228,14 +251,15 @@
 </main>
 
 <div id="toast" role="status" aria-live="polite"></div>
-<script src="storage.js?v=3.3.8"></script>
-<script src="medknowledge.js?v=3.3.8"></script>
-<script src="extractors.js?v=3.3.8"></script>
-<script src="importer.js?v=3.3.8"></script>
-<script src="ui.js?v=3.3.8"></script>
-<script src="choices.js?v=3.3.8"></script>
-<script src="compat.js?v=3.3.8"></script>
-<script src="reviewer.js?v=3.3.8"></script>
-<script src="labrefs.js?v=3.3.8"></script>
-<script src="app.js?v=3.3.8"></script>
+<script src="storage.js?v=3.4.0"></script>
+<script src="medknowledge.js?v=3.4.0"></script>
+<script src="extractors.js?v=3.4.0"></script>
+<script src="importer.js?v=3.4.0"></script>
+<script src="ui.js?v=3.4.0"></script>
+<script src="choices.js?v=3.4.0"></script>
+<script src="compat.js?v=3.4.0"></script>
+<script src="reviewer.js?v=3.4.0"></script>
+<script src="healthrecord.js?v=3.4.0"></script>
+<script src="labrefs.js?v=3.4.0"></script>
+<script src="app.js?v=3.4.0"></script>
 </body></html>
