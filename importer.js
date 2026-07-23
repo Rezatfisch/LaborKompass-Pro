@@ -113,10 +113,14 @@ window.GAImporter=(()=>{
      parts.push(await read(file));hashes.push(await hash(file));
      step(`${file.name}: Text erfolgreich erkannt.`,"ok")
     }
-    const text=parts.map((x,i)=>group.length>1?`\n--- DATEI/SEITE ${i+1}: ${group[i].name} ---\n${x}`:x).join("\n");
+    const rawText=parts.map((x,i)=>group.length>1?`\n--- DATEI/SEITE ${i+1}: ${group[i].name} ---\n${x}`:x).join("\n");
+    const cleanedText=rawText.replace(/[ \t]+/g," ").replace(/\n{3,}/g,"\n\n").replace(/([A-Za-zÄÖÜäöüß])\s+-\s*\n\s*([A-Za-zÄÖÜäöüß])/g,"$1$2").trim();
     const name=group.length>1?`Mehrseitiges Dokument (${group.length} Dateien)`:group[0].name;
-    const doc=GAExtract.document(text,name,group[0].type,group.reduce((s,f)=>s+f.size,0));
-    doc.hash=hashes.join(":");doc.sourceNames=group.map(f=>f.name);doc.pageCount=group.length;doc._files=group;
+    const doc=GAExtract.document(cleanedText,name,group[0].type,group.reduce((s,f)=>s+f.size,0));
+    doc.ocrRawText=rawText;doc.cleanedText=cleanedText;doc.ocrMethod=/--- OCR Seite/.test(rawText)?"OCR":"Direkttext";
+    doc.hash=hashes.join(":");doc.sourceNames=group.map(f=>f.name);doc.pageCount=group.length;
+    doc.originalFilesMeta=group.map((f,i)=>({index:i,name:f.name,type:f.type,size:f.size,lastModified:f.lastModified}));
+    doc._files=group;doc.reviewStatus="unreviewed";doc.fieldReview={};doc.manualChanges=0;
     step(`Erkannt: ${doc.type} · ${doc.specialty}.`,"ok");
     step(`${doc.bodyRegions.length} Körperregion(en), ${doc.diagnoses.length} Diagnose(n), ${doc.labValues.length+doc.measurements.length} Wert(e), ${doc.costs.length} Kostenangabe(n).`,"ok");
     step(`${name}: Vorschau bereit – bitte kontrollieren.`,"ok");docs.push(doc)

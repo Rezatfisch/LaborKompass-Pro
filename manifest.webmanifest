@@ -1,8 +1,8 @@
 {
-  "name": "Gesundheitsakte 3.2.2",
+  "name": "Gesundheitsakte 3.3.0",
   "short_name": "Gesundheitsakte",
-  "description": "Persönliche Gesundheitsakte mit präziser medizinischer Zuordnung, Dokumentimport und lokalen Lernregeln.",
-  "start_url": "./index.html?v=3.2.2",
+  "description": "Persönliche Gesundheitsakte mit Originalbeleg, OCR-Vergleich und Prüfarbeitsplatz.",
+  "start_url": "./index.html?v=3.3.0",
   "id": "./index.html",
   "display": "standalone",
   "background_color": "#f1f7f8",

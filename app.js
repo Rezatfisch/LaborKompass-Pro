@@ -69,12 +69,15 @@
   if(asCopy)doc={...doc,id:GAExtract.uid(),name:doc.name+" (Kopie)"};
   state.documents.push(doc);
   const n=$("takeLabs").checked?integrateLabs(doc):0;
-  if($("saveOriginal").checked&&doc._files?.[0])try{await GAStorage.putOriginal(doc.id,doc._files[0]);doc.originalStored=true}catch(e){GAUI.toast("Dokument gespeichert, Original konnte nicht separat gespeichert werden.","error")}
+  if($("saveOriginal").checked&&doc._files?.length)try{await GAStorage.putOriginalPackage(doc.id,doc._files);doc.originalStored=true;doc.originalSavedAt=new Date().toISOString()}catch(e){GAUI.toast("Dokument gespeichert, Original konnte nicht separat gespeichert werden.","error")}
   delete doc._files;delete pending[id];save();render();renderPendingCards();GAUI.toast(`Dokument gespeichert. ${n} neue Laborwerte übernommen.`)
  }
  async function replaceDoc(pid,did){
   const doc=updatePendingFromForm(pid),i=state.documents.findIndex(x=>x.id===did);if(!doc||i<0)return;
-  doc.id=did;state.documents[i]=doc;integrateLabs(doc);delete doc._files;delete pending[pid];save();render();renderPendingCards();GAUI.toast("Vorhandenes Dokument ersetzt.")
+  const files=doc._files||[];doc.id=did;
+  if(files.length&&$("saveOriginal").checked){await GAStorage.putOriginalPackage(did,files);doc.originalStored=true;doc.originalSavedAt=new Date().toISOString()}
+  state.documents[i]=doc;integrateLabs(doc);delete doc._files;delete pending[pid];if(pid!==did)await GAStorage.deleteOriginal(pid).catch(()=>{});
+  save();render();renderPendingCards();GAUI.toast("Vorhandenes Dokument und Originalbeleg ersetzt.")
  }
  function preview(doc){
   pending[doc.id]=doc;
@@ -104,6 +107,7 @@
      ${evidence?`<p class="small"><b>Erkennungsbegriffe:</b></p><div class="chip-list">${evidence}</div>`:""}
      <label class="learn-check"><input id="plearn-${doc.id}" type="checkbox" checked> Meine Korrektur für ähnliche Dokumente lokal merken</label>
     </div>
+    <div class="actions review-preview-actions"><button class="secondary" onclick="GAApp.reviewPending('${doc.id}')">Original und Scan-Ergebnis vergleichen</button></div>
     ${structuredSummary(doc)}
     <div class="field-group"><h4>Erkannte Inhalte korrigieren</h4>
      <label>Diagnosen / Begriffe – eine Zeile pro Eintrag</label><textarea id="pdiagnoses-${doc.id}">${GAUI.esc((doc.diagnoses||[]).join("\n"))}</textarea>
@@ -120,15 +124,24 @@
   const docs=Object.values(pending);box.innerHTML=docs.length?docs.map(preview).join(""):"<p class='small'>Keine vorbereiteten Dokumente.</p>";updatePendingCount()
  } function render(){
   $("metricDocuments").textContent=state.documents.length;$("metricLabs").textContent=state.values.length;$("metricSpecialties").textContent=state.documents.filter(isSpecial).length;$("metricAbnormal").textContent=state.values.filter(abnormal).length;
-  $("dashboardSummary").innerHTML=`<p><b>${state.documents.length}</b> Dokumente und <b>${state.values.length}</b> Laborwerte sind lokal gespeichert.</p>`;
+  const unreviewed=state.documents.filter(d=>(d.reviewStatus||"unreviewed")!=="reviewed").length,withoutOriginal=state.documents.filter(d=>!d.originalStored).length;
+  $("dashboardSummary").innerHTML=`<p><b>${state.documents.length}</b> Dokumente und <b>${state.values.length}</b> Laborwerte sind lokal gespeichert.</p><p><b>${unreviewed}</b> Dokumente benötigen noch eine Prüfung; bei <b>${withoutOriginal}</b> Dokument(en) fehlt der Originalbeleg.</p>`;
   const recent=[...state.documents].sort((a,b)=>(b.date||"").localeCompare(a.date||"")).slice(0,5);$("recentItems").innerHTML=recent.map(d=>`<div class="item"><b>${GAUI.date(d.date)} · ${GAUI.esc(d.name)}</b><div class="small">${GAUI.esc(d.specialty)}</div></div>`).join("")||"<p>Noch keine Einträge.</p>";
   renderDocuments();renderSpecialties();renderLabs();renderTimeline();renderAnalysisSelect();
+ }
+ function reviewBadge(d){
+  const s=d.reviewStatus||"unreviewed",labels={unreviewed:"🔴 ungeprüft",partial:"🟡 teilweise geprüft",reviewed:"🟢 geprüft",uncertain:"⚠ OCR unsicher"};
+  return `<span class="tag review-${s}">${labels[s]||labels.unreviewed}</span>`
  }
  function renderDocuments(){
   const q=$("documentSearch").value.toLowerCase(),f=$("documentFilter").value,rubs=[...new Set(state.documents.map(d=>d.rubric))].sort(),cur=f;
   $("documentFilter").innerHTML='<option value="all">Alle Rubriken</option>'+rubs.map(x=>`<option>${GAUI.esc(x)}</option>`).join("");if(rubs.includes(cur))$("documentFilter").value=cur;
-  const arr=[...state.documents].filter(d=>(f==="all"||d.rubric===f)&&`${d.name} ${d.text} ${d.specialty} ${(d.diagnoses||[]).join(" ")}`.toLowerCase().includes(q)).sort((a,b)=>(b.date||"").localeCompare(a.date||""));
-  $("documentList").innerHTML=arr.map(d=>`<details class="item import-card"><summary><div><div class="import-title">${GAUI.esc(d.name)}</div><div class="import-status"><span class="tag">${GAUI.date(d.date)}</span><span class="tag">${GAUI.esc(d.rubric)}</span><span class="tag">${GAUI.esc(d.specialty)}</span>${d.originalStored?'<span class="tag new">Original gespeichert</span>':""}</div></div><span>▼</span></summary><div class="import-body">${structuredSummary(d)}${GAUI.specialHtml(d.specialtyData)}<details><summary>Verständliche Auswertung</summary><pre class="output">${GAUI.esc(GAUI.analysis(d,mode))}</pre></details><div class="actions"><button onclick="GAApp.analyse('${d.id}')">Analysieren</button><button onclick="GAApp.share('${d.id}')">Teilen</button><button onclick="GAApp.remove('${d.id}')">Nur Dokument entfernen</button></div></div></details>`).join("")||"<article class='card'>Keine Dokumente gefunden.</article>";
+  const arr=[...state.documents].filter(d=>(f==="all"||d.rubric===f)&&`${d.name} ${d.text} ${d.specialty} ${d.creatorSpecialty||""} ${d.topicSpecialty||""} ${(d.diagnoses||[]).join(" ")}`.toLowerCase().includes(q)).sort((a,b)=>(b.date||"").localeCompare(a.date||""));
+  $("documentList").innerHTML=arr.map(d=>`<article class="item document-card">
+   <div class="document-card-head"><div><div class="import-title">${GAUI.esc(d.name)}</div><div class="import-status"><span class="tag">${GAUI.date(d.date)}</span><span class="tag">${GAUI.esc(d.rubric)}</span><span class="tag">${GAUI.esc(d.topicSpecialty||d.specialty)}</span>${reviewBadge(d)}${d.originalStored?'<span class="tag new">Original vorhanden</span>':'<span class="tag uncertain">Original fehlt</span>'}</div></div></div>
+   <p class="small">${GAUI.esc((d.keyStatements||[]).slice(0,2).join(" · ")||"Noch keine klare Kurzfassung.")}</p>
+   <div class="actions"><button class="primary" onclick="GAApp.review('${d.id}')">Original & Daten prüfen</button><button onclick="GAApp.analyse('${d.id}')">Analyse</button><button onclick="GAApp.share('${d.id}')">Teilen</button><button onclick="GAApp.remove('${d.id}')">Dokument entfernen</button></div>
+  </article>`).join("")||"<article class='card'>Keine Dokumente gefunden.</article>";
  } function renderSpecialties(){
   const q=$("specialtySearch").value.toLowerCase(),f=$("specialtyFilter").value,docs=state.documents.filter(isSpecial),specs=[...new Set(docs.map(d=>d.specialty))].sort(),cur=f;$("specialtyFilter").innerHTML='<option value="all">Alle Fachgebiete</option>'+specs.map(x=>`<option>${GAUI.esc(x)}</option>`).join("");if(specs.includes(cur))$("specialtyFilter").value=cur;
   const arr=docs.filter(d=>(f==="all"||d.specialty===f)&&`${d.name} ${d.text} ${d.creatorSpecialty||""} ${d.topicSpecialty||d.specialty||""} ${JSON.stringify(d.specialtyData)}`.toLowerCase().includes(q)).sort((a,b)=>(b.date||"").localeCompare(a.date||""));
@@ -197,9 +210,9 @@
   if(!document.getElementById("specialtyOptions")){const dl=document.createElement("datalist");dl.id="specialtyOptions";["Allgemeinmedizin","Augenheilkunde","Augenoptik","Zahnmedizin","Orthopädie / Unfallchirurgie","Neurologie","Urologie","Kardiologie","Radiologie","Hals-Nasen-Ohrenheilkunde","Dermatologie","Pneumologie","Gastroenterologie","Endokrinologie / Diabetologie","Psychologie / Psychiatrie","Chirurgie","Impfmedizin","Medikation","Abrechnung"].forEach(v=>{const o=document.createElement("option");o.value=v;dl.appendChild(o)});document.body.appendChild(dl)}
 
   $("tabs").onclick=e=>{const b=e.target.closest("button[data-page]");if(b)navigate(b.dataset.page)};
-  $("fileInput").onchange=async e=>{const files=[...e.target.files];if(!files.length)return;const docs=await GAImporter.process(files,document.querySelector('input[name="bundleMode"]:checked').value==="bundle");docs.forEach(d=>pending[d.id]=d);renderPendingCards();e.target.value=""};
+  $("fileInput").onchange=async e=>{const files=[...e.target.files];if(!files.length)return;const docs=await GAImporter.process(files,document.querySelector('input[name="bundleMode"]:checked').value==="bundle");for(const d of docs){pending[d.id]=d;if($("saveOriginal").checked&&d._files?.length)try{await GAStorage.putOriginalPackage(d.id,d._files);d.originalStored=true;d.originalStaged=true}catch{}}renderPendingCards();e.target.value=""};
   $("manualAnalyse").onclick=()=>{const t=$("manualText").value.trim();if(!t)return GAUI.toast("Bitte Text einfügen.","error");const d=GAExtract.document(t,"Manuell eingefügtes Dokument","text/plain");pending[d.id]=d;renderPendingCards();GAUI.toast("Text analysiert – bitte Vorschau kontrollieren.")};
-  $("clearImport").onclick=()=>{pending={};GAImporter.reset();GAImporter.step("Anzeige geleert. Bereit für neuen Import.");renderPendingCards();GAUI.toast("Importanzeige geleert.")};
+  $("clearImport").onclick=async()=>{for(const d of Object.values(pending))if(d.originalStaged)await GAStorage.deleteOriginal(d.id).catch(()=>{});pending={};GAImporter.reset();GAImporter.step("Anzeige geleert. Bereit für neuen Import.");renderPendingCards();GAUI.toast("Importanzeige geleert.")};
   ["documentSearch","documentFilter"].forEach(id=>$(id).oninput=renderDocuments);["specialtySearch","specialtyFilter"].forEach(id=>$(id).oninput=renderSpecialties);["labSearch","labNameFilter"].forEach(id=>$(id).oninput=renderLabs);$("trendSelect").onchange=drawTrend;
   $("newLabDate").value=new Date().toISOString().slice(0,10);
   $("newLabName").onchange=()=>{const r=GALabRefs.find($("newLabName").value);if(r&&!$("newLabUnit").value)$("newLabUnit").value=r.unit};
@@ -216,7 +229,17 @@
   $("restoreBackup").onchange=async e=>{try{const data=JSON.parse(await e.target.files[0].text());if(confirm("Diese Sicherung wiederherstellen?")){Object.assign(state,GAStorage.restore(data));render();GAUI.toast("Sicherung wiederhergestellt.")}}catch(err){GAUI.toast("Sicherung ungültig: "+err.message,"error")}e.target.value=""};
   $("forceUpdate").onclick=async()=>{if("serviceWorker"in navigator)(await navigator.serviceWorker.getRegistrations()).forEach(r=>r.unregister());if("caches"in window)(await caches.keys()).forEach(k=>caches.delete(k));location.reload()};
  }
- window.GAApp={saveDoc,replace:replaceDoc,discard:id=>{delete pending[id];renderPendingCards();GAUI.toast("Vorbereiteter Import verworfen.")},analyse:id=>{navigate("analysis");$("analysisDocument").value=id;$("runAnalysis").click()},share,remove:id=>{if(confirm("Nur das Dokument entfernen? Bereits übernommene Laborwerte bleiben erhalten.")){state.documents=state.documents.filter(x=>x.id!==id);save();render();GAUI.toast("Dokument aus dem Archiv entfernt.")}},removeLab:id=>{if(confirm("Diesen Laborwert löschen?")){state.values=state.values.filter(x=>x.id!==id);save();render();GAUI.toast("Laborwert gelöscht.")}},useReference:name=>{navigate("labs");const r=GALabRefs.find(name);$("newLabName").value=name;$("newLabUnit").value=r?.unit||"";$("newLabMin").value=r?.min??"";$("newLabMax").value=r?.max??"";$("newLabValue").focus();scrollTo(0,250)},assign:id=>{const d=state.documents.find(x=>x.id===id),v=$(`assign-${id}`).value;if(!d||!v)return;d.specialty=v;d.rubric=v==="Augenoptik"?"Optik / Brille":v==="Zahnmedizin"?"Zahnmedizin":v.split(" / ")[0];d.manualClassification=true;GAExtract.reanalyse(d);save();render();GAUI.toast("Fachgebiet zugeordnet.")}}; window.addEventListener("error",e=>GAUI.toast(`Programmfehler: ${e.message}`,"error"));window.addEventListener("unhandledrejection",e=>GAUI.toast(`Importfehler: ${e.reason?.message||e.reason}`,"error"));
- wire();state.documents.forEach(GAExtract.reanalyse);save();render();selfTest();GAUI.toast("Gesundheitsakte 3.2.2 wurde vollständig geladen.");
- if("serviceWorker"in navigator)navigator.serviceWorker.register("./service-worker.js?v=3.2.2",{updateViaCache:"none"}).catch(console.warn);
+ window.GAApp={
+  saveDoc,replace:replaceDoc,
+  discard:async id=>{const d=pending[id];if(d?.originalStaged)await GAStorage.deleteOriginal(id).catch(()=>{});delete pending[id];renderPendingCards();GAUI.toast("Vorbereiteter Import verworfen.")},
+  review:id=>{const d=state.documents.find(x=>x.id===id);if(d)GAReviewer.open(d,{onSave:updated=>{Object.assign(d,updated);save();render()}})},
+  reviewPending:id=>{const d=pending[id];if(d)GAReviewer.open(d,{onSave:updated=>{Object.assign(d,updated);renderPendingCards()}})},
+  analyse:id=>{navigate("analysis");$("analysisDocument").value=id;$("runAnalysis").click()},share,
+  remove:async id=>{if(confirm("Dokument und den lokal gespeicherten Originalbeleg entfernen? Bereits übernommene Laborwerte bleiben erhalten.")){state.documents=state.documents.filter(x=>x.id!==id);await GAStorage.deleteOriginal(id).catch(()=>{});save();render();GAUI.toast("Dokument und Originalbeleg entfernt.")}},
+  removeLab:id=>{if(confirm("Diesen Laborwert löschen?")){state.values=state.values.filter(x=>x.id!==id);save();render();GAUI.toast("Laborwert gelöscht.")}},
+  useReference:name=>{navigate("labs");const r=GALabRefs.find(name);$("newLabName").value=name;$("newLabUnit").value=r?.unit||"";$("newLabMin").value=r?.min??"";$("newLabMax").value=r?.max??"";$("newLabValue").focus();scrollTo(0,250)},
+  assign:id=>{const d=state.documents.find(x=>x.id===id),v=$(`assign-${id}`).value;if(!d||!v)return;d.specialty=v;d.rubric=v==="Augenoptik"?"Optik / Brille":v==="Zahnmedizin"?"Zahnmedizin":v.split(" / ")[0];d.manualClassification=true;GAExtract.reanalyse(d);save();render();GAUI.toast("Fachgebiet zugeordnet.")}
+ }; window.addEventListener("error",e=>GAUI.toast(`Programmfehler: ${e.message}`,"error"));window.addEventListener("unhandledrejection",e=>GAUI.toast(`Importfehler: ${e.reason?.message||e.reason}`,"error"));
+ wire();state.documents.forEach(GAExtract.reanalyse);save();render();selfTest();GAUI.toast("Gesundheitsakte 3.3.0 mit Originalbeleg und Prüfarbeitsplatz wurde vollständig geladen.");
+ if("serviceWorker"in navigator)navigator.serviceWorker.register("./service-worker.js?v=3.3.0",{updateViaCache:"none"}).catch(console.warn);
 })();
