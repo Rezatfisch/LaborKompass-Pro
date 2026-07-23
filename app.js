@@ -4,7 +4,17 @@
  function save(){GAStorage.save(state)}
  function navigate(id){document.querySelectorAll(".page").forEach(x=>x.classList.toggle("active",x.id===id));document.querySelectorAll("#tabs button").forEach(x=>x.classList.toggle("active",x.dataset.page===id));scrollTo(0,0)}
  function isSpecial(d){return d.rubric!=="Labor"&&d.rubric!=="Sonstige"&&d.specialty!=="Noch nicht zugeordnet"}
- function abnormal(v){return (v.min!=null&&v.value<v.min)||(v.max!=null&&v.value>v.max)}
+ function enrichValue(v){
+  const ref=GALabRefs.find(v.name);
+  if(ref){
+   if(!v.unit)v.unit=ref.unit;
+   if(v.min==null&&ref.min!=null)v.orientationMin=ref.min;
+   if(v.max==null&&ref.max!=null)v.orientationMax=ref.max;
+  }
+  return v;
+ }
+ function limits(v){const ref=GALabRefs.find(v.name);return {min:v.min??v.orientationMin??ref?.min??null,max:v.max??v.orientationMax??ref?.max??null,idealMin:ref?.idealMin??null,idealMax:ref?.idealMax??null,ref}}
+ function abnormal(v){const l=limits(v);return GALabRefs.status(v.value,l.min,l.max)!=="ok"}
  function integrateLabs(doc){let n=0;for(const v of doc.labValues||[]){if(!state.values.some(x=>x.name===v.name&&x.date===v.date&&x.value===v.value)){state.values.push(v);n++}}return n}
  function duplicate(doc){return state.documents.find(d=>(doc.hash&&d.hash===doc.hash)||(d.name===doc.name&&d.date===doc.date))}
  async function saveDoc(id,asCopy=false){let doc=pending[id];if(!doc)return;const dup=duplicate(doc);if(dup&&!asCopy)return GAUI.toast("Dokument ist bereits vorhanden. Bitte Ersetzen oder als Kopie speichern.","error");if(asCopy)doc={...doc,id:GAExtract.uid(),name:doc.name+" (Kopie)"};state.documents.push(doc);const n=$("takeLabs").checked?integrateLabs(doc):0;if($("saveOriginal").checked&&doc._files?.[0])try{await GAStorage.putOriginal(doc.id,doc._files[0])}catch{}delete doc._files;delete pending[id];save();render();GAUI.toast(`Befund gespeichert. ${n} neue Laborwerte übernommen.`)}
@@ -28,13 +38,58 @@
  }
  function assignBox(id){return `<div class="actions"><select id="assign-${id}"><option value="">Fachgebiet ändern …</option><option>Augenheilkunde</option><option>Augenoptik</option><option>Zahnmedizin</option><option>Orthopädie / Unfallchirurgie</option><option>Neurologie</option><option>Urologie</option><option>Kardiologie</option><option>Radiologie</option><option>Hals-Nasen-Ohrenheilkunde</option><option>Allgemeinmedizin</option></select><button onclick="GAApp.assign('${id}')">Zuordnen</button></div>`}
  function renderUnassigned(){const arr=state.documents.filter(d=>!isSpecial(d));$("unassignedList").innerHTML=`<article class="card"><h2>Nicht zugeordnet</h2>${arr.map(d=>`<div class="item"><b>${GAUI.esc(d.name)}</b><div class="small">${GAUI.date(d.date)} · ${GAUI.esc(d.rubric)}</div>${assignBox(d.id)}</div>`).join("")||"<p>Alle Dokumente zugeordnet.</p>"}</article>`}
- function renderLabs(){
-  const q=$("labSearch").value.toLowerCase(),f=$("labNameFilter").value,names=[...new Set(state.values.map(v=>v.name))].sort(),cur=f;$("labNameFilter").innerHTML='<option value="all">Alle Werte</option>'+names.map(x=>`<option>${GAUI.esc(x)}</option>`).join("");if(names.includes(cur))$("labNameFilter").value=cur;
-  const arr=[...state.values].filter(v=>(f==="all"||v.name===f)&&v.name.toLowerCase().includes(q)).sort((a,b)=>(b.date||"").localeCompare(a.date||""));
-  $("labList").innerHTML=arr.map(v=>`<div class="item"><b>${GAUI.esc(v.name)}: ${v.value} ${GAUI.esc(v.unit)}</b><div class="small">${GAUI.date(v.date)}</div></div>`).join("")||"<article class='card'>Keine Laborwerte.</article>";
-  const current=$("trendSelect").value;$("trendSelect").innerHTML=names.map(x=>`<option>${GAUI.esc(x)}</option>`).join("");if(names.includes(current))$("trendSelect").value=current;drawTrend()
+ function valuePosition(v,l){
+  if(l.min==null&&l.max==null)return 50;
+  let lo=l.min??0,hi=l.max??Math.max(lo*2,Number(v.value)*1.2,1),span=hi-lo||1;
+  const displayLo=lo-span*.35,displayHi=hi+span*.35;
+  return Math.max(1,Math.min(99,(Number(v.value)-displayLo)/(displayHi-displayLo)*100));
  }
- function drawTrend(){const name=$("trendSelect").value,arr=state.values.filter(v=>v.name===name).sort((a,b)=>(a.date||"").localeCompare(b.date||"")),c=$("trendCanvas"),ctx=c.getContext("2d");ctx.clearRect(0,0,c.width,c.height);if(!arr.length)return;const vals=arr.map(x=>Number(x.value)),min=Math.min(...vals),max=Math.max(...vals),pad=40,range=max-min||1;ctx.beginPath();ctx.lineWidth=3;arr.forEach((v,i)=>{const x=pad+i*(c.width-2*pad)/Math.max(1,arr.length-1),y=c.height-pad-(v.value-min)*(c.height-2*pad)/range;i?ctx.lineTo(x,y):ctx.moveTo(x,y);ctx.fillText(GAUI.date(v.date),x-25,c.height-12);ctx.fillText(String(v.value),x-10,y-8)});ctx.stroke();$("trendText").textContent=`${arr.length} Messung(en) von ${GAUI.date(arr[0].date)} bis ${GAUI.date(arr.at(-1).date)}.`}
+ function labCard(v){
+  const l=limits(v),s=GALabRefs.status(v.value,l.min,l.max),refText=`${l.min==null?"–":l.min} bis ${l.max==null?"∞":l.max} ${v.unit||""}`,ideal=`${l.idealMin==null?"–":l.idealMin} bis ${l.idealMax==null?"∞":l.idealMax} ${v.unit||""}`;
+  return `<div class="item lab-card ${s}"><div class="lab-head"><div><h3>${GAUI.esc(v.name)}</h3><div class="small">${GAUI.date(v.date)} · ${GAUI.esc(v.note||v.source||"")}</div></div><div class="lab-value">${v.value} ${GAUI.esc(v.unit||"")}<br><span class="badge">${GALabRefs.describeStatus(s)}</span></div></div><div class="rangebar"><i style="left:${valuePosition(v,l)}%"></i></div><div class="reference-grid"><div><b>Referenz</b><br>${refText}${v.min==null&&v.max==null&&l.ref?" <span class='small'>(Orientierung)</span>":""}</div><div><b>Günstiger Orientierungskorridor</b><br>${ideal}</div></div>${l.ref?.info?`<details><summary>Erklärung</summary><div class="explanation">${GAUI.esc(l.ref.info)}</div></details>`:""}<button class="delete-mini" onclick="GAApp.removeLab('${v.id}')">Wert löschen</button></div>`
+ }
+ function renderLabs(){
+  state.values.forEach(enrichValue);
+  const q=$("labSearch").value.toLowerCase(),f=$("labNameFilter").value,names=[...new Set(state.values.map(v=>v.name))].sort(),cur=f;
+  $("labNameFilter").innerHTML='<option value="all">Alle Werte</option>'+names.map(x=>`<option>${GAUI.esc(x)}</option>`).join("");if(names.includes(cur))$("labNameFilter").value=cur;
+  const arr=[...state.values].filter(v=>(f==="all"||v.name===f)&&v.name.toLowerCase().includes(q)).sort((a,b)=>(b.date||"").localeCompare(a.date||""));
+  $("labList").innerHTML=arr.map(labCard).join("")||"<article class='card'>Keine Laborwerte.</article>";
+  const allNames=[...new Set([...names,...GALabRefs.refs.map(r=>r.name)])].sort();
+  $("knownLabNames").innerHTML=allNames.map(x=>`<option value="${GAUI.esc(x)}"></option>`).join("");
+  const current=$("trendSelect").value;$("trendSelect").innerHTML=names.map(x=>`<option>${GAUI.esc(x)}</option>`).join("");if(names.includes(current))$("trendSelect").value=current;
+  renderCompareDates();renderReferences();drawTrend()
+ }
+ function drawTrend(){
+  const name=$("trendSelect").value,arr=state.values.filter(v=>v.name===name).sort((a,b)=>(a.date||"").localeCompare(b.date||"")),c=$("trendCanvas"),ctx=c.getContext("2d");ctx.clearRect(0,0,c.width,c.height);
+  if(!arr.length){$("trendText").textContent="Noch keine Messungen für diesen Wert.";return}
+  const l=limits(arr[0]),vals=arr.map(x=>Number(x.value)),rawMin=Math.min(...vals,l.min??Infinity,l.idealMin??Infinity),rawMax=Math.max(...vals,l.max??-Infinity,l.idealMax??-Infinity),min=Number.isFinite(rawMin)?rawMin:Math.min(...vals),max=Number.isFinite(rawMax)?rawMax:Math.max(...vals),pad=48,range=max-min||1;
+  ctx.font="14px system-ui";ctx.strokeStyle="#0b7285";ctx.fillStyle="#17232b";ctx.lineWidth=3;
+  const yFor=v=>c.height-pad-(v-min)*(c.height-2*pad)/range;
+  if(l.min!=null&&l.max!=null){ctx.fillStyle="#dcfce7";ctx.fillRect(pad,yFor(l.max),c.width-2*pad,yFor(l.min)-yFor(l.max));ctx.fillStyle="#17232b"}
+  ctx.beginPath();arr.forEach((v,i)=>{const x=pad+i*(c.width-2*pad)/Math.max(1,arr.length-1),y=yFor(Number(v.value));i?ctx.lineTo(x,y):ctx.moveTo(x,y)});ctx.stroke();
+  arr.forEach((v,i)=>{const x=pad+i*(c.width-2*pad)/Math.max(1,arr.length-1),y=yFor(Number(v.value));ctx.beginPath();ctx.arc(x,y,5,0,Math.PI*2);ctx.fill();ctx.fillText(String(v.value),x-12,y-10);ctx.fillText(GAUI.date(v.date),x-28,c.height-14)});
+  $("trendText").innerHTML=`<b>${arr.length} Messung(en)</b> von ${GAUI.date(arr[0].date)} bis ${GAUI.date(arr.at(-1).date)}. Grün markiert ist der hinterlegte Referenzbereich, sofern vorhanden.`;
+ }
+ function renderCompareDates(){
+  const dates=[...new Set(state.values.map(v=>v.date).filter(Boolean))].sort(),a=$("compareDateA").value,b=$("compareDateB").value;
+  $("compareDateA").innerHTML=dates.map(d=>`<option value="${d}">${GAUI.date(d)}</option>`).join("");
+  $("compareDateB").innerHTML=dates.map(d=>`<option value="${d}">${GAUI.date(d)}</option>`).join("");
+  if(dates.includes(a))$("compareDateA").value=a;else if(dates.length)$("compareDateA").value=dates[0];
+  if(dates.includes(b))$("compareDateB").value=b;else if(dates.length)$("compareDateB").value=dates.at(-1);
+ }
+ function compareLabs(){
+  const a=$("compareDateA").value,b=$("compareDateB").value;
+  if(!a||!b)return GAUI.toast("Bitte zwei Labortermine auswählen.","error");
+  const av=state.values.filter(v=>v.date===a),bv=state.values.filter(v=>v.date===b),names=[...new Set([...av.map(v=>v.name),...bv.map(v=>v.name)])].sort();
+  const rows=names.map(name=>{const x=av.find(v=>v.name===name),y=bv.find(v=>v.name===name);if(!x||!y)return`<tr><td>${GAUI.esc(name)}</td><td>${x?x.value+" "+GAUI.esc(x.unit):"–"}</td><td>${y?y.value+" "+GAUI.esc(y.unit):"–"}</td><td>nicht vergleichbar</td></tr>`;const delta=Number(y.value)-Number(x.value),pct=Number(x.value)!==0?delta/Number(x.value)*100:null,cls=delta>0?"delta-up":delta<0?"delta-down":"delta-same",arrow=delta>0?"▲":delta<0?"▼":"●";return`<tr><td>${GAUI.esc(name)}</td><td>${x.value} ${GAUI.esc(x.unit)}</td><td>${y.value} ${GAUI.esc(y.unit)}</td><td class="${cls}">${arrow} ${delta>0?"+":""}${Math.round(delta*100)/100}${pct!=null?` (${pct>0?"+":""}${pct.toFixed(1)} %)`:""}</td></tr>`}).join("");
+  $("compareOutput").innerHTML=`<table class="comparison-table"><thead><tr><th>Wert</th><th>${GAUI.date(a)}</th><th>${GAUI.date(b)}</th><th>Änderung</th></tr></thead><tbody>${rows}</tbody></table><p class="small">Ein Anstieg oder Abfall ist nicht automatisch gut oder schlecht. Entscheidend sind Referenzbereich, Verlauf und medizinischer Zusammenhang.</p>`;
+ }
+ function renderReferences(){
+  const q=($("referenceSearch")?.value||"").toLowerCase(),cat=$("referenceCategory")?.value||"all",categories=[...new Set(GALabRefs.refs.map(r=>r.category))].sort(),cur=cat;
+  $("referenceCategory").innerHTML='<option value="all">Alle Kategorien</option>'+categories.map(c=>`<option>${GAUI.esc(c)}</option>`).join("");if(categories.includes(cur))$("referenceCategory").value=cur;
+  const refs=GALabRefs.refs.filter(r=>(cat==="all"||r.category===cat)&&`${r.name} ${r.category} ${r.info}`.toLowerCase().includes(q));
+  $("referenceList").innerHTML=refs.map(r=>`<div class="reference-card"><div class="lab-head"><div><b>${GAUI.esc(r.name)}</b><div class="small">${GAUI.esc(r.category)}</div></div><span class="badge">${GAUI.esc(r.unit)}</span></div><div class="reference-grid"><div><b>Allgemeiner Referenzbereich</b><br>${r.min==null?"–":r.min} bis ${r.max==null?"∞":r.max} ${GAUI.esc(r.unit)}</div><div><b>Günstiger Orientierungskorridor</b><br>${r.idealMin==null?"–":r.idealMin} bis ${r.idealMax==null?"∞":r.idealMax} ${GAUI.esc(r.unit)}</div></div><p>${GAUI.esc(r.info)}</p><button class="secondary" onclick="GAApp.useReference('${GAUI.esc(r.name)}')">Als neuen Wert verwenden</button></div>`).join("");
+ }
  function renderTimeline(){const items=[...state.documents.map(d=>({date:d.date,title:d.name,type:d.specialty})),...state.values.map(v=>({date:v.date,title:`${v.name}: ${v.value} ${v.unit}`,type:"Labor"}))].sort((a,b)=>(b.date||"").localeCompare(a.date||""));$("timelineList").innerHTML=items.map(x=>`<div class="item"><b>${GAUI.date(x.date)} · ${GAUI.esc(x.title)}</b><div class="small">${GAUI.esc(x.type)}</div></div>`).join("")||"<article class='card'>Noch keine Chronik.</article>"}
  function renderAnalysisSelect(){const cur=$("analysisDocument").value;$("analysisDocument").innerHTML='<option value="">Befund auswählen …</option>'+state.documents.map(d=>`<option value="${d.id}">${GAUI.date(d.date)} · ${GAUI.esc(d.name)}</option>`).join("");$("analysisDocument").value=cur}
  async function share(id){const d=state.documents.find(x=>x.id===id),text=GAUI.analysis(d,mode),file=new File([text],`Gesundheitsakte_${d.date}.txt`,{type:"text/plain"});if(navigator.share&&(!navigator.canShare||navigator.canShare({files:[file]})))await navigator.share({title:d.name,files:[file]});else download(file)}
@@ -45,6 +100,12 @@
   $("fileInput").onchange=async e=>{const files=[...e.target.files];if(!files.length)return;const docs=await GAImporter.process(files,document.querySelector('input[name="bundleMode"]:checked').value==="bundle");$("importResults").innerHTML=docs.map(preview).join("")||"<p>Keine Vorschau erzeugt.</p>";e.target.value=""};
   $("manualAnalyse").onclick=()=>{const t=$("manualText").value.trim();if(!t)return GAUI.toast("Bitte Text einfügen.","error");const d=GAExtract.document(t,"Manuell eingefügter Befund","text/plain");$("importResults").innerHTML=preview(d)};
   ["documentSearch","documentFilter"].forEach(id=>$(id).oninput=renderDocuments);["specialtySearch","specialtyFilter"].forEach(id=>$(id).oninput=renderSpecialties);["labSearch","labNameFilter"].forEach(id=>$(id).oninput=renderLabs);$("trendSelect").onchange=drawTrend;
+  $("newLabDate").value=new Date().toISOString().slice(0,10);
+  $("newLabName").onchange=()=>{const r=GALabRefs.find($("newLabName").value);if(r&&!$("newLabUnit").value)$("newLabUnit").value=r.unit};
+  $("fillReference").onclick=()=>{const r=GALabRefs.find($("newLabName").value);if(!r)return GAUI.toast("Für diesen Wert ist kein Orientierungsbereich hinterlegt.","error");$("newLabUnit").value=r.unit;$("newLabMin").value=r.min??"";$("newLabMax").value=r.max??"";GAUI.toast("Orientierungsbereich übernommen. Bitte mit dem Laborbericht abgleichen.")};
+  $("addLabValue").onclick=()=>{const name=$("newLabName").value.trim(),value=parseFloat($("newLabValue").value.replace(",","."));if(!name||!Number.isFinite(value))return GAUI.toast("Bitte Laborwert und gültigen Messwert eingeben.","error");const ref=GALabRefs.find(name),v={id:GAExtract.uid(),name,value,unit:$("newLabUnit").value.trim()||ref?.unit||"",min:$("newLabMin").value===""?null:parseFloat($("newLabMin").value.replace(",",".")),max:$("newLabMax").value===""?null:parseFloat($("newLabMax").value.replace(",",".")),date:$("newLabDate").value||new Date().toISOString().slice(0,10),note:$("newLabNote").value.trim(),source:"Manuelle Eingabe"};state.values.push(enrichValue(v));save();["newLabValue","newLabNote"].forEach(id=>$(id).value="");render();GAUI.toast("Laborwert gespeichert und in Verlauf sowie Vergleich übernommen.")};
+  $("compareLabs").onclick=compareLabs;
+  $("referenceSearch").oninput=renderReferences;$("referenceCategory").onchange=renderReferences;
   $("reanalyseAll").onclick=()=>{state.documents.forEach(GAExtract.reanalyse);save();render();GAUI.toast("Alle Befunde wurden neu ausgewertet.")};$("showUnassigned").onclick=renderUnassigned;
   $("analysisModes").onclick=e=>{const b=e.target.closest("button[data-mode]");if(!b)return;mode=b.dataset.mode;document.querySelectorAll("#analysisModes button").forEach(x=>x.classList.toggle("active",x===b));renderDocuments()};
   $("runAnalysis").onclick=()=>{const d=state.documents.find(x=>x.id===$("analysisDocument").value);$("analysisOutput").textContent=d?GAUI.analysis(d,mode):"Bitte Befund auswählen."};
@@ -54,8 +115,8 @@
   $("restoreBackup").onchange=async e=>{try{const data=JSON.parse(await e.target.files[0].text());if(confirm("Diese Sicherung wiederherstellen?")){Object.assign(state,GAStorage.restore(data));render();GAUI.toast("Sicherung wiederhergestellt.")}}catch(err){GAUI.toast("Sicherung ungültig: "+err.message,"error")}e.target.value=""};
   $("forceUpdate").onclick=async()=>{if("serviceWorker"in navigator)(await navigator.serviceWorker.getRegistrations()).forEach(r=>r.unregister());if("caches"in window)(await caches.keys()).forEach(k=>caches.delete(k));location.reload()};
  }
- window.GAApp={saveDoc,replace:replaceDoc,discard:id=>{delete pending[id];$("importResults").innerHTML="";GAUI.toast("Import verworfen.")},analyse:id=>{navigate("analysis");$("analysisDocument").value=id;$("runAnalysis").click()},share,remove:id=>{if(confirm("Nur das Dokument entfernen? Bereits übernommene Laborwerte bleiben erhalten.")){state.documents=state.documents.filter(x=>x.id!==id);save();render()}},assign:id=>{const d=state.documents.find(x=>x.id===id),v=$(`assign-${id}`).value;if(!d||!v)return;d.specialty=v;d.rubric=v==="Augenoptik"?"Optik / Brille":v==="Zahnmedizin"?"Zahnmedizin":v.split(" / ")[0];GAExtract.reanalyse(d);save();render();GAUI.toast("Fachgebiet zugeordnet.")}};
+ window.GAApp={saveDoc,replace:replaceDoc,discard:id=>{delete pending[id];$("importResults").innerHTML="";GAUI.toast("Import verworfen.")},analyse:id=>{navigate("analysis");$("analysisDocument").value=id;$("runAnalysis").click()},share,remove:id=>{if(confirm("Nur das Dokument entfernen? Bereits übernommene Laborwerte bleiben erhalten.")){state.documents=state.documents.filter(x=>x.id!==id);save();render()}},removeLab:id=>{if(confirm("Diesen Laborwert löschen?")){state.values=state.values.filter(x=>x.id!==id);save();render();GAUI.toast("Laborwert gelöscht.")}},useReference:name=>{navigate("labs");const r=GALabRefs.find(name);$("newLabName").value=name;$("newLabUnit").value=r?.unit||"";$("newLabMin").value=r?.min??"";$("newLabMax").value=r?.max??"";$("newLabValue").focus();scrollTo(0,250)},assign:id=>{const d=state.documents.find(x=>x.id===id),v=$(`assign-${id}`).value;if(!d||!v)return;d.specialty=v;d.rubric=v==="Augenoptik"?"Optik / Brille":v==="Zahnmedizin"?"Zahnmedizin":v.split(" / ")[0];GAExtract.reanalyse(d);save();render();GAUI.toast("Fachgebiet zugeordnet.")}};
  window.addEventListener("error",e=>GAUI.toast(`Programmfehler: ${e.message}`,"error"));window.addEventListener("unhandledrejection",e=>GAUI.toast(`Importfehler: ${e.reason?.message||e.reason}`,"error"));
- wire();state.documents.forEach(GAExtract.reanalyse);save();render();selfTest();GAUI.toast("Gesundheitsakte 3.0 wurde vollständig geladen.");
- if("serviceWorker"in navigator)navigator.serviceWorker.register("./service-worker.js?v=3.0.0",{updateViaCache:"none"}).catch(console.warn);
+ wire();state.documents.forEach(GAExtract.reanalyse);save();render();selfTest();GAUI.toast("Gesundheitsakte 3.1 wurde vollständig geladen.");
+ if("serviceWorker"in navigator)navigator.serviceWorker.register("./service-worker.js?v=3.1.0",{updateViaCache:"none"}).catch(console.warn);
 })();

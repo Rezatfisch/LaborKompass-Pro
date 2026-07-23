@@ -1,4 +1,4 @@
-const CACHE="gesundheitsakte-3.0.0";const ASSETS=["./","./index.html","./styles.css","./storage.js","./extractors.js","./importer.js","./ui.js","./app.js","./manifest.webmanifest","./icon-192.png","./icon-512.png","./logo-64.png"];
+const CACHE="gesundheitsakte-3.1.0";const ASSETS=["./","./index.html","./styles.css","./storage.js","./extractors.js","./importer.js","./ui.js","./labrefs.js","./app.js","./manifest.webmanifest","./icon-192.png","./icon-512.png","./logo-64.png"];
 self.addEventListener("install",e=>{self.skipWaiting();e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)))});
 self.addEventListener("activate",e=>e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
 self.addEventListener("fetch",e=>{if(e.request.method!=="GET")return;if(e.request.mode==="navigate"){e.respondWith(fetch(e.request,{cache:"no-store"}).catch(()=>caches.match("./index.html")));return}e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request)))})

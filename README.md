@@ -1,20 +1,21 @@
-# Gesundheitsakte 3.0.0
+# Gesundheitsakte 3.1.0
 
-Komplett neu aufgebauter, modularer Kern.
+Version 3.1 führt die Funktionen der Vorgängerversionen wieder in den modularen stabilen Kern ein.
 
-## Dateien
-- index.html – Oberfläche
-- styles.css – Gestaltung
-- storage.js – Datenspeicher und Migration
-- extractors.js – Dokument-, Labor- und Fachwerterkennung
-- importer.js – PDF-, Bild-, OCR- und Textimport mit Schrittanzeige
-- ui.js – sichere Darstellung und Analyseformen
-- app.js – App-Steuerung
-- service-worker.js – PWA-Cache
-- update.html – Cachebereinigung vor dem ersten Start
+## Wieder integriert
+- Laborwerte manuell eintragen
+- Referenz-Unter- und Obergrenzen des konkreten Labors
+- allgemeine Orientierungsbereiche
+- günstige Orientierungskorridore („Idealwerte“) mit deutlichem medizinischem Hinweis
+- farbliche Statusanzeige: im Bereich, zu niedrig, zu hoch
+- Erklärungen zu Laborwerten
+- Verlaufsgrafik mit Referenzbereich
+- Vergleich zweier Labortermine
+- absolute und prozentuale Veränderung
+- Laborwert löschen
+- alle importierten Werte dynamisch nach Datum in Verlauf und Vergleich
+- vorhandene Daten aus allen bisherigen Versionen bleiben kompatibel
 
-## Wichtig
-Die bisherigen lokalen Daten unter den Schlüsseln `lk_values`, `lk_documents`, `lk_diag`, `lk_meds`, `lk_sym`, `lk_vitals`, `lk_vaccinations`, `lk_allergies` und `lk_operations` werden weiterverwendet.
-
-Nach dem Hochladen aller Dateien einmal öffnen:
+## Aktualisierung
+Nach dem Hochladen aller Dateien öffnen:
 https://rezatfisch.github.io/LaborKompass-Pro/update.html

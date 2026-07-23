@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0b7285">
 <meta name="description" content="Persönliche Gesundheitsakte für Befunde, Laborwerte, Fachwerte, Verläufe und Arztgespräche.">
-<title>Gesundheitsakte 3.0</title>
+<title>Gesundheitsakte 3.1</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -15,7 +15,7 @@
 <header class="top">
   <img src="logo-64.png" class="logo" alt="">
   <div><h1>Gesundheitsakte</h1><p>Dokumente, Werte, Verläufe und verständliche Analysen</p>
-  <span class="version">Version 3.0.0 · neuer stabiler Kern</span></div>
+  <span class="version">Version 3.1.0 · Laborvergleich und Idealbereiche</span></div>
 </header>
 
 <nav id="tabs" class="tabs" aria-label="Hauptnavigation">
@@ -93,8 +93,56 @@
   <div class="two"><input id="labSearch" placeholder="MCV, PSA, Kreatinin …">
   <select id="labNameFilter"><option value="all">Alle Werte</option></select></div>
  </article>
+
+ <article class="card">
+  <h2>Neuen Laborwert eintragen</h2>
+  <div class="three">
+   <div><label>Laborwert</label><input id="newLabName" list="knownLabNames" placeholder="z. B. MCV"></div>
+   <div><label>Wert</label><input id="newLabValue" inputmode="decimal" placeholder="z. B. 106"></div>
+   <div><label>Einheit</label><input id="newLabUnit" placeholder="z. B. fl"></div>
+  </div>
+  <datalist id="knownLabNames"></datalist>
+  <div class="three">
+   <div><label>Untergrenze des Labors</label><input id="newLabMin" inputmode="decimal"></div>
+   <div><label>Obergrenze des Labors</label><input id="newLabMax" inputmode="decimal"></div>
+   <div><label>Datum</label><input id="newLabDate" type="date"></div>
+  </div>
+  <label>Notiz</label><input id="newLabNote" placeholder="nüchtern, Medikamente, Beschwerden …">
+  <div class="actions">
+   <button id="fillReference" class="secondary">Orientierungsbereich übernehmen</button>
+   <button id="addLabValue" class="primary">Laborwert speichern</button>
+  </div>
+  <p class="small">Der Referenzbereich des konkreten Laborberichts hat Vorrang. Die hinterlegten Bereiche sind allgemeine Orientierung und können individuell abweichen.</p>
+ </article>
+
  <div id="labList"></div>
- <article class="card"><h2>Verlauf</h2><select id="trendSelect"></select><canvas id="trendCanvas" width="900" height="320"></canvas><div id="trendText"></div></article>
+
+ <article class="card">
+  <h2>Zeitlicher Verlauf</h2>
+  <select id="trendSelect"></select>
+  <canvas id="trendCanvas" width="900" height="320"></canvas>
+  <div id="trendText"></div>
+ </article>
+
+ <article class="card">
+  <h2>Vergleich zweier Labortermine</h2>
+  <div class="two">
+   <div><label>Älteres Datum</label><select id="compareDateA"></select></div>
+   <div><label>Neueres Datum</label><select id="compareDateB"></select></div>
+  </div>
+  <button id="compareLabs" class="primary full">Unterschiede anzeigen</button>
+  <div id="compareOutput"></div>
+ </article>
+
+ <article class="card">
+  <h2>Orientierungs- und Idealbereiche</h2>
+  <div class="two">
+   <input id="referenceSearch" placeholder="Wert suchen …">
+   <select id="referenceCategory"><option value="all">Alle Kategorien</option></select>
+  </div>
+  <div id="referenceList"></div>
+  <p class="small"><b>Wichtig:</b> „Idealbereich“ bedeutet hier ein allgemeiner günstiger Zielkorridor für Erwachsene, nicht eine persönliche Therapieempfehlung. Alter, Geschlecht, Erkrankungen, Medikamente, Messmethode und Labor können andere Zielwerte erforderlich machen.</p>
+ </article>
 </section>
 
 <section id="timeline" class="page">
@@ -141,5 +189,6 @@
 <script src="extractors.js"></script>
 <script src="importer.js"></script>
 <script src="ui.js"></script>
+<script src="labrefs.js"></script>
 <script src="app.js"></script>
 </body></html>
