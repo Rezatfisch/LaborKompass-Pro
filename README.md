@@ -1,16 +1,15 @@
-# Gesundheitsakte 2.1.0
+# Gesundheitsakte 2.1.1
 
-Stabilitätsversion mit vollständigem Start-Selbsttest.
+Fachwerte-Migration und manuelle Fachgebietszuordnung.
 
-Behoben und ergänzt:
-- Fehler `systems is not defined`
-- vollständige Funktionen für Vitalwerte, Impfungen, Allergien und Operationen
-- sichere DOM-Prüfungen statt ungeschützter globaler Elementvariablen
-- Hauptansicht aktualisiert alle Bereiche gemeinsam
-- sichtbare Erfolgsmeldung nach dem vollständigen Laden
-- technischer Selbsttest für wichtige Funktionen und Bildschirmbereiche
-- Cache-Version und Aktualisierungsseite auf 2.1.0 angehoben
-- bestehende lokale Daten und Sicherungen bleiben kompatibel
+Neu:
+- bereits importierte ältere Befunde werden beim Start erneut ausgewertet
+- Facharztberichte erscheinen auch dann unter Fachwerte, wenn noch keine einzelnen Zahlen sicher erkannt wurden
+- Schaltfläche „Alle Befunde neu auswerten“
+- Liste „Nicht zugeordnete Befunde“
+- manuelle Zuordnung zu Augenarzt, Optiker, Zahnarzt, Orthopädie, Neurologie, Urologie, Kardiologie, Radiologie, HNO, Dermatologie oder Allgemeinmedizin
+- strukturierte Daten werden nach der Zuordnung erneut aus dem gespeicherten Text extrahiert
+- vorhandene Gesundheitsdaten bleiben erhalten
 
-Nach dem Hochladen aller Dateien einmal öffnen:
+Nach dem Upload aller Dateien einmal öffnen:
 https://rezatfisch.github.io/LaborKompass-Pro/update.html

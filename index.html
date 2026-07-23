@@ -81,7 +81,7 @@ button.busy{opacity:.7;cursor:wait;position:relative}button.busy:after{content:"
 </style>
 </head>
 <body>
-<header><h1><img src="logo-64.png" alt="" style="width:54px;height:54px;border-radius:14px;vertical-align:middle;margin-right:10px">Gesundheitsakte</h1><p>Ihre persönliche Gesundheitsakte – Dokumente, Werte, Körperbereiche und verständliche Analysen</p><span class="versionBadge">Version 2.1.0 · stabile Gesundheitsakte</span></header>
+<header><h1><img src="logo-64.png" alt="" style="width:54px;height:54px;border-radius:14px;vertical-align:middle;margin-right:10px">Gesundheitsakte</h1><p>Ihre persönliche Gesundheitsakte – Dokumente, Werte, Körperbereiche und verständliche Analysen</p><span class="versionBadge">Version 2.1.1 · Fachwerte-Migration</span></header>
 <main>
 <nav class="tabs">
 <button class="tab active" data-page="home">Übersicht</button>
@@ -174,11 +174,17 @@ button.busy{opacity:.7;cursor:wait;position:relative}button.busy:after{content:"
 
 <section id="fachwerte" class="page">
 <div class="card">
-<h2>Strukturierte Facharztwerte</h2>
-<p class="small">Hier erscheinen automatisch erkannte Werte aus Augenarzt-, Optiker-, Zahnarzt- und anderen Facharztunterlagen. Die Anzeige wird nach Befunddatum sortiert.</p>
+<h2>Facharztwerte und Fachbefunde</h2>
+<p class="small">Hier erscheinen Facharzt-, Optiker- und Zahnarztunterlagen. Auch ältere bereits importierte Befunde werden neu ausgewertet. Ein Fachbefund bleibt sichtbar, selbst wenn daraus noch keine einzelnen Zahlen sicher erkannt wurden.</p>
+<div class="actions">
+<button class="primary" id="rebuildSpecialtyBtn">Alle Befunde neu auswerten</button>
+<button class="secondary" id="showUnassignedBtn">Nicht zugeordnete Befunde anzeigen</button>
+</div>
 <div class="row"><div><label>Fachgebiet</label><select id="specialtyFilter"><option value="all">Alle Fachgebiete</option></select></div><div><label>Suche</label><input id="specialtySearch" placeholder="Visus, Sphäre, Zahn 16, Glaukom …"></div></div>
+<div id="specialtyMigrationStatus" class="small"></div>
 </div>
 <div id="specialtyOverview"></div>
+<div id="unassignedOverview"></div>
 </section>
 <section id="trend" class="page">
 <div class="card"><h2>Zeitliche Entwicklung</h2><label>Laborwert</label><select id="trendSelect"></select><canvas id="chart" width="960" height="320"></canvas><div id="trendInfo" class="aiout"></div></div>
@@ -294,7 +300,7 @@ button.busy{opacity:.7;cursor:wait;position:relative}button.busy:after{content:"
 <p>Falls trotz eines GitHub-Updates eine alte Version erscheint, entfernt diese Funktion ausschließlich alte App-Caches und Service Worker. Deine Gesundheitsdaten in localStorage und IndexedDB bleiben erhalten.</p>
 <button class="primary full" onclick="location.href='./update.html'">Update jetzt erzwingen</button>
 </div>
-<div class="card"><h2>App-Information</h2><p><b>Gesundheitsakte 2.1.0</b></p><p class="small">Persönliche Gesundheitsakte mit Labor, Befunden, Vitalwerten, Impfungen, Allergien, Operationen, Zeitstrahl, Backups und lokaler Analyse.</p></div>
+<div class="card"><h2>App-Information</h2><p><b>Gesundheitsakte 2.1.1</b></p><p class="small">Persönliche Gesundheitsakte mit Labor, Befunden, Vitalwerten, Impfungen, Allergien, Operationen, Zeitstrahl, Backups und lokaler Analyse.</p></div>
 </section>
 </main>
 
@@ -480,13 +486,79 @@ function localEngine(){
 }
 function autoText(){return localEngine()}
 
+
+const SPECIALTY_ASSIGNMENTS={
+ eye:{type:"Augenärztlicher Befund",rubric:"Augenheilkunde",specialty:"Augenheilkunde"},
+ optician:{type:"Optiker- / Brillenpass",rubric:"Optik / Brille",specialty:"Augenoptik"},
+ dental:{type:"Zahnärztlicher Befund",rubric:"Zahnmedizin",specialty:"Zahnmedizin"},
+ orthopedic:{type:"Orthopädischer Befund",rubric:"Orthopädie",specialty:"Orthopädie / Unfallchirurgie"},
+ neurology:{type:"Neurologischer Befund",rubric:"Neurologie",specialty:"Neurologie"},
+ urology:{type:"Urologischer Befund",rubric:"Urologie",specialty:"Urologie"},
+ cardiology:{type:"Kardiologischer Befund",rubric:"Kardiologie",specialty:"Kardiologie"},
+ radiology:{type:"Bildgebender Befund",rubric:"Radiologie",specialty:"Radiologie"},
+ ent:{type:"HNO-Befund",rubric:"HNO",specialty:"Hals-Nasen-Ohrenheilkunde"},
+ dermatology:{type:"Hautärztlicher Befund",rubric:"Dermatologie",specialty:"Dermatologie"},
+ general:{type:"Arztbrief",rubric:"Arztbrief",specialty:"Allgemeinmedizin"}
+};
+function isSpecialistDocument(d){
+ const generic=/^(Allgemeinmedizin|Innere Medizin \/ Labormedizin|Krankenhaus \/ Fachabteilung)$/i.test(d.specialty||"");
+ const specialistRubrics=["Augenheilkunde","Optik / Brille","Zahnmedizin","HNO","Dermatologie","Radiologie","Kardiologie","Neurologie","Orthopädie","Urologie","Gastroenterologie","Endokrinologie","Pneumologie","Rheumatologie","Psychische Gesundheit"];
+ return specialistRubrics.includes(d.rubric)||(!generic&&d.specialty&&d.rubric!=="Labor"&&d.rubric!=="Sonstige");
+}
+function reanalyseOneDocument(d,forceClassify=false){
+ const text=d.text||"",guess=classifyDocument(text,d.name||"");
+ if(forceClassify||!d.specialty||d.rubric==="Sonstige"||d.specialty==="Allgemeinmedizin"){
+  d.type=guess.type;d.rubric=guess.rubric;d.specialty=guess.specialty;
+ }
+ d.specialtyData=extractSpecialtyData(text,{type:d.type,rubric:d.rubric,specialty:d.specialty});
+ d.specialtyReanalysedAt=new Date().toISOString();
+ return hasSpecialtyData(d.specialtyData)||isSpecialistDocument(d);
+}
+function backfillSpecialtyData(showMessage=false){
+ let updated=0,visible=0;
+ documents.forEach(d=>{
+  const before=JSON.stringify(d.specialtyData||null);
+  const appears=reanalyseOneDocument(d,false);
+  if(before!==JSON.stringify(d.specialtyData||null))updated++;
+  if(appears)visible++;
+ });
+ save();
+ if(showMessage)showToast(`${documents.length} Befunde geprüft. ${visible} Fachbefunde werden angezeigt; ${updated} Datensätze wurden ergänzt.`,"success",7000);
+ const status=document.getElementById("specialtyMigrationStatus");
+ if(status)status.textContent=`Zuletzt geprüft: ${new Date().toLocaleString("de-DE")} · ${visible} Fachbefunde gefunden.`;
+ return {updated,visible};
+}
+function assignDocumentSpecialty(id,key){
+ const d=documents.find(x=>x.id===id),cfg=SPECIALTY_ASSIGNMENTS[key];if(!d||!cfg)return;
+ Object.assign(d,cfg);d.specialtyData=extractSpecialtyData(d.text||"",cfg);d.manualSpecialty=true;
+ save();renderSpecialtyOverview();renderDocuments();showToast(`Befund wurde ${cfg.specialty} zugeordnet.`,"success");
+}
+function specialtyAssignSelect(id){
+ return `<div class="row"><select id="assign-${id}">
+ <option value="">Fachgebiet auswählen …</option>
+ <option value="eye">Augenärztin / Augenarzt</option><option value="optician">Optiker / Brille</option>
+ <option value="dental">Zahnarzt</option><option value="orthopedic">Orthopädie</option>
+ <option value="neurology">Neurologie</option><option value="urology">Urologie</option>
+ <option value="cardiology">Kardiologie</option><option value="radiology">Radiologie</option>
+ <option value="ent">HNO</option><option value="dermatology">Dermatologie</option><option value="general">Allgemeiner Arztbrief</option>
+ </select><button class="secondary" onclick="assignDocumentSpecialty('${id}',document.getElementById('assign-${id}').value)">Zuordnen</button></div>`;
+}
 function renderSpecialtyOverview(){
- const box=window.specialtyOverview,filter=window.specialtyFilter,q=(window.specialtySearch?.value||"").toLowerCase();if(!box||!filter)return;
- const docs=documents.filter(d=>hasSpecialtyData(d.specialtyData));
- const specs=[...new Set(docs.map(d=>d.specialty))].sort(),cur=filter.value||"all";
- filter.innerHTML='<option value="all">Alle Fachgebiete</option>'+specs.map(x=>`<option>${esc(x)}</option>`).join("");if(specs.includes(cur))filter.value=cur;
- const arr=docs.filter(d=>(filter.value==="all"||d.specialty===filter.value)&&(`${d.name} ${d.specialty} ${d.rubric} ${JSON.stringify(d.specialtyData)}`).toLowerCase().includes(q)).sort((a,b)=>b.date.localeCompare(a.date));
- box.innerHTML=arr.map(d=>`<div class="card"><div class="head"><div><div class="name">${esc(d.name)}</div><div class="small">${fd(d.date)} · ${esc(d.specialty)}</div></div><span class="badge info">${esc(d.rubric)}</span></div>${specialistHtml(d.specialtyData)}<div class="sharebar"><button class="secondary mini" onclick="shareDocument('${d.id}','analysis')">Auswertung teilen</button><button class="secondary mini" onclick="printDocument('${d.id}')">Drucken</button></div></div>`).join("")||"<div class='card'><p class='small'>Noch keine strukturierten Fachwerte vorhanden.</p></div>";
+ const box=document.getElementById("specialtyOverview"),filter=document.getElementById("specialtyFilter"),search=document.getElementById("specialtySearch");
+ if(!box||!filter)return;
+ const q=(search?.value||"").toLowerCase();
+ const docs=documents.filter(d=>hasSpecialtyData(d.specialtyData)||isSpecialistDocument(d));
+ const specs=[...new Set(docs.map(d=>d.specialty).filter(Boolean))].sort(),cur=filter.value||"all";
+ filter.innerHTML='<option value="all">Alle Fachgebiete</option>'+specs.map(x=>`<option>${esc(x)}</option>`).join("");
+ if(specs.includes(cur))filter.value=cur;
+ const arr=docs.filter(d=>(filter.value==="all"||d.specialty===filter.value)&&(`${d.name} ${d.specialty} ${d.rubric} ${d.text} ${JSON.stringify(d.specialtyData)}`).toLowerCase().includes(q)).sort((a,b)=>(b.date||"").localeCompare(a.date||""));
+ box.innerHTML=arr.map(d=>`<div class="card"><div class="head"><div><div class="name">${esc(d.name)}</div><div class="small">${fd(d.date)} · ${esc(d.specialty||"Noch nicht zugeordnet")}</div></div><span class="badge info">${esc(d.rubric||"Befund")}</span></div>${specialistHtml(d.specialtyData)}${!hasSpecialtyData(d.specialtyData)?`<div class="notice">Der Befund ist dem Fachgebiet zugeordnet, aber einzelne Werte konnten noch nicht sicher ausgelesen werden. Das Original und die Textauswertung bleiben vorhanden.</div>`:""}${specialtyAssignSelect(d.id)}<div class="sharebar"><button class="secondary mini" onclick="shareDocument('${d.id}','analysis')">Auswertung teilen</button><button class="secondary mini" onclick="printDocument('${d.id}')">Drucken</button><button class="secondary mini" onclick="showPage('import')">Original öffnen</button></div></div>`).join("")||"<div class='card'><p class='small'>Noch keine Fachbefunde erkannt. Tippe auf „Alle Befunde neu auswerten“ oder ordne einen Befund manuell zu.</p></div>";
+}
+function renderUnassignedDocuments(show=true){
+ const box=document.getElementById("unassignedOverview");if(!box)return;
+ if(!show){box.innerHTML="";return}
+ const arr=documents.filter(d=>!isSpecialistDocument(d)&&!hasSpecialtyData(d.specialtyData)).sort((a,b)=>(b.date||"").localeCompare(a.date||""));
+ box.innerHTML=`<div class="card"><h2>Nicht zugeordnete Befunde</h2><p class="small">Hier kannst du einen importierten Bericht nachträglich einem Fachgebiet zuordnen.</p>${arr.map(d=>`<div class="item"><b>${esc(d.name)}</b><div class="small">${fd(d.date)} · bisher: ${esc(d.rubric||"Sonstige")} / ${esc(d.specialty||"ohne Fachgebiet")}</div>${specialtyAssignSelect(d.id)}</div>`).join("")||"<p>Alle Befunde sind bereits zugeordnet.</p>"}</div>`;
 }
 
 function render(){
@@ -500,7 +572,7 @@ search.oninput=renderValues;filter.onchange=renderValues;
 vDate.value=new Date().toISOString().slice(0,10);vCat.innerHTML=cats.map(x=>`<option>${x}</option>`).join("");names.innerHTML=Object.keys(defs).map(x=>`<option>${x}</option>`).join("");
 vName.onchange=()=>{let d=defs[vName.value];if(d){vUnit.value=d.u;vMin.value=d.min;vMax.value=d.max;vCat.value=d.c}}
 valueForm.onsubmit=e=>{e.preventDefault();values.push({id:uid(),name:vName.value.trim(),value:+vValue.value,unit:vUnit.value.trim(),min:vMin.value===""?"":+vMin.value,max:vMax.value===""?"":+vMax.value,date:vDate.value,category:vCat.value,note:vNote.value.trim()});save();e.target.reset();vDate.value=new Date().toISOString().slice(0,10);render();showToast("Laborwert wurde gespeichert.","ok")};
-const APP_VERSION="2.1.0";let deferredInstallPrompt=null;
+const APP_VERSION="2.1.1";let deferredInstallPrompt=null;
 function completePayload(){return{app:"Gesundheitsakte Pro",version:APP_VERSION,exportedAt:new Date().toISOString(),values,files,documents,diagnoses,meds,symptoms,vitals,vaccinations,allergies,operations}}
 function getBackups(){try{return JSON.parse(localStorage.getItem("lk_backup_versions")||"[]")}catch(e){showToast("Sicherungsliste konnte nicht gelesen werden.","error");return[]}}
 function storageEstimate(){let n=0;for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);n+=(k.length+(localStorage.getItem(k)||"").length)*2}return n}
@@ -535,8 +607,8 @@ function renderBackupVersions(){if(!window.backupVersions)return;const a=getBack
 window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferredInstallPrompt=e;if(window.installHint)installHint.textContent="Die App kann jetzt installiert werden."});
 window.addEventListener("appinstalled",()=>{if(window.installHint)installHint.textContent="Gesundheitsakte Pro wurde installiert.";deferredInstallPrompt=null});
 document.addEventListener("DOMContentLoaded",()=>{if("serviceWorker" in navigator){
- navigator.serviceWorker.register("./service-worker.js?v=2.1.0",{updateViaCache:"none"})
-  .then(async reg=>{await reg.update();console.log("Gesundheitsakte Service Worker 2.1.0 aktiv")})
+ navigator.serviceWorker.register("./service-worker.js?v=2.1.1",{updateViaCache:"none"})
+  .then(async reg=>{await reg.update();console.log("Gesundheitsakte Service Worker 2.1.1 aktiv")})
   .catch(console.warn);
 }if(window.autoBackupSelect){autoBackupSelect.value=localStorage.getItem("lk_auto_backup")||"on";autoBackupSelect.onchange=()=>localStorage.setItem("lk_auto_backup",autoBackupSelect.value)}if(window.backupLimit){backupLimit.value=localStorage.getItem("lk_backup_limit")||"30";backupLimit.onchange=()=>localStorage.setItem("lk_backup_limit",backupLimit.value)}if(window.installBtn)installBtn.onclick=async()=>{if(deferredInstallPrompt){deferredInstallPrompt.prompt();await deferredInstallPrompt.userChoice;deferredInstallPrompt=null}else alert("Chrome-Menü öffnen und ‘App installieren’ wählen.")};if(window.backupNowBtn)backupNowBtn.onclick=()=>{try{const x=createAutoBackup("Manuell");showToast(`Sicherung angelegt: ${new Date(x.created).toLocaleTimeString("de-DE")}.`,"ok")}catch(e){showToast(e.message,"error",5000)}};if(window.downloadLatestBtn)downloadLatestBtn.onclick=()=>{setButtonBusy(downloadLatestBtn,true,"Sicherung wird erstellt");try{const x=createAutoBackup("Vor Update – lokal");downloadObject(x.data,backupFilename(x))}catch(e){showToast("Lokale Sicherung fehlgeschlagen: "+e.message,"error",7000)}finally{setButtonBusy(downloadLatestBtn,false)}};if(window.shareBackupBtn)shareBackupBtn.onclick=async()=>{setButtonBusy(shareBackupBtn,true,"OneDrive wird vorbereitet");try{const x=createAutoBackup("Vor Update – OneDrive");await shareBackup(x)}catch(e){if(e.name!=="AbortError")showToast("Cloud-Sicherung fehlgeschlagen: "+e.message,"error",7000);else showToast("Teilen wurde abgebrochen. Es wurde nichts in OneDrive gespeichert.","info",5000)}finally{setButtonBusy(shareBackupBtn,false)}};
 if(window.importBackup)importBackup.onchange=async e=>{const f=e.target.files?.[0];if(!f)return;try{const d=JSON.parse(await f.text());if(!d||!Array.isArray(d.values)||!confirm(`Sicherung aus Version ${d.version||"unbekannt"} vom ${d.exportedAt?new Date(d.exportedAt).toLocaleString("de-DE"):"unbekannten Datum"} wiederherstellen?`)){showToast("Wiederherstellung abgebrochen.","info");return}values=d.values||[];files=d.files||[];documents=d.documents||[];diagnoses=d.diagnoses||[];meds=d.meds||[];symptoms=d.symptoms||[];vitals=d.vitals||[];vaccinations=d.vaccinations||[];allergies=d.allergies||[];operations=d.operations||[];localStorage.setItem("lk_values",JSON.stringify(values));localStorage.setItem("lk_files",JSON.stringify(files));localStorage.setItem("lk_documents",JSON.stringify(documents));localStorage.setItem("lk_diag",JSON.stringify(diagnoses));localStorage.setItem("lk_meds",JSON.stringify(meds));localStorage.setItem("lk_sym",JSON.stringify(symptoms));localStorage.setItem("lk_vitals",JSON.stringify(vitals));localStorage.setItem("lk_vaccinations",JSON.stringify(vaccinations));localStorage.setItem("lk_allergies",JSON.stringify(allergies));localStorage.setItem("lk_operations",JSON.stringify(operations));createAutoBackup("Nach Wiederherstellung");render();showToast("Sicherung vollständig wiederhergestellt.","ok",7000)}catch(err){showToast("Sicherungsdatei konnte nicht eingelesen werden: "+err.message,"error",8000)}finally{e.target.value=""}};
@@ -844,7 +916,7 @@ function renderDocuments(){
  if(documentArchive)documentArchive.innerHTML=arr.map(d=>`<div class="item"><div class="head"><div><div class="name">${esc(d.name)}</div><div class="small">${fd(d.date)} · ${esc(d.rubric)} · ${esc(d.specialty)} · ${d.pageCount||1} Seite(n)</div></div><span class="badge info">${esc(d.type)}</span></div><details open><summary>Verständliche Auswertung</summary><div class="aiout">${esc(explainDocument(d))}</div></details>${hasSpecialtyData(d.specialtyData)?`<details open><summary>Strukturierte Fachwerte</summary>${specialistHtml(d.specialtyData)}</details>`:""}<details><summary>Erkannte Laborwerte</summary>${d.labValues?.length?d.labValues.map(card).join(""):"<p>Keine Laborwerte erkannt.</p>"}</details><div class="sharebar"><button class="secondary mini" onclick="shareDocument('${d.id}','analysis')">Auswertung teilen</button><button class="secondary mini" onclick="shareDocument('${d.id}','full')">Gesamtbericht teilen</button><button class="secondary mini" onclick="shareDocument('${d.id}','original')">Original teilen</button><button class="secondary mini" onclick="printDocument('${d.id}')">Drucken</button></div><button class="dangerBtn mini" onclick="deleteImportedDocumentOnly('${d.id}')">Nur aus Import-Übersicht entfernen</button></div>`).join("")||"<p class='small'>Noch keine importierten Befunde.</p>";
 }
 function deleteImportedDocumentOnly(id){if(confirm("Nur den importierten Bericht aus dieser Übersicht entfernen? Bereits übernommene Laborwerte, Diagnosen und andere Akteneinträge bleiben erhalten.")){documents=documents.filter(d=>d.id!==id);save();render();showToast("Bericht wurde nur aus der Import-Übersicht entfernt. Übernommene Daten bleiben erhalten.","ok",7000)}else showToast("Entfernen abgebrochen.","info")}
-if(docFilter)docFilter.onchange=renderDocuments;if(docSearch)docSearch.oninput=renderDocuments;if(window.explainLevel)explainLevel.onchange=renderDocuments;if(window.docSort)docSort.onchange=renderDocuments;if(window.specialtyFilter)specialtyFilter.onchange=renderSpecialtyOverview;if(window.specialtySearch)specialtySearch.oninput=renderSpecialtyOverview;
+if(docFilter)docFilter.onchange=renderDocuments;if(docSearch)docSearch.oninput=renderDocuments;if(window.explainLevel)explainLevel.onchange=renderDocuments;if(window.docSort)docSort.onchange=renderDocuments;if(window.specialtyFilter)specialtyFilter.onchange=renderSpecialtyOverview;if(window.specialtySearch)specialtySearch.oninput=renderSpecialtyOverview;if(window.rebuildSpecialtyBtn)rebuildSpecialtyBtn.onclick=()=>{backfillSpecialtyData(true);renderSpecialtyOverview();renderUnassignedDocuments(false)};if(window.showUnassignedBtn)showUnassignedBtn.onclick=()=>renderUnassignedDocuments(true);
 function renderDocCompareOptions(){
  if(!docCompareSelect)return;
  const cur=docCompareSelect.value;
@@ -1023,8 +1095,9 @@ document.querySelectorAll(".bodyPart").forEach(el=>el.addEventListener("click",(
 window.addEventListener("load",()=>{
  try{
   appSelfCheck();
+  backfillSpecialtyData(false);
   render();
-  showToast("Gesundheitsakte 2.1 wurde vollständig geladen.","success",3500);
+  showToast("Gesundheitsakte 2.1.1 wurde vollständig geladen.","success",3500);
  }catch(error){
   console.error("Startfehler",error);
   showToast("Startfehler: "+error.message,"error",10000);
