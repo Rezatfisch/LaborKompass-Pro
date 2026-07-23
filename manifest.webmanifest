@@ -1,8 +1,8 @@
 {
-  "name": "Gesundheitsakte 2.0",
+  "name": "Gesundheitsakte 2.0.1",
   "short_name": "Gesundheitsakte",
   "description": "Persönliche Gesundheitsakte für Befunde, Laborwerte, Facharztwerte, Körperbereiche, Verläufe und verständliche Analysen",
-  "start_url": "./",
+  "start_url": "./index.html?v=2.0.1",
   "scope": "./",
   "display": "standalone",
   "background_color": "#071827",
@@ -27,5 +27,6 @@
       "type": "image/png",
       "purpose": "any maskable"
     }
-  ]
+  ],
+  "id": "./index.html"
 }
