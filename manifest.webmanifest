@@ -1,8 +1,8 @@
 {
-  "name": "Gesundheitsakte 3.1",
+  "name": "Gesundheitsakte 3.2",
   "short_name": "Gesundheitsakte",
-  "description": "Persönliche Gesundheitsakte mit stabilem Dokumentimport, Fachwerten, Laborverlauf und Arztgespräch.",
-  "start_url": "./index.html?v=3.1.0",
+  "description": "Persönliche Gesundheitsakte mit intelligentem Import für medizinische Dokumente aller Art.",
+  "start_url": "./index.html?v=3.2.0",
   "id": "./index.html",
   "display": "standalone",
   "background_color": "#f1f7f8",

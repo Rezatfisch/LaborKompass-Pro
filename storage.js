@@ -18,7 +18,7 @@ window.GAStorage=(()=>{
   Object.entries(keys).forEach(([field,key])=>localStorage.setItem(key,JSON.stringify(state[field]||[])));
   localStorage.setItem("ga_last_saved",new Date().toISOString());
  }
- function backup(state){return {app:"Gesundheitsakte",version:"3.0.0",exportedAt:new Date().toISOString(),...state}}
+ function backup(state){return {app:"Gesundheitsakte",version:"3.2.0",exportedAt:new Date().toISOString(),...state}}
  function restore(data){
   const state={};
   Object.keys(keys).forEach(k=>state[k]=Array.isArray(data[k])?data[k]:[]);

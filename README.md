@@ -1,21 +1,40 @@
-# Gesundheitsakte 3.1.0
+# Gesundheitsakte 3.2.0 – intelligenter Dokumentimport
 
-Version 3.1 führt die Funktionen der Vorgängerversionen wieder in den modularen stabilen Kern ein.
+Diese Version konzentriert sich bewusst auf den ersten stabilen Entwicklungsschritt: den Import medizinischer Dokumente jeglicher Art.
 
-## Wieder integriert
-- Laborwerte manuell eintragen
-- Referenz-Unter- und Obergrenzen des konkreten Labors
-- allgemeine Orientierungsbereiche
-- günstige Orientierungskorridore („Idealwerte“) mit deutlichem medizinischem Hinweis
-- farbliche Statusanzeige: im Bereich, zu niedrig, zu hoch
-- Erklärungen zu Laborwerten
-- Verlaufsgrafik mit Referenzbereich
-- Vergleich zweier Labortermine
-- absolute und prozentuale Veränderung
-- Laborwert löschen
-- alle importierten Werte dynamisch nach Datum in Verlauf und Vergleich
-- vorhandene Daten aus allen bisherigen Versionen bleiben kompatibel
+## Importierte Dateitypen
+- PDF mit eingebettetem Text
+- Fotos und Scans mit OCR
+- mehrere Fotos/Dateien als gemeinsames Dokument
+- TXT, CSV und eingefügter Text
+- Dateien aus Android-Dateien, OneDrive oder Google Drive über den System-Dateidialog
+
+## Automatisch erkannte Grunddaten
+- Dokumentname und Dokumentdatum
+- Dokumentart und Rubrik
+- Fachgebiet
+- Körperregionen
+- Aussteller/Praxis und behandelnde Person
+- Adressen
+- Diagnosen und ICD-Begriffe
+- Medikamente
+- Empfehlungen und Kontrollen
+- Laborwerte mit erkannten Referenzgrenzen
+- sonstige Messwerte
+- Kostenangaben
+- Termine
+- wichtige Textaussagen
+
+## Kontrollierte Vorschau
+Jeder Import erscheint als kompakte, aufklappbare Karte. Vor dem Speichern können Name, Datum, Dokumentart, Fachgebiet, Rubrik, Aussteller, Behandler, Körperregionen, Diagnosen, Medikamente und Empfehlungen korrigiert werden.
+
+## Dubletten
+Ähnliche beziehungsweise identische Dokumente können ersetzt, als Kopie gespeichert oder verworfen werden.
+
+## Bestehende Funktionen
+Die Laborverläufe, Referenzbereiche, Ideal-/Orientierungsbereiche, Vergleiche, Fachwerte, Chronik, Analysen und Sicherungen aus Version 3.1 bleiben enthalten.
 
 ## Aktualisierung
-Nach dem Hochladen aller Dateien öffnen:
+Alle Dateien des Pakets in das Hauptverzeichnis des GitHub-Repositories laden und vorhandene Dateien ersetzen. Danach einmal öffnen:
+
 https://rezatfisch.github.io/LaborKompass-Pro/update.html

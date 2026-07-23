@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0b7285">
 <meta name="description" content="Persönliche Gesundheitsakte für Befunde, Laborwerte, Fachwerte, Verläufe und Arztgespräche.">
-<title>Gesundheitsakte 3.1</title>
+<title>Gesundheitsakte 3.2</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -15,7 +15,7 @@
 <header class="top">
   <img src="logo-64.png" class="logo" alt="">
   <div><h1>Gesundheitsakte</h1><p>Dokumente, Werte, Verläufe und verständliche Analysen</p>
-  <span class="version">Version 3.1.0 · Laborvergleich und Idealbereiche</span></div>
+  <span class="version">Version 3.2.0 · intelligenter Dokumentimport</span></div>
 </header>
 
 <nav id="tabs" class="tabs" aria-label="Hauptnavigation">
@@ -42,26 +42,35 @@
 </section>
 
 <section id="import" class="page">
- <article class="card">
-  <h2>Dokumente importieren</h2>
-  <p>PDF, Bild, Scan, Textdatei oder mehrere Fotos auswählen. Dateien aus OneDrive und Google Drive können über den Android-Dateidialog gewählt werden.</p>
+ <article class="card import-hero">
+  <h2>Dokumente jeglicher Art importieren</h2>
+  <p>PDF, Foto, Scan, Textdatei oder mehrere Seiten auswählen. Die App versucht Dokumentart, Fachgebiet, Körperregion, Datum, Aussteller, Diagnosen, Werte, Kosten und Empfehlungen automatisch zu erkennen.</p>
   <input id="fileInput" type="file" accept=".pdf,image/*,.txt,.csv,.json" multiple>
   <div class="options">
-   <label><input type="radio" name="bundleMode" value="separate" checked> Jede Datei einzeln</label>
-   <label><input type="radio" name="bundleMode" value="bundle"> Mehrere Bilder = ein Bericht</label>
+   <label><input type="radio" name="bundleMode" value="separate" checked> Jede Datei ist ein Dokument</label>
+   <label><input type="radio" name="bundleMode" value="bundle"> Mehrere Dateien gehören zusammen</label>
    <label><input id="saveOriginal" type="checkbox" checked> Original lokal speichern</label>
-   <label><input id="takeLabs" type="checkbox" checked> Laborwerte übernehmen</label>
+   <label><input id="takeLabs" type="checkbox" checked> Erkannte Laborwerte übernehmen</label>
   </div>
+  <div class="import-note">Cloud-Dateien: Im Android-Dateidialog links OneDrive, Google Drive oder „Eigene Dateien“ auswählen.</div>
  </article>
+
  <article class="card">
-  <h2>Importstatus</h2>
+  <div class="section-head"><div><h2>Importstatus</h2><p class="small">Jeder Verarbeitungsschritt wird sichtbar bestätigt.</p></div>
+  <button id="clearImport" class="secondary">Anzeige leeren</button></div>
   <ol id="importSteps" class="steps"><li>Bereit – bitte Datei auswählen.</li></ol>
-  <div id="importResults"></div>
  </article>
+
+ <article class="card">
+  <div class="section-head"><div><h2>Erkannte Dokumente</h2><p class="small">Kompakte Karten öffnen, Angaben kontrollieren und bei Bedarf korrigieren.</p></div>
+  <span id="pendingCount" class="count-badge">0 vorbereitet</span></div>
+  <div id="importResults"><p class="small">Noch keine Datei vorbereitet.</p></div>
+ </article>
+
  <article class="card">
   <h2>Text manuell einfügen</h2>
-  <textarea id="manualText" placeholder="Text eines Befundes hier einfügen oder erkannte Inhalte korrigieren."></textarea>
-  <button id="manualAnalyse" class="primary">Text analysieren</button>
+  <textarea id="manualText" placeholder="Text eines Befundes, einer Rechnung oder eines Arztbriefs hier einfügen."></textarea>
+  <button id="manualAnalyse" class="primary">Text erkennen und Vorschau erstellen</button>
  </article>
 </section>
 
