@@ -1,8 +1,8 @@
 {
-  "name": "Gesundheitsakte 3.3.3",
+  "name": "Gesundheitsakte 3.3.4",
   "short_name": "Gesundheitsakte",
-  "description": "Gesundheitsakte mit echten Auswahllisten, freien Einträgen und einheitlichen Dokumentnamen.",
-  "start_url": "./index.html?v=3.3.3",
+  "description": "Gesundheitsakte mit Originalbeleg, echten Auswahllisten und bestätigter Dokumentspeicherung.",
+  "start_url": "./index.html?v=3.3.4",
   "id": "./index.html",
   "display": "standalone",
   "background_color": "#f1f7f8",

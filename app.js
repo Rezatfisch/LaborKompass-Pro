@@ -1,5 +1,5 @@
 (()=>{"use strict";
- const state=GAStorage.load();let mode="simple",pending={};
+ const state=GAStorage.load();let mode="simple",pending={},lastSaveReceipt=null;
  const $=id=>document.getElementById(id);
 
  const CHOICE_DEFAULTS=GAChoices.catalogs;
@@ -105,22 +105,75 @@
   <div class="field-group"><h4>Kosten</h4>${costs.length?`<ul class="source-list">${costs.map(x=>`<li>${GAUI.esc(x)}</li>`).join("")}</ul>`:"<p class='small'>Keine Kostenangaben erkannt.</p>"}</div>
   <details><summary>Quelldateien und erkannter Originaltext</summary><ul class="source-list">${source}</ul><div class="compact-text">${GAUI.esc(doc.text||"")}</div></details>`
  }
+
+ function showSaveReceipt(doc,message="Dokument erfolgreich gespeichert"){
+  lastSaveReceipt={id:doc.id,name:doc.name,at:new Date().toISOString(),message};
+  sessionStorage.setItem("ga_last_save_receipt",JSON.stringify(lastSaveReceipt));
+ }
+ function saveReceiptHtml(){
+  let r=lastSaveReceipt;
+  if(!r)try{r=JSON.parse(sessionStorage.getItem("ga_last_save_receipt")||"null")}catch{}
+  if(!r)return "";
+  return `<div class="save-receipt" id="saveReceipt"><div><b>✅ ${GAUI.esc(r.message)}</b><br><span>Gespeichert unter: <b>Dokumente → ${GAUI.esc(r.name)}</b></span></div><button class="secondary" onclick="document.getElementById('saveReceipt')?.remove()">Schließen</button></div>`;
+ }
  async function saveDoc(id,asCopy=false){
   let doc=updatePendingFromForm(id);if(!doc)return;
   const dup=duplicate(doc);
   if(dup&&!asCopy)return GAUI.toast("Dokument ist bereits vorhanden. Bitte Ersetzen oder als Kopie speichern.","error");
-  if(asCopy)doc={...doc,id:GAExtract.uid(),name:doc.name+" (Kopie)"};
+  if(asCopy){
+   const oldName=doc.name,ext=GAChoices.extension(oldName,doc.mime||"");
+   const base=ext?oldName.slice(0,-ext.length):oldName;
+   doc={...doc,id:GAExtract.uid(),name:`${base}_Kopie${ext}`}
+  }
+  const files=doc._files||[];
   state.documents.push(doc);
   const n=$("takeLabs").checked?integrateLabs(doc):0;
-  if($("saveOriginal").checked&&doc._files?.length)try{await GAStorage.putOriginalPackage(doc.id,doc._files);doc.originalStored=true;doc.originalSavedAt=new Date().toISOString()}catch(e){GAUI.toast("Dokument gespeichert, Original konnte nicht separat gespeichert werden.","error")}
-  delete doc._files;delete pending[id];save();ensureChoiceLists();if($("documentSearch"))$("documentSearch").value="";if($("documentFilter"))$("documentFilter").value="all";render();renderPendingCards();navigate("documents");setTimeout(()=>{const card=document.querySelector(`[data-document-id="${doc.id}"]`);if(card){card.classList.add("just-saved");card.scrollIntoView({behavior:"smooth",block:"center"})}},80);GAUI.toast(`Dokument erfolgreich gespeichert und unter Dokumente angezeigt. ${n} neue Laborwerte übernommen.`)
+  if($("saveOriginal").checked&&files.length)try{
+   await GAStorage.putOriginalPackage(doc.id,files);doc.originalStored=true;doc.originalSavedAt=new Date().toISOString()
+  }catch(e){
+   recordProgramError("Originalspeicher",e.message,e.stack);
+   GAUI.toast("Die Daten wurden gespeichert, der Originalbeleg jedoch nicht. Bitte nochmals kontrollieren.","error")
+  }
+  delete doc._files;
+  save();
+
+  // Speicherung unmittelbar gegen den lokalen Speicher prüfen.
+  const memoryFound=state.documents.some(x=>x.id===doc.id);
+  const storedFound=(GAStorage.load().documents||[]).some(x=>x.id===doc.id);
+  if(!memoryFound||!storedFound){
+   recordProgramError("Dokumentspeicherung","Speicherprüfung fehlgeschlagen",doc.name);
+   GAUI.toast("Speichern konnte nicht bestätigt werden. Das Dokument bleibt zur Sicherheit im Import sichtbar.","error");
+   doc._files=files;
+   if(!pending[id])pending[id]=doc;
+   renderPendingCards();
+   return
+  }
+
+  delete pending[id];
+  showSaveReceipt(doc,"Dokument erfolgreich gespeichert");
+  ensureChoiceLists();
+  if($("documentSearch"))$("documentSearch").value="";
+  if($("documentFilter"))$("documentFilter").value="all";
+  render();renderPendingCards();navigate("documents");
+  setTimeout(()=>{
+   const card=document.querySelector(`[data-document-id="${doc.id}"]`);
+   if(card){card.classList.add("just-saved");card.scrollIntoView({behavior:"smooth",block:"center"})}
+  },120);
+  GAUI.toast(`✅ Erfolgreich gespeichert unter Dokumente: ${doc.name}. ${n} neue Laborwerte übernommen.`)
  }
  async function replaceDoc(pid,did){
   const doc=updatePendingFromForm(pid),i=state.documents.findIndex(x=>x.id===did);if(!doc||i<0)return;
   const files=doc._files||[];doc.id=did;
   if(files.length&&$("saveOriginal").checked){await GAStorage.putOriginalPackage(did,files);doc.originalStored=true;doc.originalSavedAt=new Date().toISOString()}
-  state.documents[i]=doc;integrateLabs(doc);delete doc._files;delete pending[pid];if(pid!==did)await GAStorage.deleteOriginal(pid).catch(()=>{});
-  save();ensureChoiceLists();if($("documentSearch"))$("documentSearch").value="";if($("documentFilter"))$("documentFilter").value="all";render();renderPendingCards();navigate("documents");GAUI.toast("Vorhandenes Dokument gespeichert und unter Dokumente angezeigt.")
+  state.documents[i]=doc;integrateLabs(doc);delete doc._files;save();
+  const storedFound=(GAStorage.load().documents||[]).some(x=>x.id===did);
+  if(!storedFound){GAUI.toast("Das Ersetzen konnte nicht bestätigt werden. Bitte nicht weiterarbeiten und Fehlerprotokoll prüfen.","error");return}
+  delete pending[pid];if(pid!==did)await GAStorage.deleteOriginal(pid).catch(()=>{});
+  showSaveReceipt(doc,"Vorhandenes Dokument erfolgreich ersetzt");
+  ensureChoiceLists();if($("documentSearch"))$("documentSearch").value="";if($("documentFilter"))$("documentFilter").value="all";
+  render();renderPendingCards();navigate("documents");
+  setTimeout(()=>document.querySelector(`[data-document-id="${did}"]`)?.scrollIntoView({behavior:"smooth",block:"center"}),120);
+  GAUI.toast(`✅ Erfolgreich gespeichert unter Dokumente: ${doc.name}`)
  }
  function preview(doc){
   pending[doc.id]=doc;
@@ -136,7 +189,7 @@
     ${pct<65?`<div class="review-warning">Die automatische Zuordnung ist nicht eindeutig. Bitte erstellendes Fachgebiet, Themengebiet, Rubrik, Körperregion und Seite kontrollieren.</div>`:""}
     <div class="field-group"><h4>Grunddaten und Zuordnung kontrollieren</h4>
      <div class="edit-grid">
-      <div class="wide"><label>Dokumentname</label><input id="pname-${doc.id}" value="${GAUI.esc(GAChoices.normalizeName(doc.name,doc.date,doc.mime||""))}"><div class="small">Vorgabe: JJJJ_MM_TT_Beschreibung. Die Dateiendung .pdf, .jpg oder .png bleibt automatisch erhalten.</div></div>
+      <div class="wide"><label>Dokumentname</label><input id="pname-${doc.id}" value="${GAUI.esc(GAChoices.normalizeName(doc.name,doc.date,doc.mime||""))}"><div class="small">Vorgabe: JJJJMMTT_Beschreibung, zum Beispiel 20231001_Hautarztbericht.pdf. Die Dateiendung bleibt automatisch erhalten.</div></div>
       <div><label>Dokumentdatum</label><input id="pdate-${doc.id}" type="date" value="${doc.date||""}"></div>
       <div><label>Dokumentart</label>${flexibleChoice("documentTypeOptions",doc.type,`ptype-${doc.id}`,"Dokumentart")}</div>
       <div><label>Erstellendes Fachgebiet</label>${flexibleChoice("specialtyOptions",doc.creatorSpecialty||"",`pcreator-${doc.id}`,"Erstellendes Fachgebiet")}</div>
@@ -180,7 +233,7 @@
   const q=$("documentSearch").value.toLowerCase(),f=$("documentFilter").value,rubs=[...new Set(state.documents.map(d=>d.rubric))].sort(),cur=f;
   $("documentFilter").innerHTML='<option value="all">Alle Rubriken</option>'+rubs.map(x=>`<option>${GAUI.esc(x)}</option>`).join("");if(rubs.includes(cur))$("documentFilter").value=cur;
   const arr=[...state.documents].filter(d=>(f==="all"||d.rubric===f)&&`${d.name} ${d.text} ${d.specialty} ${d.creatorSpecialty||""} ${d.topicSpecialty||""} ${(d.diagnoses||[]).join(" ")}`.toLowerCase().includes(q)).sort((a,b)=>(b.date||"").localeCompare(a.date||""));
-  $("documentList").innerHTML=arr.map(d=>`<article class="item document-card" data-document-id="${d.id}">
+  $("documentList").innerHTML=saveReceiptHtml()+arr.map(d=>`<article class="item document-card" data-document-id="${d.id}">
    <div class="document-card-head"><div><div class="import-title">${GAUI.esc(d.name)}</div><div class="import-status"><span class="tag">${GAUI.date(d.date)}</span><span class="tag">${GAUI.esc(d.rubric)}</span><span class="tag">${GAUI.esc(d.topicSpecialty||d.specialty)}</span>${reviewBadge(d)}${d.originalStored?'<span class="tag new">Original vorhanden</span>':'<span class="tag uncertain">Original fehlt</span>'}</div></div></div>
    <p class="small">${GAUI.esc((d.keyStatements||[]).slice(0,2).join(" · ")||"Noch keine klare Kurzfassung.")}</p>
    <div class="actions"><button class="primary" onclick="GAApp.review('${d.id}')">Original & Daten prüfen</button><button onclick="GAApp.analyse('${d.id}')">Analyse</button><button onclick="GAApp.share('${d.id}')">Teilen</button><button onclick="GAApp.remove('${d.id}')">Dokument entfernen</button></div>
@@ -276,13 +329,13 @@
   saveDoc,replace:replaceDoc,
   discard:async id=>{const d=pending[id];if(d?.originalStaged)await GAStorage.deleteOriginal(id).catch(()=>{});delete pending[id];renderPendingCards();GAUI.toast("Vorbereiteter Import verworfen.")},
   review:id=>{const d=state.documents.find(x=>x.id===id);if(d)GAReviewer.open(d,{onSave:updated=>{Object.assign(d,updated);save();render()}})},
-  reviewPending:id=>{const d=pending[id];if(d)GAReviewer.open(d,{pending:true,onSave:updated=>{Object.assign(d,updated);renderPendingCards()}})},
+  reviewPending:id=>{const d=pending[id];if(d)GAReviewer.open(d,{pending:true,onSave:updated=>{Object.assign(d,updated);renderPendingCards()},onFinalize:async updated=>{Object.assign(d,updated);GAReviewer.close();await saveDoc(id)}})},
   analyse:id=>{navigate("analysis");$("analysisDocument").value=id;$("runAnalysis").click()},share,
   remove:async id=>{if(confirm("Dokument und den lokal gespeicherten Originalbeleg entfernen? Bereits übernommene Laborwerte bleiben erhalten.")){state.documents=state.documents.filter(x=>x.id!==id);await GAStorage.deleteOriginal(id).catch(()=>{});save();render();GAUI.toast("Dokument und Originalbeleg entfernt.")}},
   removeLab:id=>{if(confirm("Diesen Laborwert löschen?")){state.values=state.values.filter(x=>x.id!==id);save();render();GAUI.toast("Laborwert gelöscht.")}},
   useReference:name=>{navigate("labs");const r=GALabRefs.find(name);$("newLabName").value=name;$("newLabUnit").value=r?.unit||"";$("newLabMin").value=r?.min??"";$("newLabMax").value=r?.max??"";$("newLabValue").focus();scrollTo(0,250)},
   assign:id=>{const d=state.documents.find(x=>x.id===id),v=$(`assign-${id}`).value;if(!d||!v)return;d.specialty=v;d.rubric=v==="Augenoptik"?"Optik / Brille":v==="Zahnmedizin"?"Zahnmedizin":v.split(" / ")[0];d.manualClassification=true;GAExtract.reanalyse(d);save();render();GAUI.toast("Fachgebiet zugeordnet.")}
  }; window.addEventListener("error",e=>{recordProgramError("JavaScript",e.message,`${e.filename||""}:${e.lineno||""}:${e.colno||""}\n${e.error?.stack||""}`);GAUI.toast(`Programmfehler protokolliert: ${e.message}`,"error")});window.addEventListener("unhandledrejection",e=>{recordProgramError("Promise",e.reason?.message||e.reason,e.reason?.stack||"");GAUI.toast(`Importfehler protokolliert: ${e.reason?.message||e.reason}`,"error")});
- wire();state.documents.forEach(GAExtract.reanalyse);save();render();selfTest();GAUI.toast("Gesundheitsakte 3.3.3 mit echten Auswahllisten wurde vollständig geladen.");
- if("serviceWorker"in navigator)navigator.serviceWorker.register("./service-worker.js?v=3.3.3",{updateViaCache:"none"}).catch(console.warn);
+ wire();state.documents.forEach(GAExtract.reanalyse);save();render();selfTest();GAUI.toast("Gesundheitsakte 3.3.4 mit bestätigter Dokumentspeicherung wurde vollständig geladen.");
+ if("serviceWorker"in navigator)navigator.serviceWorker.register("./service-worker.js?v=3.3.4",{updateViaCache:"none"}).catch(console.warn);
 })();

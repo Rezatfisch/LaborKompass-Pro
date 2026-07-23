@@ -32,7 +32,7 @@ window.GAChoices=(()=>{
   let n=String(name||"").trim().replace(/[\\/:*?"<>|]+/g,"-");
   const ext=extension(n,mime);if(ext)n=n.slice(0,-ext.length);
   n=n.replace(/^\d{4}[_-]?\d{2}[_-]?\d{2}[_-]?/i,"").replace(/^_+|_+$/g,"").replace(/\s+/g,"_");
-  const d=/^\d{4}-\d{2}-\d{2}$/.test(date||"")?date.replaceAll("-","_"):"0000_00_00";
+  const d=/^\d{4}-\d{2}-\d{2}$/.test(date||"")?date.replaceAll("-",""):"00000000";
   return `${d}_${n||"Dokument"}${ext||extension("",mime)}`;
  }
  function bind(root=document){

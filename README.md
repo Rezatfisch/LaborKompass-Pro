@@ -1,20 +1,23 @@
-# Gesundheitsakte 3.3.3 – Echte Auswahllisten und Dateinamen
+# Gesundheitsakte 3.3.4 – Bestätigtes Speichern
 
-## Neu
+## Änderungen
 
-- Die bisher auf Android unzuverlässigen Datalist-Felder wurden durch echte, aufklappbare Auswahlfelder ersetzt.
-- Jede Liste enthält „Eigener Eintrag …“. Damit bleibt freie Eingabe möglich.
-- Umfangreiche alphabetische Körperbereichsliste, einschließlich linker und rechter Körperteile.
-- Körperseite bleibt separat: ohne Seitenangabe, beidseits, links, rechts.
-- Deutlich erweiterte Hauptrubriken, Dokumentarten und Fachgebiete.
-- Dokumentnamen werden einheitlich als `JJJJ_MM_TT_Beschreibung.pdf` beziehungsweise `.jpg`/`.png` gespeichert.
-- Der frei wählbare Beschreibungsteil bleibt editierbar.
-- Die ursprüngliche Dateiendung wird automatisch erhalten.
+- Einheitlicher Dokumentname: `JJJJMMTT_Beschreibung.Dateiendung`
+- Beispiel: `20231001_Hautarztbericht.pdf`
+- PDF, JPG oder PNG werden anhand des Originalformats automatisch beibehalten.
+- Nach dem Speichern wird der lokale Speicher unmittelbar geprüft.
+- Erst nach erfolgreicher Prüfung wird der vorbereitete Import entfernt.
+- Die App wechselt automatisch zu **Dokumente**.
+- Dort erscheint eine grüne, dauerhafte Erfolgsbestätigung mit dem exakten Dokumentnamen.
+- Das neu gespeicherte Dokument wird hervorgehoben und in den sichtbaren Bereich gescrollt.
+- Im Prüfarbeitsplatz gibt es bei neuen Importen einen eindeutigen grünen Knopf:
+  **„Geprüft und endgültig unter Dokumente speichern“**
+- Suche und Rubrikfilter werden nach dem Speichern zurückgesetzt.
 
 ## Installation
 
-Alle Dateien ersetzen. Neu ist `choices.js`. Danach `update.html` aufrufen.
+Alle Dateien auf GitHub ersetzen. Danach `update.html` öffnen und den Cache aktualisieren.
 
-Die sichtbare Version muss lauten:
+Erwartete Versionsanzeige:
 
-**Version 3.3.3 · Echte Auswahllisten und Dateinamen**
+**Version 3.3.4 · Bestätigtes Speichern und Dateiname JJJJMMTT**

@@ -102,7 +102,7 @@ window.GAReviewer=(()=>{
    <div class="review-form">
     <h3>Dokumentdaten prüfen</h3>
     <div class="edit-grid">
-     <div class="wide"><label>Dokumentname</label><input id="reviewDocumentName" data-field="name" value="${esc(GAChoices.normalizeName(current.name,current.date,current.mime||""))}"><div class="small">Vorgabe: JJJJ_MM_TT_Beschreibung; Dateiendung bleibt automatisch erhalten.</div></div>
+     <div class="wide"><label>Dokumentname</label><input id="reviewDocumentName" data-field="name" value="${esc(GAChoices.normalizeName(current.name,current.date,current.mime||""))}"><div class="small">Vorgabe: JJJJMMTT_Beschreibung, zum Beispiel 20231001_Hautarztbericht.pdf. Die Dateiendung bleibt automatisch erhalten.</div></div>
      <div><label>Datum</label><input data-field="date" type="date" value="${esc(current.date||"")}"></div>
      <div><label>Dokumentart</label>${choiceInput("type",current.type,"documentTypeOptions")}</div>
      <div><label>Hauptrubrik</label>${choiceInput("rubric",current.rubric,"rubricOptions")}</div>
@@ -117,7 +117,7 @@ window.GAReviewer=(()=>{
     ${listField("Empfehlungen / Kontrollen","recommendations",current.recommendations)}
     <label>Prüfstatus</label><select id="reviewStatus"><option value="unreviewed">🔴 Ungeprüft</option><option value="partial">🟡 Teilweise geprüft</option><option value="reviewed">🟢 Geprüft</option><option value="uncertain">⚠ OCR unsicher</option></select>
     <label class="learn-check"><input id="reviewUncertain" type="checkbox"${current.hasUncertainOCR?" checked":""}> Dieses Dokument enthält unsichere OCR-Stellen</label>
-    <div class="actions"><button id="saveReview" class="primary">Korrekturen speichern</button><button id="markReviewed" class="secondary">Als geprüft speichern</button></div><p class="small review-save-hint">${callbacks.pending?"Danach muss der Import noch mit „Dokument endgültig speichern“ abgeschlossen werden.":"Die Änderung wird sofort im gespeicherten Dokument übernommen."}</p>
+    <div class="actions"><button id="saveReview" class="secondary">Korrekturen zwischenspeichern</button><button id="markReviewed" class="secondary">Als geprüft markieren</button>${callbacks.pending?'<button id="finalizeReview" class="primary">Geprüft und endgültig unter Dokumente speichern</button>':""}</div><p class="small review-save-hint">${callbacks.pending?"Der grüne Knopf speichert den Import endgültig und öffnet anschließend automatisch den Bereich „Dokumente“.":"Die Änderung wird sofort im gespeicherten Dokument übernommen."}</p>
    </div>
    <aside class="quality-card"><h3>Qualitätsbewertung</h3>${qualityHtml(current)}<p class="small">Die Bewertung ist eine technische Orientierung. Sie ersetzt nicht den Vergleich mit dem Original.</p></aside>
   </div>`;
@@ -125,8 +125,10 @@ window.GAReviewer=(()=>{
   box.querySelector("#reviewStatus").value=current.reviewStatus||"unreviewed";
   box.querySelector("#saveReview").onclick=()=>saveData(false);
   box.querySelector("#markReviewed").onclick=()=>{box.querySelector("#reviewStatus").value="reviewed";saveData(true)};
+  const finalize=box.querySelector("#finalizeReview");
+  if(finalize)finalize.onclick=()=>{box.querySelector("#reviewStatus").value="reviewed";saveData(true,false);callbacks.onFinalize?.(current)};
  }
- function saveData(markAll){
+ function saveData(markAll,rerender=true){
   const box=document.getElementById("rpanel-data"),changed=[];
   box.querySelectorAll("[data-field]").forEach(el=>{
    const key=el.dataset.field,old=JSON.stringify(current[key]??null);
@@ -143,8 +145,8 @@ window.GAReviewer=(()=>{
   current.reviewHistory=current.reviewHistory||[];
   current.reviewHistory.push({at:current.reviewedAt,fields:changed,status:current.reviewStatus});
   if(markAll)current.fieldReview={all:"reviewed"};
-  callbacks.onSave?.(current);renderHeader();renderAnalysis();renderData();
-  window.GAUI?.toast(callbacks.pending?"Prüfung gespeichert. Bitte anschließend den Import endgültig speichern.":(changed.length?`${changed.length} Korrektur(en) gespeichert.`:"Prüfstatus gespeichert."))
+  callbacks.onSave?.(current);if(rerender){renderHeader();renderAnalysis();renderData()}
+  window.GAUI?.toast(callbacks.pending?(rerender?"Korrekturen zwischengespeichert. Für den endgültigen Abschluss den grünen Speicherknopf drücken.":"Dokument wird endgültig gespeichert."):(changed.length?`${changed.length} Korrektur(en) gespeichert.`:"Prüfstatus gespeichert."))
  }
  function qualityHtml(d){const q=quality(d);return `<div class="quality-meter"><span>OCR-Qualität</span><b>${q.ocr}%</b><i><em style="width:${q.ocr}%"></em></i></div><div class="quality-meter"><span>Vollständigkeit</span><b>${q.completeness}%</b><i><em style="width:${q.completeness}%"></em></i></div><div class="quality-meter"><span>Gesamtqualität</span><b>${q.overall}%</b><i><em style="width:${q.overall}%"></em></i></div>`}
  function renderOCR(){
